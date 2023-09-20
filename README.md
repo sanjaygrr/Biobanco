@@ -24,13 +24,13 @@ source venv/bin/activate  # En Windows use: .\venv\Scripts\activate
 2. Realiza las migraciones necesarias con:
 
 
-'python3 manage.py migrate'
+`python3 manage.py migrate`
 
 
 3. Crea un superusuario para acceder al panel de administración con:
 
 
-'python3 manage.py createsuperuser'
+`python3 manage.py createsuperuser`
 
 
 ## ⚙️ Poner en marcha el proyecto
@@ -38,7 +38,7 @@ source venv/bin/activate  # En Windows use: .\venv\Scripts\activate
 Para iniciar el servidor de desarrollo, usa:
 
 
-'python3 manage.py runserver'
+`python3 manage.py runserver`
 
 
 Ahora, abre tu navegador y visita [http://127.0.0.1:8000/](http://127.0.0.1:8000/) para ver la aplicación en funcionamiento.
@@ -48,7 +48,7 @@ Ahora, abre tu navegador y visita [http://127.0.0.1:8000/](http://127.0.0.1:8000
 Para ejecutar las pruebas del proyecto, use:
 
 
-'python3 manage.py test'
+`python3 manage.py test`
 
 
 

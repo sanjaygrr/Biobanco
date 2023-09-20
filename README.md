@@ -14,8 +14,8 @@ Asegúrate de tener instalado:
 Recomendamos utilizar un entorno virtual para instalar las dependencias del proyecto. Sigue estos pasos para crearlo y activarlo:
 
 
-python3 -m venv venv
-source venv/bin/activate  # En Windows use: .\venv\Scripts\activate
+`python3 -m venv venv`
+`source venv/bin/activate`  # En Windows use: `.\venv\Scripts\activate`
 
 
 ## 🚀 Configuración del proyecto

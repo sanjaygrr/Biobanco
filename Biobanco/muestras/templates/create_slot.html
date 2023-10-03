@@ -1,0 +1,92 @@
+{% extends 'base.html'%}
+
+{% block content  %}
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Espacio</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: left;
+            width: 300px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Registrar Espacio</h1>
+    <form action="/register_space" method="POST">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="type">Tipo:</label>
+            <select id="type" name="type" required>
+                <option value="box">Caja</option>
+                <option value="freezer">Freezer</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="name">Nombre o Numeración:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Descripción:</label>
+            <textarea id="description" name="description" rows="4" required></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="status">Estado:</label>
+            <select id="status" name="status" required>
+                <option value="enabled">Habilitado</option>
+                <option value="disabled">Inhabilitado</option>
+            </select>
+        </div>
+        
+        <button type="submit">Registrar</button>
+    </form>
+</body>
+</html>
+{% endblock %}

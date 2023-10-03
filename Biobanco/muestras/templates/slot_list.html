@@ -1,0 +1,125 @@
+{% extends 'base.html'%}
+
+{% block content  %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ver/Cambiar Espacios</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .filter-box, .spaces-list {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ver/Cambiar Espacios</h1>
+    
+    <div class="filter-box">
+        <h2>Criterios de Búsqueda</h2>
+        <form action="/search_spaces" method="GET">
+            <div class="form-group">
+                <label for="name">Nombre o Contenido:</label>
+                <input type="text" id="name" name="name">
+            </div>
+            <div class="form-group">
+                <label for="type">Tipo de Espacio:</label>
+                <select id="type" name="type">
+                    <option value="">--Seleccionar--</option>
+                    <option value="box">Caja</option>
+                    <option value="freezer">Freezer</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="status">Estado:</label>
+                <select id="status" name="status">
+                    <option value="">--Seleccionar--</option>
+                    <option value="enabled">Habilitado</option>
+                    <option value="disabled">Inhabilitado</option>
+                </select>
+            </div>
+            <button type="submit">Buscar</button>
+        </form>
+    </div>
+    
+    <div class="spaces-list">
+        <h2>Lista de Espacios</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Descripción</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for space in spaces %}
+                    <tr>
+                        <td>{{ space.name }}</td>
+                        <td>{{ space.type }}</td>
+                        <td>{{ space.description }}</td>
+                        <td>{{ space.status }}</td>
+                        <td>
+                            <a href="/edit_space/{{ space.id }}">Editar</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
+{% endblock %}

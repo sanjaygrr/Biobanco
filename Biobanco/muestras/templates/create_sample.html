@@ -1,0 +1,127 @@
+{% extends 'base.html'%}
+
+{% block content  %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Muestra</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+            padding: 20px;
+        }
+        h1, h2 {
+            margin-bottom: 20px;
+        }
+        .form-box {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Nueva Muestra</h1>
+    
+    <div class="form-box">
+        <h2>Datos de la Muestra</h2>
+        <form action="/create_sample" method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="subject_id">ID Sujeto:</label>
+                <input type="text" id="subject_id" name="subject_id" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="sample_date">Fecha de Obtención de la Muestra:</label>
+                <input type="date" id="sample_date" name="sample_date" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="preservation_state">Estado de Preservación:</label>
+                <select id="preservation_state" name="preservation_state" required>
+                    <option value="normal">Normal</option>
+                    <option value="frozen">Congelado</option>
+                    <option value="other">Otro</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="specimen">Especimen:</label>
+                <select id="specimen" name="specimen" required>
+                    <option value="blood">Sangre</option>
+                    <option value="urine">Orina</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="specification">Especificación:</label>
+                <select id="specification" name="specification" required>
+                    <option value="s1">S1</option>
+                    <option value="s2">S2</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="volume">Volumen (ml):</label>
+                <input type="number" id="volume" name="volume" required>
+            </div>
+            
+            <h2>Ubicación</h2>
+            
+            <div class="form-group">
+                <label for="freezer_number">Freezer Nro:</label>
+                <input type="number" id="freezer_number" name="freezer_number" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="rack_number">Rack Nro:</label>
+                <input type="number" id="rack_number" name="rack_number" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="box_number">Caja Nro:</label>
+                <input type="number" id="box_number" name="box_number" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="cell_number">Celda Nro:</label>
+                <input type="number" id="cell_number" name="cell_number" required>
+            </div>
+            
+            <button type="submit" name="action" value="save_and_add_another">Guardar y Agregar Otra Muestra</button>
+            <button type="submit" name="action" value="save_and_exit">Guardar y Salir</button>
+        </form>
+    </div>
+</body>
+</html>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'base.html'%}
+
+{% block content  %}
+    <h1>Trazabilidad</h1>
+    
+    <div class="section">
+        <div class="filter-box">
+            <h2>Criterios de Búsqueda</h2>
+            <form action="/search_samples" method="GET">
+                <div class="form-group">
+                    <label for="subject_id">ID Sujeto:</label>
+                    <input type="text" id="subject_id" name="subject_id">
+                </div>
+                <div class="form-group">
+                    <label for="sample_date">Fecha de Obtención:</label>
+                    <input type="date" id="sample_date" name="sample_date">
+                </div>
+                <div class="form-group">
+                    <label for="specimen">Especimen:</label>
+                    <select id="specimen" name="specimen">
+                        <option value="">--Seleccionar--</option>
+                        <option value="blood">Sangre</option>
+                        <option value="urine">Orina</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="specification">Especificación:</label>
+                    <select id="specification" name="specification">
+                        <option value="">--Seleccionar--</option>
+                        <option value="s1">S1</option>
+                        <option value="s2">S2</option>
+                    </select>
+                </div>
+                <button type="submit">Ver Historial</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="samples-list">
+            <h2>Lista de Muestras</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID Sujeto</th>
+                        <th>Fecha de Obtención</th>
+                        <th>Especimen</th>
+                        <th>Especificación</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sample in samples %}
+                        <tr>
+                            <td>{{ sample.subject_id }}</td>
+                            <td>{{ sample.sample_date }}</td>
+                            <td>{{ sample.specimen }}</td>
+                            <td>{{ sample.specification }}</td>
+                            <td>
+                                <a href="/sample_detail/{{ sample.id }}">Ver Detalle</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

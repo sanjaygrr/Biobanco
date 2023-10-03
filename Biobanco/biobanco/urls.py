@@ -4,9 +4,15 @@ from muestras import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('home', views.home, name='home'),
+    path('home/', views.home, name='home'),
     path('signup/', views.signup, name='signup'),
     path('create_account/', views.create_accounts, name='create_account'),
-    path('user_list/', views.user_list)
+    path('user_list/', views.user_list),
+    path('create_slot/', views.create_slot),
+    path('slot_list/', views.slot_list),
+    path('', views.home),
+    path('create_sample/', views.create_sample),
+    path('sample_list/', views.sample_list),
+    path('trazability/', views.trazability)
 
 ]

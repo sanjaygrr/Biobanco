@@ -43,3 +43,23 @@ def create_accounts(request):
 def user_list(request):
     users = User.objects.all()  # Obtén todos los usuarios de la base de datos
     return render(request, 'user_list.html', {'users': users})
+
+
+def create_slot(request):
+    return render(request, 'create_slot.html')
+
+
+def slot_list(request):
+    return render(request, 'slot_list.html')
+
+
+def create_sample(request):
+    return render(request, 'create_sample.html')
+
+
+def sample_list(request):
+    return render(request, 'sample_list.html')
+
+
+def trazability(request):
+    return render(request, 'trazability.html')

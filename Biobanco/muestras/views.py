@@ -1,6 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.contrib.auth import login
+from django.db import IntegrityError
+
 from django.http import HttpResponse
 
 
@@ -20,8 +23,9 @@ def signup(request):
                 user = User.objects.create_user(
                     username=request.POST['username'], password=request.POST['password1'])
                 user.save()
-                return HttpResponse('User created  successfully')
-            except:
+                login(request, user)
+                return redirect('home')
+            except IntegrityError:
                 return render(request, 'signup.html', {
                     'form': UserCreationForm,
                     "error": 'Username already exists'
@@ -30,3 +34,12 @@ def signup(request):
             'form': UserCreationForm,
             "error": 'Password do not match'
         })
+
+
+def create_accounts(request):
+    return render(request, 'create_account.html')
+
+
+def user_list(request):
+    users = User.objects.all()  # Obtén todos los usuarios de la base de datos
+    return render(request, 'user_list.html', {'users': users})

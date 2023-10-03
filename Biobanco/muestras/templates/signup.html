@@ -1,9 +1,108 @@
-<h1>Sign up</h1>
-{{error}}
-<form action="/signup/" method="POST">
-    {% csrf_token %}
-    {{form.as_p}}
-    <button>
-        Signup
-    </button>
-</form>
+{% extends 'base.html'%}
+
+<!DOCTYPE html>
+<html lang="es">
+{% block content  %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Usuario</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            width: 300px;
+            text-align: center;
+        }
+        form {
+            background-color: #f0f0f0;
+            padding: 20px;
+            border: 2px solid #000;
+            width: 300px;
+            text-align: left;
+        }
+        .form-group {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        label {
+            width: 40%;
+        }
+        input, select {
+            width: 55%;
+        }
+        button {
+            width: 48%;
+            margin: 1%;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Datos de usuario</h1>
+    <form action="/signup/" method="POST">
+        {% csrf_token %}
+        {{ error }}
+        
+        <div class="form-group">
+            <label for="username">Nombre de usuario:</label>
+            <input type="text" id="username" name="username" placeholder="Usuario123" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Correo:</label>
+            <input type="email" id="email" name="email" placeholder="ejemplo@dominio.com" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="first_name">Nombre:</label>
+            <input type="text" id="first_name" name="first_name" placeholder="Juan" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="last_name">Apellido:</label>
+            <input type="text" id="last_name" name="last_name" placeholder="Pérez" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="role">Rol:</label>
+            <select id="role" name="role" required>
+                <option value="tecnico">Técnico</option>
+                <option value="supervisor">Supervisor</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="account_status">Estado de la Cuenta:</label>
+            <select id="account_status" name="account_status" required>
+                <option value="active">Activa</option>
+                <option value="inactive">Inactiva</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="password1">Contraseña:</label>
+            <input type="password" id="password1" name="password1" placeholder="Contraseña" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="password2">Confirmar Contraseña:</label>
+            <input type="password" id="password2" name="password2" placeholder="Repite la contraseña" required>
+        </div>
+        
+        <button type="submit">Guardar</button>
+        <button type="reset">Cancelar</button>
+    </form>
+</body>
+</html>
+{% endblock  %}

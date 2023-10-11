@@ -3,6 +3,9 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login
 from django.db import IntegrityError
+from .models import Space
+from django.contrib import messages
+
 
 from django.http import HttpResponse
 
@@ -45,8 +48,39 @@ def user_list(request):
     return render(request, 'user_list.html', {'users': users})
 
 
-def create_slot(request):
-    return render(request, 'create_slot.html')
+def create_space(request):
+    # Verificar si la solicitud es de tipo POST
+    if request.method == 'POST':
+        # Obtener los datos del formulario
+        space_type = request.POST.get('type')
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        status = request.POST.get('status')
+
+        # Validar los datos (opcional pero recomendado)
+        if not all([space_type, name, description, status]):
+            # Puedes enviar un mensaje de error al usuario si algún campo está vacío
+            return render(request, 'create_space.html', {'error': 'Todos los campos son obligatorios'})
+
+        # Crear y guardar el nuevo espacio en la base de datos
+        new_space = Space(type=space_type, name=name,
+                          description=description, status=status)
+        new_space.save()
+
+        # Consultar el espacio que acabamos de guardar
+        # Nota: Esto es un ejemplo y puede no ser necesario en tu caso,
+        # ya que `new_space` ya contiene el objeto que acabamos de guardar.
+        saved_space = Space.objects.get(id=new_space.id)
+
+        # Ahora puedes usar `saved_space` para hacer algo, por ejemplo,
+        # pasarlo a un template o usar sus atributos en alguna lógica adicional.
+
+        messages.success(request, '¡Espacio registrado exitosamente!')
+
+        return redirect('create_space/')
+
+    # Si la solicitud no es POST, simplemente renderizar la página como está
+    return render(request, 'create_space.html')
 
 
 def slot_list(request):

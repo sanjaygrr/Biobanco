@@ -9,29 +9,45 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f8f8f8;
+            background-color: #F5EFE7;
         }
+        
         nav {
-            background-color: #4CAF50;
+            background-color: #213555;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+        
+        main {
+            margin-top: 60px; /* Ajusta según la altura de tu nav */
+        }
+        
+        nav {
+            background-color: #213555;
         }
         ul {
             list-style-type: none;
             margin: 0;
             padding: 0;
             overflow: hidden;
+            display: flex;
+            justify-content: space-around;
         }
         li {
-            float: left;
+            /* float: left; */
         }
         li a, .dropdown-btn {
             display: inline-block;
-            color: white;
+            color: #D8C4B6;
             text-align: center;
             padding: 14px 16px;
             text-decoration: none;
         }
         li a:hover, .dropdown:hover .dropdown-btn {
-            background-color: #3a3;
+            background-color: #4F709C;
         }
         li.dropdown {
             display: inline-block;
@@ -45,17 +61,36 @@
             z-index: 1;
         }
         .dropdown-content a {
-            color: black;
+            color: #213555;
             padding: 12px 16px;
             text-decoration: none;
             display: block;
             text-align: left;
         }
         .dropdown-content a:hover {
-            background-color: #f1f1f1;
+            background-color: #D8C4B6;
         }
         .dropdown:hover .dropdown-content {
             display: block;
+        }
+    
+        /* Media query para pantallas de hasta 768px de ancho */
+        @media (max-width: 768px) {
+            ul {
+                flex-direction: column;
+                align-items: center;
+            }
+            li {
+                width: 100%;
+                text-align: center;
+            }
+            .dropdown-content {
+                min-width: 100%;
+                text-align: center;
+            }
+            .dropdown-content a {
+                padding: 12px 24px;
+            }
         }
     </style>
 </head>
@@ -63,7 +98,6 @@
     <nav>
         <ul>
             <li><a href="/home">Home</a></li>
-            
             <li class="dropdown">
                 <a href="javascript:void(0)" class="dropdown-btn">Cuentas de Usuario</a>
                 <div class="dropdown-content">
@@ -71,15 +105,13 @@
                     <a href="/user_list">Ver/Editar Usuarios</a>
                 </div>
             </li>
-            
             <li class="dropdown">
                 <a href="javascript:void(0)" class="dropdown-btn">Espacios</a>
                 <div class="dropdown-content">
-                    <a href="/create_slot">Registrar Espacio</a>
+                    <a href="/create_space">Registrar Espacio</a>
                     <a href="/slot_list">Ver/Cambiar Espacio</a>
                 </div>
             </li>
-            
             <li class="dropdown">
                 <a href="javascript:void(0)" class="dropdown-btn">Muestras</a>
                 <div class="dropdown-content">
@@ -88,13 +120,15 @@
                     <a href="/trazability">Trazabilidad</a>
                 </div>
             </li>
-            
             <li><a href="/">Envíos</a></li>
-            
             <li><a href="/">Reportería</a></li>
+            <li><a href="/logout">Log Out</a></li> <!-- Nuevo elemento -->
         </ul>
     </nav>
-    {% block content %}
-    {% endblock %}
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
 </body>
 </html>

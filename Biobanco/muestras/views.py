@@ -3,11 +3,9 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login
 from django.db import IntegrityError
+from django.http import HttpResponse
 from .models import Space
 from django.contrib import messages
-
-
-from django.http import HttpResponse
 
 
 def home(request):
@@ -49,42 +47,43 @@ def user_list(request):
 
 
 def create_space(request):
-    # Verificar si la solicitud es de tipo POST
+    # Check if the request is of type POST
     if request.method == 'POST':
-        # Obtener los datos del formulario
+        # Get form data
         space_type = request.POST.get('type')
         name = request.POST.get('name')
         description = request.POST.get('description')
         status = request.POST.get('status')
 
-        # Validar los datos (opcional pero recomendado)
+        # Validate data (optional but recommended)
         if not all([space_type, name, description, status]):
-            # Puedes enviar un mensaje de error al usuario si algún campo está vacío
-            return render(request, 'create_space.html', {'error': 'Todos los campos son obligatorios'})
+            # You can send an error message to the user if any field is empty
+            return render(request, 'create_space.html', {'error': 'All fields are required'})
 
-        # Crear y guardar el nuevo espacio en la base de datos
+        # Create and save the new space in the database
         new_space = Space(type=space_type, name=name,
                           description=description, status=status)
         new_space.save()
 
-        # Consultar el espacio que acabamos de guardar
-        # Nota: Esto es un ejemplo y puede no ser necesario en tu caso,
-        # ya que `new_space` ya contiene el objeto que acabamos de guardar.
+        # Query the space we just saved
+        # Note: This is an example and may not be necessary in your case,
+        # as `new_space` already contains the object we just saved.
         saved_space = Space.objects.get(id=new_space.id)
 
-        # Ahora puedes usar `saved_space` para hacer algo, por ejemplo,
-        # pasarlo a un template o usar sus atributos en alguna lógica adicional.
+        # Now you can use `saved_space` to do something, e.g.,
+        # pass it to a template or use its attributes in some additional logic.
 
-        messages.success(request, '¡Espacio registrado exitosamente!')
+        messages.success(request, 'Space registered successfully!')
 
-        return redirect('create_space/')
+        return redirect('/create_space')
 
-    # Si la solicitud no es POST, simplemente renderizar la página como está
+    # If the request is not POST, simply render the page as is
     return render(request, 'create_space.html')
 
 
-def slot_list(request):
-    return render(request, 'slot_list.html')
+def space_list(request):
+    spaces = Space.objects.all()  # Obtén todos los espacios de la base de datos
+    return render(request, 'space_list.html', {'spaces': spaces})
 
 
 def create_sample(request):

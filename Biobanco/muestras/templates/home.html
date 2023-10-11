@@ -1,8 +1,87 @@
 {% extends 'base.html'%}
 
 {% block content  %}
-<h1>
-    Home
-</h1>
-<h2></h2>
-{% endblock  %}
+{% load static %}
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background-color: #F5EFE7;
+    }
+
+    .home {
+        margin-top: 60px; /* Asegúrate de que esta distancia es suficiente para no superponerse con el nav */
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 10px;
+        flex-wrap: wrap; /* Permite que los elementos se ajusten en pantallas más pequeñas */
+    }
+
+    .left-section, .right-section {
+        flex: 1; 
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 20px; /* Añade un margen alrededor de las secciones */
+        background-color: #D8C4B6; /* Color de fondo claro */
+        border-radius: 15px; /* Esquinas redondeadas */
+        padding: 20px; /* Espaciado interno */
+        max-width: 450px; /* Ancho máximo para mantener la legibilidad */
+    }
+
+    .logo {
+        width: 300px; 
+    }
+
+    h1 {
+        font-size: 36px; 
+        color: #213555; /* Color de texto oscuro */
+        margin-bottom: 20px;
+    }
+
+    p {
+        font-size: 18px; 
+        color: #213555; 
+        text-align: center; /* Centra el texto */
+        margin-bottom: 20px;
+    }
+
+    .info {
+        font-size: 20px; 
+        color: #213555; 
+        text-align: left; 
+    }
+
+    .info-item {
+        background-color: #F5EFE7; /* Color de fondo más claro para los items de información */
+        padding: 15px; 
+        margin-bottom: 10px; 
+        border-radius: 10px; /* Esquinas redondeadas */
+        width: 100%; /* Ocupa todo el ancho disponible */
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombra sutil para un efecto "elevado" */
+    }
+</style>
+
+<div class="home" id="home">
+    <div class="left-section">
+        <img src="{% static 'biobanco/images/Biobanco.png' %}" alt="Logo" class="logo">
+        <h1>Bienvenido a BioBanco</h1>
+        <p>
+            En BioBanco, nos especializamos en el registro y almacenamiento seguro de muestras de sangre, 
+            creando una base sólida para futuras investigaciones y descubrimientos médicos. Nuestro sistema, 
+            diseñado para escalar y adaptarse, está preparado para expandirse a la gestión de diversas 
+            muestras biológicas, siempre con un compromiso firme con la seguridad y la integridad de cada muestra.
+        </p>
+    </div>
+    <div class="right-section">
+        <div class="info">
+            <div class="info-item">Información 1</div>
+            <div class="info-item">Información 2</div>
+            <div class="info-item">Información 3</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

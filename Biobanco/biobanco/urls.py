@@ -14,5 +14,4 @@ urlpatterns = [
     path('create_sample/', views.create_sample),
     path('sample_list/', views.sample_list),
     path('trazability/', views.trazability)
-
 ]

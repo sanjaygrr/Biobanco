@@ -61,7 +61,84 @@
             background-color: #4CAF50;
             color: white;
         }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+        
+        input:checked + .slider {
+            background-color: #4CAF50;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .slider.round {
+            border-radius: 34px;
+        }
+        
+        .slider.round:before {
+            border-radius: 50%;
+        }
     </style>
+    <script>
+        var csrfToken = '{{ csrf_token }}';
+        
+        function toggleStatus(spaceId, isChecked) {
+            const status = isChecked ? 'enabled' : 'disabled';
+            
+            fetch(`/update_space_status/${spaceId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                body: `status=${status}`,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error:', data.error);
+                } else {
+                    console.log('Success:', data);
+                }
+            })
+            .catch((error) => {
+                console.error('Fetch Error:', error);
+            });
+        }
+        </script>
 </head>
 <body>
     <h1>Ver/Cambiar Espacios</h1>
@@ -98,22 +175,26 @@
         <table>
             <thead>
                 <tr>
-                    <th>Nombre</th>
-                    <th>Tipo</th>
+                    <th>Espacio</th>
+                    <th>Numeracion</th>
                     <th>Descripción</th>
+                    <th>Muestras Guardadas</th>
                     <th>Estado</th>
-                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 {% for space in spaces %}
                     <tr>
-                        <td>{{ space.name }}</td>
                         <td>{{ space.type }}</td>
+                        <td>{{ space.name }}</td>
+                        
                         <td>{{ space.description }}</td>
-                        <td>{{ space.status }}</td>
+                        <td> numero de muestras </td>
                         <td>
-                            <a href="/edit_space/{{ space.id }}">Editar</a>
+                            <label class="switch">
+                                <input type="checkbox" {% if space.status == 'enabled' %}checked{% endif %} onchange="toggleStatus({{ space.id }}, this.checked)">
+                                <span class="slider"></span>
+                            </label>            
                         </td>
                     </tr>
                 {% endfor %}

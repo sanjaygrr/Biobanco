@@ -56,7 +56,7 @@ def create_space(request):
         space_type = request.POST.get('space_type')
         space_value = request.POST.get('space_value')
         location_state = request.POST.get('location_state')
-        description = request.POST.get('description')  # New field
+        description = request.POST.get('description')
 
         # Validate data
         if not all([space_type, space_value, location_state, description]):
@@ -75,19 +75,30 @@ def create_space(request):
         elif space_type == 'freezer':
             freezer = space_value
 
-        # Create and save the new location in the database
-        new_location = Location(
+        # Check if the space already exists
+        space_exists = Location.objects.filter(
             box=box,
             cell=cell,
             rack=rack,
-            freezer=freezer,
-            location_state=location_state,
-            description=description  # Save the description
-        )
-        new_location.save()
+            freezer=freezer
+        ).exists()
 
-        messages.success(request, 'Location registered successfully!')
-        return redirect('create_space')
+        if space_exists:
+            messages.error(request, 'Este espacio ya existe')
+        else:
+            # Create and save the new location in the database
+            new_location = Location(
+                box=box,
+                cell=cell,
+                rack=rack,
+                freezer=freezer,
+                location_state=location_state,
+                description=description
+            )
+            new_location.save()
+
+            messages.success(request, 'Location registered successfully!')
+            return redirect('create_space')
 
     return render(request, 'create_space.html')
 

@@ -53,9 +53,29 @@
             background-color: #45a049;
         }
     </style>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <h1>Registrar Espacio</h1>
+    {% if messages %}
+    <script>
+        {% for message in messages %}
+            {% if message.tags == "error" %}
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: '{{ message }}',
+                });
+            {% elif message.tags == "success" %}
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: '{{ message }}',
+                });
+            {% endif %}
+        {% endfor %}
+    </script>
+    {% endif %}
     <form action="{% url 'create_space' %}" method="POST">
         {% csrf_token %}
         

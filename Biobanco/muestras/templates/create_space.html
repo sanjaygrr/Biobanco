@@ -56,37 +56,44 @@
 </head>
 <body>
     <h1>Registrar Espacio</h1>
-    <form action="/create_space/" method="POST">
+    <form action="{% url 'create_space' %}" method="POST">
         {% csrf_token %}
         
         <div class="form-group">
-            <label for="type">Tipo:</label>
-            <select id="type" name="type" required>
+            <label for="space_type">Tipo de Espacio:</label>
+            <select id="space_type" name="space_type" required onchange="showInputField()">
+                <option value="" disabled selected>Seleccione un tipo</option>
                 <option value="box">Caja</option>
+                <option value="rack">Rack</option>
                 <option value="freezer">Freezer</option>
             </select>
         </div>
-        
-        <div class="form-group">
-            <label for="name">Nombre o Numeración:</label>
-            <input type="text" id="name" name="name" required>
+    
+        <div class="form-group" id="input_field" style="display:none;">
+            <label for="space_value">Valor:</label>
+            <input type="number" id="space_value" name="space_value" required>
         </div>
-        
         <div class="form-group">
             <label for="description">Descripción:</label>
-            <textarea id="description" name="description" rows="4" required></textarea>
+            <textarea id="description" name="description" required></textarea>
         </div>
-        
         <div class="form-group">
-            <label for="status">Estado:</label>
-            <select id="status" name="status" required>
-                <option value="enabled">Habilitado</option>
-                <option value="disabled">Inhabilitado</option>
+            <label for="location_state">Estado:</label>
+            <select id="location_state" name="location_state" required>
+                <option value="1">En uso</option>
+                <option value="0">Sin uso</option>
             </select>
         </div>
         
         <button type="submit">Registrar</button>
     </form>
+    
+    <script>
+    function showInputField() {
+        document.getElementById('input_field').style.display = 'block';
+    }
+    </script>
+    
 </body>
 </html>
 {% endblock %}

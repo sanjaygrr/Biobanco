@@ -4,7 +4,11 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login
 from django.db import IntegrityError
 from django.http import HttpResponse
-from .models import Space
+from django.http import JsonResponse
+from django.db.models import Q
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+from .models import Location
 from django.contrib import messages
 
 
@@ -42,48 +46,110 @@ def create_accounts(request):
 
 
 def user_list(request):
-    users = User.objects.all()  # Obtén todos los usuarios de la base de datos
+    users = User.objects.all()
     return render(request, 'user_list.html', {'users': users})
 
 
 def create_space(request):
-    # Check if the request is of type POST
     if request.method == 'POST':
         # Get form data
-        space_type = request.POST.get('type')
-        name = request.POST.get('name')
-        description = request.POST.get('description')
-        status = request.POST.get('status')
+        space_type = request.POST.get('space_type')
+        space_value = request.POST.get('space_value')
+        location_state = request.POST.get('location_state')
+        description = request.POST.get('description')  # New field
 
-        # Validate data (optional but recommended)
-        if not all([space_type, name, description, status]):
-            # You can send an error message to the user if any field is empty
+        # Validate data
+        if not all([space_type, space_value, location_state, description]):
             return render(request, 'create_space.html', {'error': 'All fields are required'})
 
-        # Create and save the new space in the database
-        new_space = Space(type=space_type, name=name,
-                          description=description, status=status)
-        new_space.save()
+        # Initialize all space values to 0
+        box = cell = rack = freezer = 0
 
-        # Query the space we just saved
-        # Note: This is an example and may not be necessary in your case,
-        # as `new_space` already contains the object we just saved.
-        saved_space = Space.objects.get(id=new_space.id)
+        # Assign the provided value to the selected space type
+        if space_type == 'box':
+            box = space_value
+        elif space_type == 'cell':
+            cell = space_value
+        elif space_type == 'rack':
+            rack = space_value
+        elif space_type == 'freezer':
+            freezer = space_value
 
-        # Now you can use `saved_space` to do something, e.g.,
-        # pass it to a template or use its attributes in some additional logic.
+        # Create and save the new location in the database
+        new_location = Location(
+            box=box,
+            cell=cell,
+            rack=rack,
+            freezer=freezer,
+            location_state=location_state,
+            description=description  # Save the description
+        )
+        new_location.save()
 
-        messages.success(request, 'Space registered successfully!')
+        messages.success(request, 'Location registered successfully!')
+        return redirect('create_space')
 
-        return redirect('/create_space')
-
-    # If the request is not POST, simply render the page as is
     return render(request, 'create_space.html')
 
 
 def space_list(request):
-    spaces = Space.objects.all()  # Obtén todos los espacios de la base de datos
-    return render(request, 'space_list.html', {'spaces': spaces})
+    locations = Location.objects.all()
+
+    number_query = request.GET.get('number')
+    type_query = request.GET.get('type')
+    status_query = request.GET.get('status')
+
+    # Intenta convertir number_query a int si está presente, si no, déjalo como None
+    try:
+        number_query = int(number_query) if number_query else None
+    except ValueError:
+        number_query = None
+
+    # Filtrado por tipo y número
+    if type_query and number_query is not None:
+        locations = locations.filter(**{f"{type_query}": number_query})
+
+    # Filtrado solo por tipo
+    elif type_query:
+        locations = locations.filter(**{f"{type_query}__gt": 0})
+
+    # Filtrado solo por número
+    elif number_query is not None:
+        locations = locations.filter(
+            Q(box=number_query) |
+            Q(freezer=number_query) |
+            Q(rack=number_query) |
+            Q(cell=number_query)
+        )
+
+    # Filtrado por estado
+    if status_query:
+        if status_query == 'enabled':
+            locations = locations.filter(location_state=True)
+        elif status_query == 'disabled':
+            locations = locations.filter(location_state=False)
+
+    return render(request, 'space_list.html', {'spaces': locations})
+
+
+@csrf_exempt
+@require_POST
+def update_space_status(request, space_id):
+    try:
+        location = Location.objects.get(pk=space_id)
+        new_status = request.POST.get('location_state')
+
+        if new_status not in ['0', '1']:
+            return JsonResponse({'error': 'Invalid status'}, status=400)
+
+        location.location_state = new_status
+        location.save()
+
+        return JsonResponse({'message': 'Status updated successfully'})
+    except Location.DoesNotExist:
+        return JsonResponse({'error': 'Location not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 def create_sample(request):

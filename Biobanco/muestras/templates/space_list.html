@@ -145,10 +145,10 @@
     
     <div class="filter-box">
         <h2>Criterios de Búsqueda</h2>
-        <form action="/search_spaces" method="GET">
+        <form action="{% url 'space_list' %}" method="GET">
             <div class="form-group">
-                <label for="name">Nombre o Contenido:</label>
-                <input type="text" id="name" name="name">
+                <label for="number">Número:</label>
+                <input type="number" id="number" name="number">
             </div>
             <div class="form-group">
                 <label for="type">Tipo de Espacio:</label>
@@ -156,6 +156,7 @@
                     <option value="">--Seleccionar--</option>
                     <option value="box">Caja</option>
                     <option value="freezer">Freezer</option>
+                    <option value="rack">Rack</option>  
                 </select>
             </div>
             <div class="form-group">
@@ -185,15 +186,14 @@
             <tbody>
                 {% for space in spaces %}
                     <tr>
-                        <td>{{ space.type }}</td>
-                        <td>{{ space.name }}</td>
-                        
-                        <td>{{ space.description }}</td>
-                        <td> numero de muestras </td>
+                        <td>{{ space.get_space_type_and_value.0 }}</td>
+                        <td>{{ space.get_space_type_and_value.1 }}</td> 
+                        <td>{{ space.description|default:"N/A" }}</td>
+                        <td>{{ space.samples_count|default:"N/A" }}</td> 
                         <td>
                             <label class="switch">
-                                <input type="checkbox" {% if space.status == 'enabled' %}checked{% endif %} onchange="toggleStatus({{ space.id }}, this.checked)">
-                                <span class="slider"></span>
+                                <input type="checkbox" {% if space.location_state %}checked{% endif %} onchange="toggleStatus({{ space.id }}, this.checked)">
+                                <span class="slider round"></span>
                             </label>            
                         </td>
                     </tr>

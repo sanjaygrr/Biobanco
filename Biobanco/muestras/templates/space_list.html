@@ -139,6 +139,86 @@
             });
         }
         </script>
+            
+    <script>
+        var csrfToken = '{{ csrf_token }}';
+        var changes = {};
+    
+        function toggleStatus(spaceId, isChecked) {
+            const status = isChecked ? 'enabled' : 'disabled';
+            changes[spaceId] = status;
+        }
+    
+        function saveChanges() {
+            fetch(`/update_space_status/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(changes),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error:', data.error);
+                } else {
+                    console.log('Success:', data);
+                    changes = {};  // Clear changes
+                }
+            })
+            .catch((error) => {
+                console.error('Fetch Error:', error);
+            });
+        }
+
+        function saveChanges() {
+            fetch(`/update_space_status/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(changes),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error:', data.error);
+                    // Utiliza SweetAlert para mostrar un mensaje de error
+                    swal("Error", data.error, "error");
+                } else {
+                    console.log('Success:', data);
+                    // Utiliza SweetAlert para mostrar un mensaje de éxito
+                    swal("Success", " Los cambios guardados exitosmanete", "success");
+                    changes = {};  // Clear changes
+                }
+            })
+            .catch((error) => {
+                console.error('Fetch Error:', error);
+                // Utiliza SweetAlert para mostrar un mensaje de error
+                swal("Error", "Fetch Error: " + error, "error");
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent;
+            var comparer = (idx, asc) => (a, b) => ((v1, v2) => 
+                v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
+                )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
+            
+            document.querySelectorAll('.sortable').forEach(th => th.addEventListener('click', (() => {
+                const table = th.closest('table');
+                Array.from(table.querySelectorAll('tbody tr'))
+                    .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
+                    .forEach(tr => table.querySelector('tbody').appendChild(tr) );
+            })));
+        });
+        
+        
+    </script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
 </head>
 <body>
     <h1>Ver/Cambiar Espacios</h1>
@@ -173,13 +253,13 @@
     
     <div class="spaces-list">
         <h2>Lista de Espacios</h2>
-        <table>
+        <table id="spacesTable">
             <thead>
                 <tr>
-                    <th>Espacio</th>
-                    <th>Numeracion</th>
-                    <th>Descripción</th>
-                    <th>Muestras Guardadas</th>
+                    <th class="sortable">Espacio &#x02193;</th>
+                    <th class="sortable">Numeracion &#x02193;</th>
+                    <th class="sortable">Descripción &#x02193;</th>
+                    <th class="sortable">Muestras Guardadas &#x02193;</th>
                     <th>Estado</th>
                 </tr>
             </thead>
@@ -201,6 +281,10 @@
             </tbody>
         </table>
     </div>
+    <div class="spaces-list">
+        <button type="button" onclick="saveChanges()">Guardar Cambios</button>
+    </div>
+
 </body>
 </html>
 {% endblock %}

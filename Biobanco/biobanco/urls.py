@@ -13,5 +13,7 @@ urlpatterns = [
     path('', views.home),
     path('create_sample/', views.create_sample),
     path('sample_list/', views.sample_list),
-    path('trazability/', views.trazability)
+    path('trazability/', views.trazability),
+    path('update_space_status/',
+         views.update_space_status, name='update_space_status')
 ]

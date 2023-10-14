@@ -5,6 +5,7 @@ from django.contrib.auth import login
 from django.db import IntegrityError
 from django.http import HttpResponse
 from django.http import JsonResponse
+import json
 from django.db.models import Q
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
@@ -145,21 +146,31 @@ def space_list(request):
 
 @csrf_exempt
 @require_POST
-def update_space_status(request, space_id):
+def update_space_status(request):
     try:
-        location = Location.objects.get(pk=space_id)
-        new_status = request.POST.get('location_state')
+        # Carga los datos JSON de la solicitud.
+        data = json.loads(request.body)
 
-        if new_status not in ['0', '1']:
-            return JsonResponse({'error': 'Invalid status'}, status=400)
+        # Verifica que los datos son un diccionario con los IDs de espacio y estados.
+        if not all(isinstance(space_id, str) and isinstance(status, str) for space_id, status in data.items()):
+            return JsonResponse({'error': 'Invalid data format'}, status=400)
 
-        location.location_state = new_status
-        location.save()
+        # Itera sobre cada ID de espacio y estado en los datos y actualiza el estado en la base de datos.
+        for space_id, status in data.items():
+            location = Location.objects.get(pk=space_id)
+            location.location_state = status == 'enabled'
+            location.save()
 
+        # Responde con un mensaje de éxito.
         return JsonResponse({'message': 'Status updated successfully'})
     except Location.DoesNotExist:
+        # Responde con un mensaje de error si la ubicación no existe.
         return JsonResponse({'error': 'Location not found'}, status=404)
+    except json.JSONDecodeError:
+        # Responde con un mensaje de error si los datos JSON no son válidos.
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
     except Exception as e:
+        # Responde con un mensaje de error si ocurre otra excepción.
         return JsonResponse({'error': str(e)}, status=500)
 
 

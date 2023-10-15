@@ -61,6 +61,19 @@
             background-color: #4F709C;
             color: white;
         }
+        /* Estilo para la celda que contiene los elementos */
+
+/* Estilo para el contenedor del botón de eliminar */
+.delete-container {
+    display: inline-block;
+    vertical-align: top;
+}
+
+/* Estilo para el contenedor del switch */
+.switch-container {
+    display: inline-block;
+    vertical-align: top;
+}
         .switch {
             position: relative;
             display: inline-block;
@@ -123,6 +136,27 @@
         .delete-btn.active {
             background-color: #c0392b;
         }
+        .switch-container,
+        .delete-container {
+            display: inline-block;
+            vertical-align: top;
+            float: left; /* Añadido para mover el botón de eliminar al extremo izquierdo */
+        }
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        .status-text,
+        .delete-text {
+            display: block;
+            text-align: center;
+            font-size: 12px;
+        }
+        .to-be-deleted {
+            background-color: #ffe6e6; /* Un rojo muy sutil */
+        }
     </style>
     <script>
         var csrfToken = '{{ csrf_token }}';
@@ -159,6 +193,9 @@
         function toggleStatus(spaceId, isChecked) {
             const status = isChecked ? 'enabled' : 'disabled';
             changes[spaceId] = status;
+        
+            // Cambiar el texto del estado
+            document.getElementById('statusText' + spaceId).innerText = isChecked ? 'Habilitado' : 'Inhabilitado';
         }
     
         function saveChanges() {
@@ -229,70 +266,90 @@
         
         var deletions = {};
 
-function toggleDelete(spaceId, btnElement) {
-    // Toggle the active class
-    btnElement.classList.toggle('active');
-    
-    // Add or remove the spaceId from the deletions object
-    if (deletions[spaceId]) {
-        delete deletions[spaceId];
-    } else {
-        deletions[spaceId] = true;
-    }
-}
+        function toggleDelete(spaceId, btnElement) {
+            // Toggle the active class
+            btnElement.classList.toggle('active');
+            
+            // Add or remove the spaceId from the deletions object
+            if (deletions[spaceId]) {
+                delete deletions[spaceId];
+            } else {
+                deletions[spaceId] = true;
+            }
+        
+            // Toggle the to-be-deleted class on the parent <tr> element
+            btnElement.closest('tr').classList.toggle('to-be-deleted');
+        }
 
 function saveChanges() {
-    // Send status changes
-    fetch(`/update_space_status/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken
-        },
-        body: JSON.stringify(changes),
+    // Utiliza SweetAlert para mostrar un mensaje de confirmación
+    swal({
+        title: "¿Estás seguro?",
+        text: "¿Seguro que quieres hacer esto?",
+        icon: "warning",
+        buttons: true,
+        dangerMode: true,
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            console.error('Error:', data.error);
-            swal("Error", data.error, "error");
-        } else {
-            console.log('Success:', data);
-            swal("Success", "Los cambios de estado han sido guardados exitosamente", "success");
-            changes = {};  // Clear changes
-        }
-    })
-    .catch((error) => {
-        console.error('Fetch Error:', error);
-        swal("Error", "Fetch Error: " + error, "error");
-    });
+    .then((willSave) => {
+        if (willSave) {
+            // Si el usuario confirma, realiza las acciones de guardar
 
-    // Send deletion requests
-    fetch(`/delete_spaces/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken
-        },
-        body: JSON.stringify(deletions),
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            console.error('Error:', data.error);
-            swal("Error", data.error, "error");
+            // Enviar cambios de estado
+            fetch(`/update_space_status/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(changes),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error:', data.error);
+                    swal("Error", data.error, "error");
+                } else {
+                    console.log('Success:', data);
+                    swal("Éxito", "Los cambios de estado han sido guardados exitosamente", "success");
+                    changes = {};  // Limpiar cambios
+                }
+            })
+            .catch((error) => {
+                console.error('Fetch Error:', error);
+                swal("Error", "Fetch Error: " + error, "error");
+            });
+
+            // Enviar solicitudes de eliminación
+            fetch(`/delete_spaces/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(deletions),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error:', data.error);
+                    swal("Error", data.error, "error");
+                } else {
+                    console.log('Success:', data);
+                    swal("Éxito", "Los espacios han sido eliminados exitosamente", "success");
+                    deletions = {};  // Limpiar eliminaciones
+                    location.reload();  // Recargar la página para reflejar las eliminaciones
+                }
+            })
+            .catch((error) => {
+                console.error('Fetch Error:', error);
+                swal("Error", "Fetch Error: " + error, "error");
+            });
         } else {
-            console.log('Success:', data);
-            swal("Success", "Los espacios han sido eliminados exitosamente", "success");
-            deletions = {};  // Clear deletions
-            location.reload();  // Reload the page to reflect the deletions
+            swal("Tus cambios no se han guardado");
         }
-    })
-    .catch((error) => {
-        console.error('Fetch Error:', error);
-        swal("Error", "Fetch Error: " + error, "error");
     });
 }
+
         
     </script>
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
@@ -349,12 +406,20 @@ function saveChanges() {
                         <td>{{ space.description|default:"N/A" }}</td>
                         <td>{{ space.samples_count|default:"N/A" }}</td> 
                         <td>
-                            <label class="switch">
-                                <input type="checkbox" {% if space.location_state %}checked{% endif %} onchange="toggleStatus({{ space.id }}, this.checked)">
-                                <span class="slider round"></span>
-                            </label>
-                            <button class="delete-btn" onclick="toggleDelete({{ space.id }}, this)">X</button>
+
+                            <div class="switch-container">
+                                <label class="switch">
+                                    <input type="checkbox" {% if space.location_state %}checked{% endif %} onchange="toggleStatus({{ space.id }}, this.checked)">
+                                    <span class="slider round"></span>
+                                </label>
+                                <span class="status-text" id="statusText{{ space.id }}">{% if space.location_state %}Habilitado{% else %}Inhabilitado{% endif %}</span>
+                            </div>
+                            <div class="delete-container">
+                                <button class="delete-btn" onclick="toggleDelete({{ space.id }}, this)">X</button>
+                                <span class="delete-text">{% if space.to_be_deleted %}Seleccionado{% else %}{% endif %}</span>
+                            </div>
                         </td>
+                        
                     </tr>
                 {% endfor %}
             </tbody>

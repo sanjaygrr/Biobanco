@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrar Espacio</title>
+    <title>Registrar Almacenamiento</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -56,7 +56,7 @@
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
-    <h1>Registrar Espacio</h1>
+    <h1>Registrar Almacenamiento</h1>
     {% if messages %}
     <script>
         {% for message in messages %}
@@ -80,27 +80,27 @@
         {% csrf_token %}
         
         <div class="form-group">
-            <label for="space_type">Tipo de Espacio:</label>
-            <select id="space_type" name="space_type" required onchange="showInputField()">
+            <label for="storage_type">Tipo de Almacenamiento:</label>
+            <select id="storage_type" name="storage_type" required>
                 <option value="" disabled selected>Seleccione un tipo</option>
-                <option value="box">Caja</option>
-                <option value="rack">Rack</option>
-                <option value="freezer">Freezer</option>
+                {% for type in storage_types %}
+                    <option value="{{ type.id }}">{{ type.get_name_storagetype_display }}</option>
+                {% endfor %}
             </select>
         </div>
     
-        <div class="form-group" id="input_field">
-            <label for="space_value">Numeración:</label>
-            <input type="number" id="space_value" name="space_value" required>
+        <div class="form-group">
+            <label for="storage_name">Nombre del Almacenamiento:</label>
+            <input type="text" id="storage_name" name="storage_name" required>
         </div>
         <div class="form-group">
-            <label for="description">Descripción:</label>
-            <textarea id="description" name="description" required></textarea>
+            <label for="storage_description">Descripción:</label>
+            <textarea id="storage_description" name="storage_description" required></textarea>
         </div>
         <div class="form-group">
-            <label for="location_state">Estado:</label>
-            <select id="location_state" name="location_state" required>
-                <option value="">--Seleccionar--</option>
+            <label for="storage_state">Estado:</label>
+            <select id="storage_state" name="storage_state" required>
+                <option value="" disabled selected>--Seleccionar--</option>
                 <option value="1">Habilitado</option>
                 <option value="0">Inhabilitado</option>
             </select>
@@ -108,12 +108,6 @@
         
         <button type="submit">Registrar</button>
     </form>
-    
-    <script>
-    function showInputField() {
-        document.getElementById('input_field').style.display = 'block';
-    }
-    </script>
     
 </body>
 </html>

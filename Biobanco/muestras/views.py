@@ -9,7 +9,7 @@ import json
 from django.db.models import Q
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
-from .models import Location
+from .models import Storage, StorageType
 from django.contrib import messages
 
 
@@ -53,124 +53,63 @@ def user_list(request):
 
 def create_space(request):
     if request.method == 'POST':
-        # Get form data
-        space_type = request.POST.get('space_type')
-        space_value = request.POST.get('space_value')
-        location_state = request.POST.get('location_state')
-        description = request.POST.get('description')
+        storage_type_id = request.POST.get('storage_type')
+        storage_name = request.POST.get('storage_name')
+        storage_state = request.POST.get('storage_state')
+        storage_description = request.POST.get('storage_description')
 
-        # Validate data
-        if not all([space_type, space_value, location_state, description]):
-            return render(request, 'create_space.html', {'error': 'All fields are required'})
-
-        # Initialize all space values to 0
-        box = cell = rack = freezer = 0
-
-        # Assign the provided value to the selected space type
-        if space_type == 'box':
-            box = space_value
-        elif space_type == 'cell':
-            cell = space_value
-        elif space_type == 'rack':
-            rack = space_value
-        elif space_type == 'freezer':
-            freezer = space_value
-
-        # Check if the space already exists
-        space_exists = Location.objects.filter(
-            box=box,
-            cell=cell,
-            rack=rack,
-            freezer=freezer
-        ).exists()
-
-        if space_exists:
-            messages.error(request, 'Este espacio ya existe')
-        else:
-            # Create and save the new location in the database
-            new_location = Location(
-                box=box,
-                cell=cell,
-                rack=rack,
-                freezer=freezer,
-                location_state=location_state,
-                description=description
-            )
-            new_location.save()
-
-            messages.success(request, 'Location registered successfully!')
+        if not all([storage_type_id, storage_name, storage_state, storage_description]):
+            messages.error(request, 'Todos los campos son obligatorios.')
             return redirect('create_space')
 
-    return render(request, 'create_space.html')
+        storage_exists = Storage.objects.filter(
+            storage_name=storage_name,
+            STORAGE_TYPE_id_storagetype=storage_type_id
+        ).exists()
+
+        if storage_exists:
+            messages.error(request, 'Este espacio ya existe.')
+        else:
+            new_storage = Storage(
+                storage_name=storage_name,
+                storage_state=bool(int(storage_state)),
+                storage_description=storage_description,
+                STORAGE_TYPE_id_storagetype_id=storage_type_id
+            )
+            new_storage.save()
+
+            messages.success(request, 'Espacio registrado con éxito!')
+            return redirect('create_space')
+
+    storage_types = StorageType.objects.all()
+    return render(request, 'create_space.html', {'storage_types': storage_types})
 
 
 def space_list(request):
-    locations = Location.objects.all()
-
-    number_query = request.GET.get('number')
-    type_query = request.GET.get('type')
-    status_query = request.GET.get('status')
-
-    # Intenta convertir number_query a int si está presente, si no, déjalo como None
-    try:
-        number_query = int(number_query) if number_query else None
-    except ValueError:
-        number_query = None
-
-    # Filtrado por tipo y número
-    if type_query and number_query is not None:
-        locations = locations.filter(**{f"{type_query}": number_query})
-
-    # Filtrado solo por tipo
-    elif type_query:
-        locations = locations.filter(**{f"{type_query}__gt": 0})
-
-    # Filtrado solo por número
-    elif number_query is not None:
-        locations = locations.filter(
-            Q(box=number_query) |
-            Q(freezer=number_query) |
-            Q(rack=number_query) |
-            Q(cell=number_query)
-        )
-
-    # Filtrado por estado
-    if status_query:
-        if status_query == 'enabled':
-            locations = locations.filter(location_state=True)
-        elif status_query == 'disabled':
-            locations = locations.filter(location_state=False)
-
-    return render(request, 'space_list.html', {'spaces': locations})
+    storages = Storage.objects.select_related(
+        'STORAGE_TYPE_id_storagetype').all()
+    return render(request, 'space_list.html', {'spaces': storages})
 
 
 @csrf_exempt
 @require_POST
 def update_space_status(request):
     try:
-        # Carga los datos JSON de la solicitud.
         data = json.loads(request.body)
+        if not all(isinstance(space_id, str) and isinstance(status, bool) for space_id, status in data.items()):
+            return JsonResponse({'error': 'Formato de datos inválido'}, status=400)
 
-        # Verifica que los datos son un diccionario con los IDs de espacio y estados.
-        if not all(isinstance(space_id, str) and isinstance(status, str) for space_id, status in data.items()):
-            return JsonResponse({'error': 'Invalid data format'}, status=400)
-
-        # Itera sobre cada ID de espacio y estado en los datos y actualiza el estado en la base de datos.
         for space_id, status in data.items():
-            location = Location.objects.get(pk=space_id)
-            location.location_state = status == 'enabled'
-            location.save()
+            storage = Storage.objects.get(pk=space_id)
+            storage.storage_state = status
+            storage.save()
 
-        # Responde con un mensaje de éxito.
-        return JsonResponse({'message': 'Status updated successfully'})
-    except Location.DoesNotExist:
-        # Responde con un mensaje de error si la ubicación no existe.
-        return JsonResponse({'error': 'Location not found'}, status=404)
+        return JsonResponse({'message': 'Estado actualizado con éxito'})
+    except Storage.DoesNotExist:
+        return JsonResponse({'error': 'Espacio no encontrado'}, status=404)
     except json.JSONDecodeError:
-        # Responde con un mensaje de error si los datos JSON no son válidos.
-        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
     except Exception as e:
-        # Responde con un mensaje de error si ocurre otra excepción.
         return JsonResponse({'error': str(e)}, status=500)
 
 
@@ -178,29 +117,21 @@ def update_space_status(request):
 @require_POST
 def delete_spaces(request):
     try:
-        # Carga los datos JSON de la solicitud.
         data = json.loads(request.body)
-
-        # Verifica que los datos son un diccionario con los IDs de espacio y valores booleanos.
         if not all(isinstance(space_id, str) and isinstance(should_delete, bool) for space_id, should_delete in data.items()):
-            return JsonResponse({'error': 'Invalid data format'}, status=400)
+            return JsonResponse({'error': 'Formato de datos inválido'}, status=400)
 
-        # Itera sobre cada ID de espacio y valor booleano en los datos y elimina el espacio si el valor es True.
         for space_id, should_delete in data.items():
             if should_delete:
-                location = Location.objects.get(pk=space_id)
-                location.delete()
+                storage = Storage.objects.get(pk=space_id)
+                storage.delete()
 
-        # Responde con un mensaje de éxito.
-        return JsonResponse({'message': 'Spaces deleted successfully'})
-    except Location.DoesNotExist:
-        # Responde con un mensaje de error si la ubicación no existe.
-        return JsonResponse({'error': 'Location not found'}, status=404)
+        return JsonResponse({'message': 'Espacios eliminados con éxito'})
+    except Storage.DoesNotExist:
+        return JsonResponse({'error': 'Espacio no encontrado'}, status=404)
     except json.JSONDecodeError:
-        # Responde con un mensaje de error si los datos JSON no son válidos.
-        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
     except Exception as e:
-        # Responde con un mensaje de error si ocurre otra excepción.
         return JsonResponse({'error': str(e)}, status=500)
 
 

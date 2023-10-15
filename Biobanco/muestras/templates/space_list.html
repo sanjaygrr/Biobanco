@@ -366,9 +366,9 @@ function saveChanges() {
                 <label for="type">Tipo de Espacio:</label>
                 <select id="type" name="type">
                     <option value="">--Seleccionar--</option>
-                    <option value="box">Caja</option>
-                    <option value="freezer">Freezer</option>
-                    <option value="rack">Rack</option>  
+                    {% for storage_type in storage_types %}
+                        <option value="{{ storage_type.id }}">{{ storage_type }}</option>
+                    {% endfor %}
                 </select>
             </div>
             <div class="form-group">
@@ -388,20 +388,20 @@ function saveChanges() {
         <table id="spacesTable">
             <thead>
                 <tr>
-                    <th class="sortable">Espacio &#x02193;</th>
-                    <th class="sortable">Numeracion &#x02193;</th>
+                    <th class="sortable">Tipo de Espacio &#x02193;</th>
+                    <th class="sortable">Nombre &#x02193;</th>
                     <th class="sortable">Descripción &#x02193;</th>
-                    <th class="sortable">Muestras Guardadas &#x02193;</th>
+                    <th class="sortable">Estado &#x02193;</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 {% for space in spaces %}
                     <tr>
-                        <td>{{ space.get_space_type_and_value.0 }}</td>
-                        <td>{{ space.get_space_type_and_value.1 }}</td> 
-                        <td>{{ space.description|default:"N/A" }}</td>
-                        <td>{{ space.samples_count|default:"N/A" }}</td> 
+                        <td>{{ space.STORAGE_TYPE_id_storagetype }}</td>
+                        <td>{{ space.storage_name }}</td>
+                        <td>{{ space.storage_description }}</td>
+                        <td>{{ space.storage_state|yesno:"Habilitado,Inhabilitado" }}</td>
                         <td>
 
                             <div class="switch-container">

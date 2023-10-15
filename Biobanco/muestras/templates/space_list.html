@@ -61,15 +61,12 @@
             background-color: #4F709C;
             color: white;
         }
-        /* Estilo para la celda que contiene los elementos */
+        /* Estilo para la celda que contiene los elementos */   
 
-/* Estilo para el contenedor del botón de eliminar */
 .delete-container {
     display: inline-block;
     vertical-align: top;
 }
-
-/* Estilo para el contenedor del switch */
 .switch-container {
     display: inline-block;
     vertical-align: top;
@@ -395,7 +392,7 @@ function saveChanges() {
                     <th class="sortable">Numeracion &#x02193;</th>
                     <th class="sortable">Descripción &#x02193;</th>
                     <th class="sortable">Muestras Guardadas &#x02193;</th>
-                    <th>Estado</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -416,7 +413,7 @@ function saveChanges() {
                             </div>
                             <div class="delete-container">
                                 <button class="delete-btn" onclick="toggleDelete({{ space.id }}, this)">X</button>
-                                <span class="delete-text">{% if space.to_be_deleted %}Seleccionado{% else %}{% endif %}</span>
+                                <span class="delete-text">Eliminar</span>
                             </div>
                         </td>
                         

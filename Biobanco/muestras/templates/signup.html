@@ -9,6 +9,8 @@
     <title>Registro de Usuario</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -17,33 +19,37 @@
             margin: 0;
         }
         h1 {
-            border-bottom: 2px solid #000;
-            padding-bottom: 10px;
-            width: 300px;
-            text-align: center;
+            margin-bottom: 20px;
         }
         form {
-            background-color: #f0f0f0;
+            background-color: #fff;
             padding: 20px;
-            border: 2px solid #000;
-            width: 300px;
+            border-radius: 5px;
             text-align: left;
+            width: 300px;
         }
         .form-group {
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            margin-bottom: 15px;
         }
         label {
-            width: 40%;
+            display: block;
+            margin-bottom: 5px;
         }
-        input, select {
-            width: 55%;
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
         }
         button {
-            width: 48%;
-            margin: 1%;
+            background-color: #4F709C;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: rgb(79, 100, 150);
         }
     </style>
 </head>
@@ -79,6 +85,7 @@
             <select id="role" name="role" required>
                 <option value="tecnico">Técnico</option>
                 <option value="supervisor">Supervisor</option>
+                <option value="administrador">Administrador</option>
             </select>
         </div>
         
@@ -90,18 +97,8 @@
             </select>
         </div>
         
-        <div class="form-group">
-            <label for="password1">Contraseña:</label>
-            <input type="password" id="password1" name="password1" placeholder="Contraseña" required>
-        </div>
         
-        <div class="form-group">
-            <label for="password2">Confirmar Contraseña:</label>
-            <input type="password" id="password2" name="password2" placeholder="Repite la contraseña" required>
-        </div>
-        
-        <button type="submit">Guardar</button>
-        <button type="reset">Cancelar</button>
+        <button type="submit">Guardar</button>   
     </form>
 </body>
 </html>

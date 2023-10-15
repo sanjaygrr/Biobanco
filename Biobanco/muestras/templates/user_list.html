@@ -26,13 +26,18 @@
             text-align: left;
         }
         th {
-            background-color: #4CAF50;
+            background-color: #4F709C;
             color: white;
         }
     </style>
 </head>
 <body>
     <h1>Lista de Usuarios</h1>
+    {% if users %}
+    <p>Hay {{ users.count }} usuario(s) para mostrar.</p>
+    {% else %}
+    <p>No hay usuarios para mostrar.</p>
+    {% endif %}
     
     <table>
         <thead>

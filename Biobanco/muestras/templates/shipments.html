@@ -1,0 +1,89 @@
+{% extends 'base.html'%}
+
+{% block content  %}
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Espacio</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: left;
+            width: 300px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4F709C;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: rgb(79, 100, 150);
+        }
+    </style>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <h1>Datos de envio</h1>
+    <form action="" method="POST">
+        {% csrf_token %}
+        
+    
+        <div class="form-group">
+            <label for="sample_date">Fecha: </label>
+            <input type="date" id="sample_date" name="sample_date" required>
+        </div>
+        <div class="form-group">
+            <label for="description">Laboratorio:</label>
+            <textarea id="description" name="description" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="description">Análisis:</label>
+            <textarea id="description" name="description" required></textarea>
+        </div>
+
+            <button onclick="redirectToShipmentsSelect()"">Seleccionar muestras</button>
+        
+    </form>
+    
+    <script>
+        function redirectToShipmentsSelect() {
+            window.location.href = "/shipments_select";
+        }
+    </script>
+    
+</body>
+</html>
+{% endblock %}

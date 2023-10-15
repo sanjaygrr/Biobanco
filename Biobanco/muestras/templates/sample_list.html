@@ -37,7 +37,7 @@
             box-sizing: border-box;
         }
         button {
-            background-color: #4CAF50;
+            background-color: #4F709C;
             color: white;
             padding: 10px 15px;
             border: none;
@@ -45,7 +45,7 @@
             cursor: pointer;
         }
         button:hover {
-            background-color: #45a049;
+            background-color: rgb(79, 100, 150);
         }
         table {
             width: 100%;
@@ -60,7 +60,7 @@
             text-align: left;
         }
         th {
-            background-color: #4CAF50;
+            background-color: #4F709C;
             color: white;
         }
     </style>
@@ -74,27 +74,15 @@
             <form action="/filter_samples" method="GET" style="display: inline-block;">
                 <div class="form-group">
                     <label for="subject_id">ID Sujeto:</label>
-                    <input type="text" id="subject_id" name="subject_id">
+                    <input type="number" id="subject_id" name="subject_id">
                 </div>
                 <div class="form-group">
                     <label for="sample_date">Fecha de Obtención:</label>
                     <input type="date" id="sample_date" name="sample_date">
                 </div>
                 <div class="form-group">
-                    <label for="specimen">Especimen:</label>
-                    <select id="specimen" name="specimen">
-                        <option value="">--Seleccionar--</option>
-                        <option value="blood">Sangre</option>
-                        <option value="urine">Orina</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="specification">Especificación:</label>
-                    <select id="specification" name="specification">
-                        <option value="">--Seleccionar--</option>
-                        <option value="s1">S1</option>
-                        <option value="s2">S2</option>
-                    </select>
+                    <label for="sample_id">ID muestra:</label>
+                    <input type="number" id="sample_id" name="sample_id">
                 </div>
             </form>
         </div>

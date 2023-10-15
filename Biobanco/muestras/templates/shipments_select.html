@@ -1,0 +1,176 @@
+{% extends 'base.html'%}
+
+{% block content  %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviar Muestras</title>
+    <style>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f8f8f8;
+                padding: 20px;
+            }
+            h1, h2 {
+                margin-bottom: 20px;
+            }
+            .filter-box {
+                background-color: #fff;
+                padding: 20px;
+                border-radius: 5px;
+                margin-bottom: 20px;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .filter-box form {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .filter-box label {
+                margin-right: 5px;
+            }
+            .filter-box input, .filter-box select {
+                padding: 8px;
+                box-sizing: border-box;
+            }
+            .samples-selection, .samples-to-send {
+                background-color: #fff;
+                padding: 20px;
+                border-radius: 5px;
+                margin-bottom: 20px;
+            }
+            button {
+                background-color: #4F709C;
+                color: white;
+                padding: 10px 15px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+            button:hover {
+                background-color: rgb(79, 100, 150);
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+            table, th, td {
+                border: 1px solid #ddd;
+            }
+            th, td {
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #4F709C;
+                color: white;
+            }
+        </style>
+</head>
+<body>
+    <h1>Enviar Muestras</h1>
+    
+    <div class="filter-box">
+        <form action="/filter_samples" method="GET">
+            <label for="year">Año:</label>
+            <input type="number" id="year" name="year">
+            
+            <label for="month">Mes:</label>
+            <input type="number" id="month" name="month" min="1" max="12">
+            
+            <label for="subject_id">ID Sujeto:</label>
+            <input type="text" id="subject_id" name="subject_id">
+            
+            <label for="volume_condition">Volumen:</label>
+            <select id="volume_condition" name="volume_condition">
+                <option value="greater">Mayor a</option>
+                <option value="less">Menor a</option>
+                <option value="equal">Igual a</option>
+            </select>
+            <input type="number" id="volume" name="volume" min="0"> ml
+            
+            <button type="submit">Buscar</button>
+        </form>
+    </div>
+    
+    <div class="samples-selection">
+        <h2>Seleccionar Muestras</h2>
+        <table id="samplesTable">
+            <thead>
+                <tr>
+                    <th>ID Sujeto</th>
+                    <th>Fecha</th>
+                    <th>Número de Muestra</th>
+                    <th>Volumen</th>
+                    <th>Estado de Preservación</th>
+                    <th>Freezer</th>
+                    <th>Rack</th>
+                    <th>Caja</th>
+                    <th>Celda</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sample in samples %}
+                    <tr>
+                        <td>{{ sample.subject_id }}</td>
+                        <td>{{ sample.sample_date }}</td>
+                        <td>{{ sample.sample_number }}</td>
+                        <td>{{ sample.volume }}</td>
+                        <td>{{ sample.preservation_status }}</td>
+                        <td>{{ sample.freezer }}</td>
+                        <td>{{ sample.rack }}</td>
+                        <td>{{ sample.box }}</td>
+                        <td>{{ sample.cell }}</td>
+                        <td>
+                            <button onclick="addToSendTable({{ sample.id }})">Agregar a Envíos</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="samples-to-send">
+        <h2>Muestras a Enviar</h2>
+        <table id="sendTable">
+            <thead>
+                <tr>
+                    <th>ID Sujeto</th>
+                    <th>Fecha</th>
+                    <th>Número de Muestra</th>
+                    <th>Volumen</th>
+                    <th>Estado de Preservación</th>
+                    <th>Freezer</th>
+                    <th>Rack</th>
+                    <th>Caja</th>
+                    <th>Celda</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Las filas aquí serán añadidas dinámicamente con JavaScript -->
+            </tbody>
+        </table>
+        <button onclick="registerSend()">Registrar Envío</button>
+    </div>
+    
+    <script>
+        function addToSendTable(sampleId) {
+            // Tu lógica JavaScript para añadir una muestra de la tabla de selección a la tabla de envío
+        }
+
+        function registerSend() {
+            // Tu lógica JavaScript para registrar el envío de las muestras seleccionadas
+        }
+    </script>
+</body>
+</html>
+{% endblock %}

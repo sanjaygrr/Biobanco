@@ -42,7 +42,7 @@
             box-sizing: border-box;
         }
         button {
-            background-color: #4CAF50;
+            background-color: #4F709C;
             color: white;
             padding: 10px 15px;
             border: none;
@@ -50,7 +50,7 @@
             cursor: pointer;
         }
         button:hover {
-            background-color: #45a049;
+            background-color: rgb(79, 100, 150);
         }
     </style>
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -89,8 +89,8 @@
             </select>
         </div>
     
-        <div class="form-group" id="input_field" style="display:none;">
-            <label for="space_value">Valor:</label>
+        <div class="form-group" id="input_field">
+            <label for="space_value">Numeración:</label>
             <input type="number" id="space_value" name="space_value" required>
         </div>
         <div class="form-group">
@@ -100,8 +100,9 @@
         <div class="form-group">
             <label for="location_state">Estado:</label>
             <select id="location_state" name="location_state" required>
-                <option value="1">En uso</option>
-                <option value="0">Sin uso</option>
+                <option value="">--Seleccionar--</option>
+                <option value="1">Habilitado</option>
+                <option value="0">Inhabilitado</option>
             </select>
         </div>
         

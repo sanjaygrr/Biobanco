@@ -35,7 +35,7 @@
             box-sizing: border-box;
         }
         button {
-            background-color: #4CAF50;
+            background-color: #4F709C;
             color: white;
             padding: 10px 15px;
             border: none;
@@ -43,7 +43,7 @@
             cursor: pointer;
         }
         button:hover {
-            background-color: #45a049;
+            background-color: rgb(79, 100, 150);
         }
         table {
             width: 100%;
@@ -58,7 +58,7 @@
             text-align: left;
         }
         th {
-            background-color: #4CAF50;
+            background-color: #4F709C;
             color: white;
         }
         .switch {
@@ -97,7 +97,7 @@
         }
         
         input:checked + .slider {
-            background-color: #4CAF50;
+            background-color: #4F709C;
         }
         
         input:checked + .slider:before {
@@ -110,6 +110,18 @@
         
         .slider.round:before {
             border-radius: 50%;
+        }
+        .delete-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .delete-btn.active {
+            background-color: #c0392b;
         }
     </style>
     <script>
@@ -215,6 +227,72 @@
             })));
         });
         
+        var deletions = {};
+
+function toggleDelete(spaceId, btnElement) {
+    // Toggle the active class
+    btnElement.classList.toggle('active');
+    
+    // Add or remove the spaceId from the deletions object
+    if (deletions[spaceId]) {
+        delete deletions[spaceId];
+    } else {
+        deletions[spaceId] = true;
+    }
+}
+
+function saveChanges() {
+    // Send status changes
+    fetch(`/update_space_status/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify(changes),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            console.error('Error:', data.error);
+            swal("Error", data.error, "error");
+        } else {
+            console.log('Success:', data);
+            swal("Success", "Los cambios de estado han sido guardados exitosamente", "success");
+            changes = {};  // Clear changes
+        }
+    })
+    .catch((error) => {
+        console.error('Fetch Error:', error);
+        swal("Error", "Fetch Error: " + error, "error");
+    });
+
+    // Send deletion requests
+    fetch(`/delete_spaces/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify(deletions),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            console.error('Error:', data.error);
+            swal("Error", data.error, "error");
+        } else {
+            console.log('Success:', data);
+            swal("Success", "Los espacios han sido eliminados exitosamente", "success");
+            deletions = {};  // Clear deletions
+            location.reload();  // Reload the page to reflect the deletions
+        }
+    })
+    .catch((error) => {
+        console.error('Fetch Error:', error);
+        swal("Error", "Fetch Error: " + error, "error");
+    });
+}
         
     </script>
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
@@ -274,7 +352,8 @@
                             <label class="switch">
                                 <input type="checkbox" {% if space.location_state %}checked{% endif %} onchange="toggleStatus({{ space.id }}, this.checked)">
                                 <span class="slider round"></span>
-                            </label>            
+                            </label>
+                            <button class="delete-btn" onclick="toggleDelete({{ space.id }}, this)">X</button>
                         </td>
                     </tr>
                 {% endfor %}

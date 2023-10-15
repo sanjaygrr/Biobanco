@@ -174,6 +174,36 @@ def update_space_status(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+@csrf_exempt
+@require_POST
+def delete_spaces(request):
+    try:
+        # Carga los datos JSON de la solicitud.
+        data = json.loads(request.body)
+
+        # Verifica que los datos son un diccionario con los IDs de espacio y valores booleanos.
+        if not all(isinstance(space_id, str) and isinstance(should_delete, bool) for space_id, should_delete in data.items()):
+            return JsonResponse({'error': 'Invalid data format'}, status=400)
+
+        # Itera sobre cada ID de espacio y valor booleano en los datos y elimina el espacio si el valor es True.
+        for space_id, should_delete in data.items():
+            if should_delete:
+                location = Location.objects.get(pk=space_id)
+                location.delete()
+
+        # Responde con un mensaje de éxito.
+        return JsonResponse({'message': 'Spaces deleted successfully'})
+    except Location.DoesNotExist:
+        # Responde con un mensaje de error si la ubicación no existe.
+        return JsonResponse({'error': 'Location not found'}, status=404)
+    except json.JSONDecodeError:
+        # Responde con un mensaje de error si los datos JSON no son válidos.
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        # Responde con un mensaje de error si ocurre otra excepción.
+        return JsonResponse({'error': str(e)}, status=500)
+
+
 def create_sample(request):
     return render(request, 'create_sample.html')
 
@@ -184,3 +214,19 @@ def sample_list(request):
 
 def trazability(request):
     return render(request, 'trazability.html')
+
+
+def shipments(request):
+    return render(request, 'shipments.html')
+
+
+def login(request):
+    return render(request, 'login.html')
+
+
+def create_password(request):
+    return render(request, 'create_password.html')
+
+
+def shipments_select(request):
+    return render(request, 'shipments_select.html')

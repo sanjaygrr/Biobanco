@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -19,39 +20,47 @@
             top: 0;
             left: 0;
             z-index: 1000;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1%;
         }
         
         main {
-            margin-top: 60px; /* Ajusta según la altura de tu nav */
+            margin-top: 80px;
         }
-        
-        nav {
-            background-color: #213555;
-        }
-        ul {
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            display: flex;
-            justify-content: space-around;
-        }
-        li {
-            /* float: left; */
-        }
-        li a, .dropdown-btn {
-            display: inline-block;
-            color: #D8C4B6;
-            text-align: center;
-            padding: 14px 16px;
-            text-decoration: none;
-        }
-        li a:hover, .dropdown:hover .dropdown-btn {
+
+        .logo {
+            width: 65px;
+            height: auto;
+            }
+
+            ul {
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                display: flex;
+                justify-content: space-between;
+                width: 100%; /* Cambio del ancho al 100% */
+                margin-right: 100px;
+                margin-left: 100px;
+            }
+            
+            li a, .dropdown-btn {
+                display: inline-block;
+                color: white;
+                font-weight: bold;
+                text-align: center;
+                padding: 6px 4px; /* Reducción adicional del padding */
+                text-decoration: none;
+            }
+
+        li a:hover, .dropdown:hover .dropdown-btn, .dropdown-content a:hover {
             background-color: #4F709C;
         }
-        li.dropdown {
-            display: inline-block;
-        }
+
         .dropdown-content {
             display: none;
             position: absolute;
@@ -60,6 +69,7 @@
             box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
             z-index: 1;
         }
+
         .dropdown-content a {
             color: #213555;
             padding: 12px 16px;
@@ -67,27 +77,28 @@
             display: block;
             text-align: left;
         }
-        .dropdown-content a:hover {
-            background-color: #D8C4B6;
-        }
+
         .dropdown:hover .dropdown-content {
             display: block;
         }
-    
-        /* Media query para pantallas de hasta 768px de ancho */
+
         @media (max-width: 768px) {
             ul {
                 flex-direction: column;
                 align-items: center;
+                width: 100%;
             }
+
             li {
                 width: 100%;
                 text-align: center;
             }
+
             .dropdown-content {
                 min-width: 100%;
                 text-align: center;
             }
+
             .dropdown-content a {
                 padding: 12px 24px;
             }
@@ -96,6 +107,7 @@
 </head>
 <body>
     <nav>
+        <img src="{% static 'biobanco/images/Biobanco.png' %}" alt="Logo" class="logo">
         <ul>
             <li><a href="/home">Inicio</a></li>
             <li class="dropdown">
@@ -117,15 +129,15 @@
                 <div class="dropdown-content">
                     <a href="/create_sample">Registrar Muestras</a>
                     <a href="/sample_list">Editar Muestras</a>
-                    <a href="/trazability">Trazabilidad</a>
                 </div>
             </li>
             <li><a href="/shipments">Envíos</a></li>
             <li class="dropdown">
                 <a href="javascript:void(0)" class="dropdown-btn">Reporteria</a>
                 <div class="dropdown-content">
-                    <a href="/sample_list">Muestras</a>
-                    <a href="/shipments">Envíos</a>
+                    <a href="/sample_list">Reporte de Muestras</a>
+                    <a href="/shipments">Reporte de Envíos</a>
+                    <a href="/trazability">Trazabilidad</a>
                 </div>
             </li>
             <li><a href="/">Log Out</a></li>

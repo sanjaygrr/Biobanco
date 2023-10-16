@@ -22,7 +22,13 @@
             border-radius: 5px;
             margin-bottom: 20px;
             display: flex;
-            justify-content: space-between;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+        .filter-section {
+            flex: 1;
+            min-width: 45%;
+            margin-right: 5%;
         }
         .form-group {
             margin-bottom: 15px;
@@ -69,9 +75,9 @@
     <h1>Editar/Ver Muestras</h1>
     
     <div class="filter-box">
-        <div>
+        <div class="filter-section">
             <h2>Filtros de Muestra</h2>
-            <form action="/filter_samples" method="GET" style="display: inline-block;">
+            <form action="/filter_samples" method="GET">
                 <div class="form-group">
                     <label for="subject_id">ID Sujeto:</label>
                     <input type="number" id="subject_id" name="subject_id">
@@ -86,9 +92,9 @@
                 </div>
             </form>
         </div>
-        <div>
+        <div class="filter-section">
             <h2>Filtros de Ubicación</h2>
-            <form action="/filter_samples" method="GET" style="display: inline-block;">
+            <form action="/home" method="GET">
                 <div class="form-group">
                     <label for="freezer_number">Freezer Nro:</label>
                     <input type="number" id="freezer_number" name="freezer_number">
@@ -101,7 +107,7 @@
                     <label for="box_number">Caja Nro:</label>
                     <input type="number" id="box_number" name="box_number">
                 </div>
-                <button type="submit">Buscar</button>
+                <button onclick="redirectToHome()">Buscar</button>
             </form>
         </div>
     </div>
@@ -124,6 +130,37 @@
                 </tr>
             </thead>
             <tbody>
+                <!-- Valores de prueba -->
+                <tr>
+                    <td>101</td>
+                    <td>2023-10-10</td>
+                    <td>Sangre</td>
+                    <td>Plasma</td>
+                    <td>10</td>
+                    <td>1</td>
+                    <td>5</td>
+                    <td>10</td>
+                    <td>15</td>
+                    <td>
+                        <a href="/edit_sample/101">Editar</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>102</td>
+                    <td>2023-10-05</td>
+                    <td>Tejido</td>
+                    <td>Muscular</td>
+                    <td>5</td>
+                    <td>2</td>
+                    <td>3</td>
+                    <td>8</td>
+                    <td>12</td>
+                    <td>
+                        <a href="/edit_sample/102">Editar</a>
+                    </td>
+                </tr>
+                <!-- Fin de valores de prueba -->
+
                 {% for sample in samples %}
                     <tr>
                         <td>{{ sample.subject_id }}</td>
@@ -143,6 +180,11 @@
             </tbody>
         </table>
     </div>
+    <script>
+        function redirectToHome() {
+            window.location.href = "/home";
+        }
+    </script>
 </body>
 </html>
 {% endblock %}

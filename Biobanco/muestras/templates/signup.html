@@ -98,8 +98,16 @@
         </div>
         
         
-        <button type="submit">Guardar</button>   
+        <button onclick="redirectToHome()">Guardar</button>
+        
     </form>
+
+<script>
+    function redirectToHome() {
+        window.location.href = "/home";
+    }
+</script>
+
 </body>
 </html>
 {% endblock  %}

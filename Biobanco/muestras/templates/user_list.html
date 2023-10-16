@@ -33,12 +33,18 @@
 </head>
 <body>
     <h1>Lista de Usuarios</h1>
+    <div>
+        <form method="GET" action="">
+            <input type="text" name="search" placeholder="Buscar por nombre o correo">
+            <button onclick="redirectToHome()">Buscar</button>
+        </form>
+    </div>
     {% if users %}
     <p>Hay {{ users.count }} usuario(s) para mostrar.</p>
     {% else %}
     <p>No hay usuarios para mostrar.</p>
     {% endif %}
-    
+
     <table>
         <thead>
             <tr>
@@ -61,6 +67,11 @@
             {% endfor %}
         </tbody>
     </table>
+    <script>
+        function redirectToHome() {
+            window.location.href = "/home";
+        }
+    </script>
 </body>
 </html>
 {% endblock  %}

@@ -1,3 +1,9 @@
-from django.contrib import admin
+# admin.py en tu aplicación
 
-# Register your models here.
+from django.contrib import admin
+from .models import StorageType
+
+
+@admin.register(StorageType)
+class StorageTypeAdmin(admin.ModelAdmin):
+    list_display = ['name_storagetype']

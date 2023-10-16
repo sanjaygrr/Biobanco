@@ -21,4 +21,6 @@ urlpatterns = [
     path('create_password/', views.create_password),
     path('shipments_select/', views.shipments_select),
     path('delete_spaces/', views.delete_spaces, name='delete_spaces'),
+    path('shipments_report/', views.shipments_report),
+    path('samples_report/', views.samples_report),
 ]

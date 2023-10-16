@@ -184,3 +184,11 @@ def create_password(request):
 
 def shipments_select(request):
     return render(request, 'shipments_select.html')
+
+
+def shipments_report(request):
+    return render(request, 'shipments_report.html')
+
+
+def samples_report(request):
+    return render(request, 'samples_report.html')

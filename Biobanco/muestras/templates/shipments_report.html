@@ -1,0 +1,152 @@
+{% extends 'base.html'%}
+
+{% block content  %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviar Muestras</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+            padding: 20px;
+        }
+        h1, h2 {
+            margin-bottom: 20px;
+        }
+        .filter-box, .samples-selection, .samples-to-send {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #4F709C;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: rgb(79, 100, 150);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #4F709C;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Enviar Muestras</h1>
+    
+    <div class="filter-box">
+        <form action="/home" method="GET">
+            <label for="year">Año:</label>
+            <input type="number" id="year" name="year">
+            
+            <label for="month">Mes:</label>
+            <input type="number" id="month" name="month" min="1" max="12">
+            
+            <label for="subject_id">ID Sujeto:</label>
+            <input type="text" id="subject_id" name="subject_id">
+            
+            <label for="volume_condition">Volumen:</label>
+            <select id="volume_condition" name="volume_condition">
+                <option value="greater">Mayor a</option>
+                <option value="less">Menor a</option>
+                <option value="equal">Igual a</option>
+            </select>
+            <input type="number" id="volume" name="volume" min="0"> ml
+            
+            <button onclick="redirectToHome()">Buscar</button>
+        </form>
+    </div>
+    
+    <div class="samples-selection">
+        <h2>Seleccionar Muestras</h2>
+        <table id="samplesTable">
+            <thead>
+                <tr>
+                    <th>ID Sujeto</th>
+                    <th>Fecha</th>
+                    <th>Número de Muestra</th>
+                    <th>Volumen</th>
+                    <th>Estado de Preservación</th>
+                    <th>Freezer</th>
+                    <th>Rack</th>
+                    <th>Caja</th>
+                    <th>Celda</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Valores de prueba -->
+                <tr data-sample-id="101">
+                    <td>101</td>
+                    <td>2023-10-10</td>
+                    <td>Muestra001</td>
+                    <td>10ml</td>
+                    <td>Normal</td>
+                    <td>1</td>
+                    <td>3</td>
+                    <td>4</td>
+                    <td>87</td>
+                    <td>
+                        <button onclick="addToSendTable(101)">Agregar a Envíos</button>
+                    </td>
+                </tr>
+                <!-- ... (resto de valores de prueba y código no modificado) ... -->
+            </tbody>
+        </table>
+    </div>
+    
+    
+    <script>
+        function addToSendTable(sampleId) {
+            // Encuentra la fila en la tabla de selección basada en el ID de muestra
+            let row = document.querySelector(`#samplesTable tr[data-sample-id="${sampleId}"]`);
+            
+            // Crea una copia de esa fila
+            let newRow = row.cloneNode(true);
+            
+            // Agrega un botón de eliminar en la nueva fila
+            let deleteButtonCell = newRow.querySelector('td:last-child');
+            deleteButtonCell.innerHTML = '<button onclick="removeFromSendTable(this)">Quitar</button>';
+            
+            // Añade la nueva fila a la tabla de envío
+            document.querySelector('#sendTable tbody').appendChild(newRow);
+            
+            // Opcional: Elimina la fila de la tabla de selección
+            row.remove();
+        }
+
+        function removeFromSendTable(buttonElement) {
+            // Elimina la fila de la tabla de envío
+            buttonElement.closest('tr').remove();
+        }
+    </script>
+
+    <script>
+        function redirectToHome() {
+            window.location.href = "/home";
+        }
+    </script>
+
+</body>
+</html>
+{% endblock %}

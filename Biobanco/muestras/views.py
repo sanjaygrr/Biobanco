@@ -88,7 +88,26 @@ def create_space(request):
 def space_list(request):
     storages = Storage.objects.select_related(
         'STORAGE_TYPE_id_storagetype').all()
-    return render(request, 'space_list.html', {'spaces': storages})
+    storage_types = StorageType.objects.all()
+
+    # Aplicar filtros basados en los parámetros GET
+    name_filter = request.GET.get('name')
+    type_filter = request.GET.get('type')
+    status_filter = request.GET.get('status')
+
+    if name_filter:
+        storages = storages.filter(storage_name__icontains=name_filter)
+
+    if type_filter:
+        storages = storages.filter(STORAGE_TYPE_id_storagetype=type_filter)
+
+    if status_filter:
+        if status_filter == 'enabled':
+            storages = storages.filter(storage_state=True)
+        elif status_filter == 'disabled':
+            storages = storages.filter(storage_state=False)
+
+    return render(request, 'space_list.html', {'spaces': storages, 'storage_types': storage_types})
 
 
 @csrf_exempt
@@ -96,21 +115,24 @@ def space_list(request):
 def update_space_status(request):
     try:
         data = json.loads(request.body)
-        if not all(isinstance(space_id, str) and isinstance(status, bool) for space_id, status in data.items()):
+        if not all(isinstance(space_id, str) and isinstance(status, bool) for space_id, status in data['changes'].items()):
             return JsonResponse({'error': 'Formato de datos inválido'}, status=400)
 
-        for space_id, status in data.items():
+        for space_id, status in data['changes'].items():
             storage = Storage.objects.get(pk=space_id)
             storage.storage_state = status
             storage.save()
 
-        return JsonResponse({'message': 'Estado actualizado con éxito'})
+        return JsonResponse({'message': 'Estados actualizados con éxito'})
+
     except Storage.DoesNotExist:
         return JsonResponse({'error': 'Espacio no encontrado'}, status=404)
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
+    except ValueError as ve:
+        return JsonResponse({'error': f'Error de valor: {str(ve)}'}, status=400)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({'error': f'Error inesperado: {str(e)}'}, status=500)
 
 
 @csrf_exempt
@@ -118,6 +140,7 @@ def update_space_status(request):
 def delete_spaces(request):
     try:
         data = json.loads(request.body)
+        print("Received data:", data)
         if not all(isinstance(space_id, str) and isinstance(should_delete, bool) for space_id, should_delete in data.items()):
             return JsonResponse({'error': 'Formato de datos inválido'}, status=400)
 

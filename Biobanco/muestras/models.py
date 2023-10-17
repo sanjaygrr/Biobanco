@@ -19,6 +19,7 @@ class StorageType(models.Model):
     class Meta:
         verbose_name = "Tipo de Almacenamiento"
         verbose_name_plural = "Tipos de Almacenamiento"
+        db_table = 'STORAGE_TYPE'
 
 
 class Storage(models.Model):
@@ -46,3 +47,4 @@ class Storage(models.Model):
     class Meta:
         verbose_name = "Almacenamiento"
         verbose_name_plural = "Almacenamientos"
+        db_table = 'STORAGE'

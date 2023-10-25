@@ -119,9 +119,9 @@
                 <tr>
                     <th>ID Sujeto</th>
                     <th>Fecha de Obtención</th>
-                    <th>Especimen</th>
-                    <th>Especificación</th>
+                    <th>Número de Muestra</th>
                     <th>Volumen (ml)</th>
+                    <th>Estado de Preservación</th>
                     <th>Freezer Nro</th>
                     <th>Rack Nro</th>
                     <th>Caja Nro</th>
@@ -130,50 +130,20 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Valores de prueba -->
-                <tr>
-                    <td>101</td>
-                    <td>2023-10-10</td>
-                    <td>Sangre</td>
-                    <td>Plasma</td>
-                    <td>10</td>
-                    <td>1</td>
-                    <td>5</td>
-                    <td>10</td>
-                    <td>15</td>
-                    <td>
-                        <a href="/edit_sample/101">Editar</a>
-                    </td>
-                </tr>
-                <tr>
-                    <td>102</td>
-                    <td>2023-10-05</td>
-                    <td>Tejido</td>
-                    <td>Muscular</td>
-                    <td>5</td>
-                    <td>2</td>
-                    <td>3</td>
-                    <td>8</td>
-                    <td>12</td>
-                    <td>
-                        <a href="/edit_sample/102">Editar</a>
-                    </td>
-                </tr>
-                <!-- Fin de valores de prueba -->
-
                 {% for sample in samples %}
                     <tr>
-                        <td>{{ sample.subject_id }}</td>
-                        <td>{{ sample.sample_date }}</td>
-                        <td>{{ sample.specimen }}</td>
-                        <td>{{ sample.specification }}</td>
-                        <td>{{ sample.volume }}</td>
+                        <td>{{ sample.id_subject }}</td>
+                        <td>{{ sample.date_sample }}</td>
+                        <td>{{ sample.id_sample }}</td>
+                        <td>{{ sample.ml_volume }}</td>
+                        <td>{% if sample.state_preservation %}Descongelado{% else %}Normal{% endif %}</td>
+                        <!-- Asumiendo que tienes campos para Freezer, Rack, Caja y Celda en tu modelo -->
                         <td>{{ sample.freezer_number }}</td>
                         <td>{{ sample.rack_number }}</td>
                         <td>{{ sample.box_number }}</td>
                         <td>{{ sample.cell_number }}</td>
                         <td>
-                            <a href="/edit_sample/{{ sample.id }}">Editar</a>
+                            <a href="/edit_sample/{{ sample.id_sample }}">Editar</a>
                         </td>
                     </tr>
                 {% endfor %}

@@ -9,7 +9,7 @@ import json
 from django.db.models import Q
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
-from .models import Storage, StorageType
+from .models import Storage, StorageType, Sample
 from django.contrib import messages
 
 
@@ -159,11 +159,90 @@ def delete_spaces(request):
 
 
 def create_sample(request):
-    return render(request, 'create_sample.html')
+    if request.method == "POST":
+        # Extraer datos del formulario
+        subject_id = request.POST.get('subject_id')
+        sample_date = request.POST.get('sample_date')
+        preservation_state = True if request.POST.get(
+            'preservation_state') == 'frozen' else False
+        volume = float(request.POST.get('volume'))  # Convertir a float
+        specification = request.POST.get('specification')
+        freezer_number = request.POST.get('freezer_number')
+        rack_number = request.POST.get('rack_number')
+        box_number = request.POST.get('box_number')
+        # Aquí puedes agregar lógica para manejar los números de freezer, rack y caja si es necesario
+
+        # Crear una instancia del modelo Sample y guardarla
+        sample = Sample(
+            id_subject=subject_id,
+            date_sample=sample_date,
+            state_preservation=preservation_state,
+            ml_volume=volume,
+            state_analysis=False,  # Valor predeterminado: No analizada
+            specification=specification,
+            # SHIPMENT_id_shipment se dejará en blanco por ahora
+        )
+        sample.save()
+
+        # Redirigir según el botón que se presionó
+        action = request.POST.get('action')
+        if action == 'add_another':
+            messages.success(
+                request, '¡Éxito! Muestra registrada correctamente. Puedes agregar otra muestra.')
+            return redirect('create_sample')
+        else:
+            messages.success(
+                request, '¡Éxito! Muestra registrada correctamente.')
+            return redirect('home')
+
+    # Query available freezers, racks, and boxes
+    freezers = Storage.objects.filter(
+        STORAGE_TYPE_id_storagetype__name_storagetype=3)
+    racks = Storage.objects.filter(
+        STORAGE_TYPE_id_storagetype__name_storagetype=2)
+    boxes = Storage.objects.filter(
+        STORAGE_TYPE_id_storagetype__name_storagetype=1)
+
+    context = {
+        'freezers': freezers,
+        'racks': racks,
+        'boxes': boxes,
+    }
+
+    return render(request, 'create_sample.html', context)
 
 
 def sample_list(request):
-    return render(request, 'sample_list.html')
+    samples = Sample.objects.all()
+
+    # Si el método es GET y hay datos en el formulario
+    if request.method == "GET":
+        subject_id = request.GET.get('subject_id')
+        sample_date = request.GET.get('sample_date')
+        freezer_number = request.GET.get('freezer_number')
+        rack_number = request.GET.get('rack_number')
+        box_number = request.GET.get('box_number')
+
+        if subject_id:
+            samples = samples.filter(id_subject=subject_id)
+        if sample_date:
+            samples = samples.filter(date_sample=sample_date)
+        #  para el freezer_number, rack_number, y box_number
+        if freezer_number:
+
+            samples = samples.filter(freezer_number=freezer_number)
+        if rack_number:
+
+            samples = samples.filter(rack_number=rack_number)
+        if box_number:
+
+            samples = samples.filter(box_number=box_number)
+
+    context = {
+        'samples': samples
+    }
+
+    return render(request, 'sample_list.html', context)
 
 
 def trazability(request):

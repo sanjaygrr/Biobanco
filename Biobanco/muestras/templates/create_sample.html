@@ -65,6 +65,7 @@
         .button-group {
             display: flex;
             justify-content: space-between;
+        }
     </style>
 </head>
 <body>
@@ -72,12 +73,12 @@
     
     <div class="form-box">
         <h2>Datos de la Muestra</h2>
-        <form action="/create_sample" method="POST">
+        <form action="/create_sample/" method="POST">
             {% csrf_token %}
             
             <div class="form-group">
                 <label for="subject_id">ID Sujeto:</label>
-                <input type="text" id="subject_id" name="subject_id" required>
+                <input type="number" id="subject_id" name="subject_id" required>
             </div>
             
             <div class="form-group">
@@ -95,24 +96,52 @@
             
             <div class="form-group">
                 <label for="volume">Volumen (ml):</label>
-                <input type="number" id="volume" name="volume" required>
+                <input type="text" pattern="^\d*(\.\d{0,2})?$" id="volume" name="volume" required title="Por favor, ingrese un número válido con hasta dos decimales. Ejemplo: 10.25">
             </div>
             
+            <div class="form-group">
+                <label for="state_analysis">Estado del Análisis:</label>
+                <select id="state_analysis" name="state_analysis" required>
+                    <option value="0" selected>No analizada</option>
+                    <option value="1">Enviada a análisis</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="specification">Especificación:</label>
+                <input type="number" id="specification" name="specification" required>
+            </div>
+
             <h2>Ubicación</h2>
             
             <div class="form-group">
                 <label for="freezer_number">Freezer Nro:</label>
-                <input type="number" id="freezer_number" name="freezer_number" required>
+                <select id="freezer_number" name="freezer_number" required>
+                    <option value="" disabled selected>Selecciona un freezer</option>
+                    {% for freezer in freezers %}
+                        <option value="{{ freezer.id_storage }}">{{ freezer.storage_name }}</option>
+                    {% endfor %}
+                </select>
             </div>
             
             <div class="form-group">
                 <label for="rack_number">Rack Nro:</label>
-                <input type="number" id="rack_number" name="rack_number" required>
+                <select id="rack_number" name="rack_number" required>
+                    <option value="" disabled selected>Selecciona un rack</option>
+                    {% for rack in racks %}
+                        <option value="{{ rack.id_storage }}">{{ rack.storage_name }}</option>
+                    {% endfor %}
+                </select>
             </div>
             
             <div class="form-group">
                 <label for="box_number">Caja Nro:</label>
-                <input type="number" id="box_number" name="box_number" required>
+                <select id="box_number" name="box_number" required>
+                    <option value="" disabled selected>Selecciona una caja</option>
+                    {% for box in boxes %}
+                        <option value="{{ box.id_storage }}">{{ box.storage_name }}</option>
+                    {% endfor %}
+                </select>
             </div>
             
             <div class="form-group">
@@ -120,15 +149,10 @@
                 <input type="number" id="cell_number" name="cell_number" required>
             </div>
             
-            <button onclick="redirectToHome()">Guardar y Agregar Otra Muestra</button>
-            <button onclick="redirectToHome()">Guardar y Salir</button>
+            <button type="submit" name="action" value="add_another">Guardar y Agregar Otra Muestra</button>
+            <button type="submit" name="action" value="save_exit">Guardar y Salir</button>
         </form>
     </div>
-    <script>
-        function redirectToHome() {
-            window.location.href = "/home";
-        }
-    </script>
 </body>
 </html>
 {% endblock %}

@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 
 
 class StorageType(models.Model):
@@ -48,3 +49,27 @@ class Storage(models.Model):
         verbose_name = "Almacenamiento"
         verbose_name_plural = "Almacenamientos"
         db_table = 'STORAGE'
+
+
+class Sample(models.Model):
+    id_sample = models.CharField(max_length=16, primary_key=True)
+
+    id_subject = models.CharField(max_length=10)
+    date_sample = models.DateField()
+
+    ml_volume = models.FloatField(validators=[MinValueValidator(0)])
+    state_analysis = models.BooleanField(
+        default=False, help_text="Valores: 0. No analizada 1. Enviada a análisis")
+    state_preservation = models.BooleanField(
+        default=False, help_text="Valores: 0. Normal 1. Descongelada")
+
+    specification = models.CharField(max_length=10)
+    SHIPMENT_id_shipment = models.IntegerField(
+        null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        self.id_sample = f"{self.id_subject}-{self.specification}{self.date_sample}"
+        super().save(*args, **kwargs)
+
+    class Meta:
+        db_table = 'SAMPLE'

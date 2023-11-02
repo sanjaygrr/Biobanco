@@ -6,10 +6,10 @@ from django.db import IntegrityError
 from django.http import HttpResponse
 from django.http import JsonResponse
 import json
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
-from .models import Storage, StorageType, Sample
+from .models import Storage, StorageType, Sample, Location
 from django.contrib import messages
 
 
@@ -157,65 +157,87 @@ def delete_spaces(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+def is_valid_int(value):
+    """Función de ayuda para comprobar si un valor puede ser convertido a int."""
+    try:
+        int(value)
+        return True
+    except ValueError:
+        return False
+
 
 def create_sample(request):
     if request.method == "POST":
-        # Extraer datos del formulario
-        subject_id = request.POST.get('subject_id')
-        sample_date = request.POST.get('sample_date')
-        preservation_state = True if request.POST.get(
-            'preservation_state') == 'frozen' else False
-        volume = float(request.POST.get('volume'))  # Convertir a float
+        # Obtener y procesar datos del formulario
+        id_subject = request.POST.get('id_subject')
+        date_sample = request.POST.get('date_sample')
+        ml_volume = float(request.POST.get('ml_volume'))
+        state_analysis = request.POST.get('state_analysis') == "1"
+        state_preservation = request.POST.get('state_preservation') == "1"
         specification = request.POST.get('specification')
-        freezer_number = request.POST.get('freezer_number')
-        rack_number = request.POST.get('rack_number')
-        box_number = request.POST.get('box_number')
-        # Aquí puedes agregar lógica para manejar los números de freezer, rack y caja si es necesario
+        shipment_id = request.POST.get('SHIPMENT_id_shipment')
 
-        # Crear una instancia del modelo Sample y guardarla
+        # Crear una nueva instancia de muestra
         sample = Sample(
-            id_subject=subject_id,
-            date_sample=sample_date,
-            state_preservation=preservation_state,
-            ml_volume=volume,
-            state_analysis=False,  # Valor predeterminado: No analizada
-            specification=specification,
-            # SHIPMENT_id_shipment se dejará en blanco por ahora
+            id_subject=id_subject,
+            date_sample=date_sample,
+            ml_volume=ml_volume,
+            state_analysis=state_analysis,
+            state_preservation=state_preservation,
+            specification=specification
         )
+
+        if shipment_id:
+            sample.SHIPMENT_id_shipment = int(shipment_id)
+
         sample.save()
 
-        # Redirigir según el botón que se presionó
+        # Lógica de Guardado de Ubicaciones
+        for storage_value_key in ['freezer_id', 'rack_id', 'caja_id']:
+            storage_value = request.POST.get(storage_value_key)
+            storage_type, storage_name = storage_value.split('-')
+
+            # Buscar el objeto Storage usando ambos valores:
+            storage_obj = Storage.objects.filter(STORAGE_TYPE_id_storagetype_id=storage_type, storage_name=storage_name).first()
+            if storage_obj:
+                cell_value = int(request.POST.get('cell'))
+                location = Location(
+                    cell=cell_value,
+                    SAMPLE_id_sample_1=sample,
+                    STORAGE_id_storage_1=storage_obj,
+                    STORAGE_TYPE_id_storagetype=storage_obj.STORAGE_TYPE_id_storagetype
+                )
+                location.save()
+                print(f"Ubicación para {storage_obj.storage_name} guardada con éxito.")
+            else:
+                print(f"Objeto Storage no encontrado para id: {storage_value}.")
+
+        # Redirigir según la acción
         action = request.POST.get('action')
-        if action == 'add_another':
-            messages.success(
-                request, '¡Éxito! Muestra registrada correctamente. Puedes agregar otra muestra.')
+        if action == "add_another":
             return redirect('create_sample')
         else:
-            messages.success(
-                request, '¡Éxito! Muestra registrada correctamente.')
             return redirect('home')
 
-    # Query available freezers, racks, and boxes
-    freezers = Storage.objects.filter(
-        STORAGE_TYPE_id_storagetype__name_storagetype=3)
-    racks = Storage.objects.filter(
-        STORAGE_TYPE_id_storagetype__name_storagetype=2)
-    boxes = Storage.objects.filter(
-        STORAGE_TYPE_id_storagetype__name_storagetype=1)
+    else:
+        # Cargar datos para el formulario
+        storages = Storage.objects.all().order_by('storage_name')
+        storage_types = StorageType.objects.all().order_by('name_storagetype')
 
-    context = {
-        'freezers': freezers,
-        'racks': racks,
-        'boxes': boxes,
-    }
+        context = {
+            'storages': storages,
+            'storage_types': storage_types
+        }
 
-    return render(request, 'create_sample.html', context)
+        return render(request, 'create_sample.html', context)
 
 
 def sample_list(request):
-    samples = Sample.objects.all()
+    samples = Sample.objects.all().select_related('location_set')
+    samples = Sample.objects.all().prefetch_related(
+        Prefetch('location_set', queryset=Location.objects.select_related('STORAGE_id_storage_1'))
+    )
 
-    # Si el método es GET y hay datos en el formulario
     if request.method == "GET":
         subject_id = request.GET.get('subject_id')
         sample_date = request.GET.get('sample_date')
@@ -227,22 +249,22 @@ def sample_list(request):
             samples = samples.filter(id_subject=subject_id)
         if sample_date:
             samples = samples.filter(date_sample=sample_date)
-        #  para el freezer_number, rack_number, y box_number
+
+        # Filtros para freezer_number, rack_number, y box_number usando el modelo relacionado `Location` y luego `Storage`
         if freezer_number:
-
-            samples = samples.filter(freezer_number=freezer_number)
+            samples = samples.filter(location__STORAGE_id_storage_1__freezer_number=freezer_number)
         if rack_number:
-
-            samples = samples.filter(rack_number=rack_number)
+            samples = samples.filter(location__STORAGE_id_storage_1__rack_number=rack_number)
         if box_number:
-
-            samples = samples.filter(box_number=box_number)
+            samples = samples.filter(location__STORAGE_id_storage_1__box_number=box_number)
 
     context = {
         'samples': samples
     }
 
     return render(request, 'sample_list.html', context)
+
+
 
 
 def trazability(request):

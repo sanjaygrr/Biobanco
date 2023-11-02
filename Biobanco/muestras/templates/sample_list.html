@@ -137,11 +137,12 @@
                         <td>{{ sample.id_sample }}</td>
                         <td>{{ sample.ml_volume }}</td>
                         <td>{% if sample.state_preservation %}Descongelado{% else %}Normal{% endif %}</td>
-                        <!-- Asumiendo que tienes campos para Freezer, Rack, Caja y Celda en tu modelo -->
-                        <td>{{ sample.freezer_number }}</td>
-                        <td>{{ sample.rack_number }}</td>
-                        <td>{{ sample.box_number }}</td>
-                        <td>{{ sample.cell_number }}</td>
+                        
+                        <!-- Obtener los datos de ubicación a partir del modelo Location relacionado con Sample -->
+                        <td>{{ sample.location_set.first.STORAGE_id_storage_1.freezer_number }}</td>
+                        <td>{{ sample.location_set.first.STORAGE_id_storage_1.rack_number }}</td>
+                        <td>{{ sample.location_set.first.STORAGE_id_storage_1.box_number }}</td>
+                        <td>{{ sample.location_set.first.cell }}</td>
                         <td>
                             <a href="/edit_sample/{{ sample.id_sample }}">Editar</a>
                         </td>

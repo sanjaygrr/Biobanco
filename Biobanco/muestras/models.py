@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import MinValueValidator
 
 
+
 class StorageType(models.Model):
     """
     Modelo para representar los tipos de almacenamiento.
@@ -73,3 +74,72 @@ class Sample(models.Model):
 
     class Meta:
         db_table = 'SAMPLE'
+
+
+class Role(models.Model):
+    id_role = models.AutoField(primary_key=True)
+    role_name = models.CharField(max_length=15, null=False, blank=False)
+
+    def __str__(self):
+        return self.role_name
+
+    class Meta:
+        db_table = 'ROLE'
+
+
+class User(models.Model):
+    id_user = models.CharField(max_length=20, primary_key=True)
+    name = models.CharField(max_length=20)
+    lastname = models.CharField(max_length=20)
+    email = models.CharField(max_length=20)
+    user_state = models.CharField(max_length=20)
+    password_hash = models.CharField(max_length=20)
+    ROLE_id_role = models.ForeignKey(Role, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.name} {self.lastname}"
+
+    class Meta:
+        db_table = 'USER'
+
+
+class Location(models.Model):
+    id_location = models.AutoField(primary_key=True)
+    cell = models.IntegerField(null=True, blank=True)
+    SAMPLE_id_sample_1 = models.ForeignKey(Sample, on_delete=models.CASCADE)
+    STORAGE_id_storage_1 = models.ForeignKey(Storage, on_delete=models.CASCADE)
+    STORAGE_TYPE_id_storagetype = models.ForeignKey(StorageType, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Location {self.id_location}"
+
+    class Meta:
+        db_table = 'LOCATION'
+
+
+class Shipment(models.Model):
+    id_shipment = models.AutoField(primary_key=True)
+    date_shipment = models.DateField()
+    laboratory = models.CharField(max_length=30)
+    analysis = models.CharField(max_length=50)
+
+    def __str__(self):
+        return f"Shipment {self.id_shipment}"
+
+    class Meta:
+        db_table = 'SHIPMENT'
+
+
+class SampleEvent(models.Model):
+    id_event = models.AutoField(primary_key=True)
+    event_user = models.CharField(max_length=15)
+    event_date = models.DateField()
+    action = models.CharField(max_length=15)
+    action_information = models.CharField(max_length=100)
+    SAMPLE_id_sample = models.ForeignKey(Sample, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Event {self.id_event} on Sample {self.SAMPLE_id_sample.id_sample}"
+
+    class Meta:
+        db_table = 'SAMPLE_EVENT'

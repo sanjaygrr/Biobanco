@@ -157,6 +157,7 @@ def delete_spaces(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+
 def is_valid_int(value):
     """Función de ayuda para comprobar si un valor puede ser convertido a int."""
     try:
@@ -197,20 +198,23 @@ def create_sample(request):
             storage_value = request.POST.get(storage_value_key)
             storage_type, storage_name = storage_value.split('-')
 
-            # Buscar el objeto Storage usando ambos valores:
-            storage_obj = Storage.objects.filter(STORAGE_TYPE_id_storagetype_id=storage_type, storage_name=storage_name).first()
+            # Buscar el objeto Storage usando el nombre del almacenamiento:
+            storage_obj = Storage.objects.filter(
+                storage_name=storage_name).first()
             if storage_obj:
                 cell_value = int(request.POST.get('cell'))
                 location = Location(
                     cell=cell_value,
                     SAMPLE_id_sample_1=sample,
                     STORAGE_id_storage_1=storage_obj,
-                    STORAGE_TYPE_id_storagetype=storage_obj.STORAGE_TYPE_id_storagetype
+                    STORAGE_TYPE_id_storagetype_id=int(storage_type)
                 )
                 location.save()
-                print(f"Ubicación para {storage_obj.storage_name} guardada con éxito.")
+                print(
+                    f"Ubicación para {storage_obj.storage_name} guardada con éxito.")
             else:
-                print(f"Objeto Storage no encontrado para id: {storage_value}.")
+                print(
+                    f"Objeto Storage no encontrado para id: {storage_value}.")
 
         # Redirigir según la acción
         action = request.POST.get('action')
@@ -235,7 +239,8 @@ def create_sample(request):
 def sample_list(request):
     samples = Sample.objects.all().select_related('location_set')
     samples = Sample.objects.all().prefetch_related(
-        Prefetch('location_set', queryset=Location.objects.select_related('STORAGE_id_storage_1'))
+        Prefetch('location_set', queryset=Location.objects.select_related(
+            'STORAGE_id_storage_1'))
     )
 
     if request.method == "GET":
@@ -252,19 +257,20 @@ def sample_list(request):
 
         # Filtros para freezer_number, rack_number, y box_number usando el modelo relacionado `Location` y luego `Storage`
         if freezer_number:
-            samples = samples.filter(location__STORAGE_id_storage_1__freezer_number=freezer_number)
+            samples = samples.filter(
+                location__STORAGE_id_storage_1__freezer_number=freezer_number)
         if rack_number:
-            samples = samples.filter(location__STORAGE_id_storage_1__rack_number=rack_number)
+            samples = samples.filter(
+                location__STORAGE_id_storage_1__rack_number=rack_number)
         if box_number:
-            samples = samples.filter(location__STORAGE_id_storage_1__box_number=box_number)
+            samples = samples.filter(
+                location__STORAGE_id_storage_1__box_number=box_number)
 
     context = {
         'samples': samples
     }
 
     return render(request, 'sample_list.html', context)
-
-
 
 
 def trazability(request):

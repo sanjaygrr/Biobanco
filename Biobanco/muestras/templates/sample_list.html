@@ -21,14 +21,21 @@
             padding: 20px;
             border-radius: 5px;
             margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: flex-start;
+            display: block; 
+            width: 100%; 
         }
+        
         .filter-section {
-            flex: 1;
-            min-width: 45%;
-            margin-right: 5%;
+            width: 48%; 
+            float: left; 
+            margin-right: 2%;
+        }
+        
+        /* Limpiar el float después de las secciones */
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
         }
         .form-group {
             margin-bottom: 15px;
@@ -38,10 +45,16 @@
             margin-bottom: 5px;
         }
         input, select {
-            width: 100%;
-            padding: 8px;
+            width: 75%; 
+            padding: 10px; 
             box-sizing: border-box;
+            margin-bottom: 10px; 
         }
+        .samples-list {
+            width: 100%;
+            margin-top: 30px;
+        }
+        
         button {
             background-color: #4F709C;
             color: white;
@@ -49,6 +62,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin-top: 20px; 
         }
         button:hover {
             background-color: rgb(79, 100, 150);
@@ -74,45 +88,42 @@
 <body>
     <h1>Editar/Ver Muestras</h1>
     
-    <div class="filter-box">
-        <div class="filter-section">
-            <h2>Filtros de Muestra</h2>
-            <form action="/sample_list" method="GET">
-                <!-- Filtros de Muestra -->
-                <div class="filter-section">
-                    <h2>Filtros de Muestra</h2>
-                    <div class="form-group">
-                        <label for="subject_id">ID Sujeto:</label>
-                        <input type="number" id="subject_id" name="subject_id">
-                    </div>
-                    <div class="form-group">
-                        <label for="sample_date">Fecha de Obtención:</label>
-                        <input type="date" id="sample_date" name="sample_date">
-                    </div>
-                    <div class="form-group">
-                        <label for="sample_id">ID muestra:</label>
-                        <input type="number" id="sample_id" name="sample_id">
-                    </div>
+    <div class="filter-box clearfix">
+        <form action="/sample_list" method="GET">
+            <!-- Filtros de Muestra -->
+            <div class="filter-section">
+                <h2>Filtros de Muestra</h2>
+                <div class="form-group">
+                    <label for="subject_id">ID Sujeto:</label>
+                    <input type="number" id="subject_id" name="subject_id">
                 </div>
-                <!-- Filtros de Ubicación -->
-                <div class="filter-section">
-                    <h2>Filtros de Ubicación</h2>
-                    <div class="form-group">
-                        <label for="freezer_number">Freezer Nro:</label>
-                        <input type="number" id="freezer_number" name="freezer_number">
-                    </div>
-                    <div class="form-group">
-                        <label for="rack_number">Rack Nro:</label>
-                        <input type="number" id="rack_number" name="rack_number">
-                    </div>
-                    <div class="form-group">
-                        <label for="box_number">Caja Nro:</label>
-                        <input type="number" id="box_number" name="box_number">
-                    </div>
-                    <button type="submit">Buscar</button>
+                <div class="form-group">
+                    <label for="sample_date">Fecha de Obtención:</label>
+                    <input type="date" id="sample_date" name="sample_date">
                 </div>
-            </form>
-        </div>
+                <div class="form-group">
+                    <label for="sample_id">ID muestra:</label>
+                    <input type="number" id="sample_id" name="sample_id">
+                </div>
+            </div>
+            <!-- Filtros de Ubicación -->
+            <div class="filter-section">
+                <h2>Filtros de Ubicación</h2>
+                <div class="form-group">
+                    <label for="freezer_number">Freezer Nro:</label>
+                    <input type="number" id="freezer_number" name="freezer_number">
+                </div>
+                <div class="form-group">
+                    <label for="rack_number">Rack Nro:</label>
+                    <input type="number" id="rack_number" name="rack_number">
+                </div>
+                <div class="form-group">
+                    <label for="box_number">Caja Nro:</label>
+                    <input type="number" id="box_number" name="box_number">
+                </div>
+                <button type="submit">Buscar</button>
+            </div>
+        </form>
     </div>
     
     <div class="samples-list">

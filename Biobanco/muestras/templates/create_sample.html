@@ -11,60 +11,62 @@
         body {
             font-family: Arial, sans-serif;
             background-color: #f8f8f8;
+            margin: 0;
             padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
+            margin-top: 10px;
         }
-        h1, h2 {
-            margin-bottom: 20px;
+        h2 {
             color: #4F709C;
+            text-align: center;
+            margin-bottom: 30px;
         }
         .form-box {
             background-color: #fff;
-            padding: 20px;
             border-radius: 5px;
-            margin-bottom: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
             width: 70%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         .form-group {
-            margin-bottom: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 35px;
+            padding: 40px;
         }
         label {
-            margin-bottom: 0;
-            width: 45%;
+            flex-basis: 40%;
+            margin-right: 20px;
             text-align: right;
-            margin-right: 10px;
         }
         input, select {
-            width: 50%;
-            padding: 8px;
-            box-sizing: border-box;
+            flex-basis: 55%;
+            padding: 12px;
             border-radius: 4px;
             border: 1px solid #ccc;
         }
         button {
             background-color: #4F709C;
             color: white;
-            padding: 10px 15px;
+            padding: 15px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            margin-right: 10px;
             font-size: 16px;
-            margin-top: 20px;
+            margin-top: 40px;
+            transition: background-color 0.3s;
         }
         button:hover {
             background-color: #39506A;
         }
         .button-group {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start;
         }
     </style>
 </head>

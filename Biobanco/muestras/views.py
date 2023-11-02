@@ -237,7 +237,6 @@ def create_sample(request):
 
 
 def sample_list(request):
-    samples = Sample.objects.all().select_related('location_set')
     samples = Sample.objects.all().prefetch_related(
         Prefetch('location_set', queryset=Location.objects.select_related(
             'STORAGE_id_storage_1'))
@@ -246,25 +245,40 @@ def sample_list(request):
     if request.method == "GET":
         subject_id = request.GET.get('subject_id')
         sample_date = request.GET.get('sample_date')
-        freezer_number = request.GET.get('freezer_number')
-        rack_number = request.GET.get('rack_number')
-        box_number = request.GET.get('box_number')
+        freezer_name = request.GET.get('freezer_number')
+        rack_name = request.GET.get('rack_number')
+        box_name = request.GET.get('box_number')
 
         if subject_id:
             samples = samples.filter(id_subject=subject_id)
         if sample_date:
             samples = samples.filter(date_sample=sample_date)
 
-        # Filtros para freezer_number, rack_number, y box_number usando el modelo relacionado `Location` y luego `Storage`
-        if freezer_number:
+        # Filtros para freezer_name, rack_name, y box_name usando el modelo relacionado `Location` y luego `Storage`
+        if freezer_name:
             samples = samples.filter(
-                location__STORAGE_id_storage_1__freezer_number=freezer_number)
-        if rack_number:
+                location__STORAGE_id_storage_1__storage_name=freezer_name,
+                location__STORAGE_id_storage_1__STORAGE_TYPE_id_storagetype_id=3
+            )
+        if rack_name:
             samples = samples.filter(
-                location__STORAGE_id_storage_1__rack_number=rack_number)
-        if box_number:
+                location__STORAGE_id_storage_1__storage_name=rack_name,
+                location__STORAGE_id_storage_1__STORAGE_TYPE_id_storagetype_id=2
+            )
+        if box_name:
             samples = samples.filter(
-                location__STORAGE_id_storage_1__box_number=box_number)
+                location__STORAGE_id_storage_1__storage_name=box_name,
+                location__STORAGE_id_storage_1__STORAGE_TYPE_id_storagetype_id=1
+            )
+
+    # Agregando nombres de Freezer, Rack y Caja a cada sample
+    for sample in samples:
+        sample.freezer_name = sample.location_set.filter(
+            STORAGE_TYPE_id_storagetype_id=3).first().STORAGE_id_storage_1.storage_name
+        sample.rack_name = sample.location_set.filter(
+            STORAGE_TYPE_id_storagetype_id=2).first().STORAGE_id_storage_1.storage_name
+        sample.box_name = sample.location_set.filter(
+            STORAGE_TYPE_id_storagetype_id=1).first().STORAGE_id_storage_1.storage_name
 
     context = {
         'samples': samples

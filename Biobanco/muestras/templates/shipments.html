@@ -62,27 +62,21 @@
         
     
         <div class="form-group">
-            <label for="sample_date">Fecha: </label>
-            <input type="date" id="sample_date" name="sample_date" required>
+            <label for="date_shipment">Fecha: </label>
+            <input type="date" id="date_shipment" name="date_shipment" required>
         </div>
         <div class="form-group">
-            <label for="description">Laboratorio:</label>
-            <textarea id="description" name="description" required></textarea>
+            <label for="laboratory">Laboratorio:</label>
+            <textarea id="laboratory" name="laboratory" required></textarea>
         </div>
         <div class="form-group">
-            <label for="description">Análisis:</label>
-            <textarea id="description" name="description" required></textarea>
+            <label for="analysis">Análisis:</label>
+            <textarea id="analysis" name="analysis" required></textarea>
         </div>
-
-            <button onclick="redirectToShipmentsSelect()"">Seleccionar muestras</button>
+        <button type="submit">Registrar Envío</button>
         
     </form>
     
-    <script>
-        function redirectToShipmentsSelect() {
-            window.location.href = "/shipments_select";
-        }
-    </script>
     
 </body>
 </html>

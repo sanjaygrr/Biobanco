@@ -7,6 +7,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nueva Muestra</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Make sure to include the SweetAlert CSS if it's not globally included in your project -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+</head>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -92,18 +96,18 @@
             <input type="number" name="ml_volume" min="0" step="0.01" required>
         </div>
 
-        <div>
+        <div style="display: none;">
             <label for="state_analysis">Estado de Análisis:</label>
             <select name="state_analysis">
-                <option value="0">No analizada</option>
+                <option value="0" selected>No analizada</option>
                 <option value="1">Enviada a análisis</option>
             </select>
         </div>
 
-        <div>
+        <div style="display: none;">
             <label for="state_preservation">Estado de Preservación:</label>
             <select name="state_preservation">
-                <option value="0">Normal</option>
+                <option value="0" selected>Normal</option>
                 <option value="1">Descongelada</option>
             </select>
         </div>
@@ -162,6 +166,57 @@
             <button type="submit" name="action" value="submit">Finalizar</button>
         </div>
     </form>
+    <script>
+        document.querySelector('form').onsubmit = function(e) {
+            e.preventDefault(); // Prevent the default form submission
+
+            // Assuming you have validation logic here or you just proceed with the submission
+
+            Swal.fire({
+                title: '¿Crear Muestra?',
+                text: "No podrás revertir esto!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: '¡Crear muestra!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // If the user confirms, submit the form programmatically
+                    e.target.submit();
+                }
+            });
+        };
+
+        // If you have an AJAX submission, you can handle success and error with SweetAlert like this:
+        /*
+        fetch('/your-endpoint', {
+            method: 'POST',
+            body: new FormData(document.querySelector('form')),
+            // Additional headers and configurations if needed
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            Swal.fire(
+                '¡Creado!',
+                'La muestra ha sido creada.',
+                'success'
+            );
+        })
+        .catch((error) => {
+            Swal.fire(
+                'Error',
+                'Hubo un problema al crear la muestra: ' + error.message,
+                'error'
+            );
+        });
+        */
+    </script>
 </body>
 </html>
 {% endblock %}

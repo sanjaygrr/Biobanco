@@ -19,8 +19,12 @@ urlpatterns = [
     path('shipments/', views.shipments, name='shipments'),
     path('login/', views.login),
     path('create_password/', views.create_password),
-    path('shipments_select/', views.shipments_select),
+    path('shipments_select/', views.shipments_select, name='shipments_select'),
+    path('update-shipment/', views.update_samples_shipment,
+         name='update_samples_shipment'),
     path('delete_spaces/', views.delete_spaces, name='delete_spaces'),
+    path('delete_sample/<sample_id>/', views.delete_sample, name='delete_sample'),
     path('shipments_report/', views.shipments_report),
     path('samples_report/', views.samples_report),
+    path('edit_sample/<int:sample_id>/', views.edit_sample, name='edit_sample'),
 ]

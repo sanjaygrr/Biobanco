@@ -21,14 +21,21 @@
             padding: 20px;
             border-radius: 5px;
             margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: flex-start;
+            display: block; 
+            width: 100%; 
         }
+        
         .filter-section {
-            flex: 1;
-            min-width: 45%;
-            margin-right: 5%;
+            width: 48%; 
+            float: left; 
+            margin-right: 2%;
+        }
+        
+        /* Limpiar el float después de las secciones */
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
         }
         .form-group {
             margin-bottom: 15px;
@@ -38,10 +45,16 @@
             margin-bottom: 5px;
         }
         input, select {
-            width: 100%;
-            padding: 8px;
+            width: 75%; 
+            padding: 10px; 
             box-sizing: border-box;
+            margin-bottom: 10px; 
         }
+        .samples-list {
+            width: 100%;
+            margin-top: 30px;
+        }
+        
         button {
             background-color: #4F709C;
             color: white;
@@ -49,6 +62,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin-top: 20px; 
         }
         button:hover {
             background-color: rgb(79, 100, 150);
@@ -72,12 +86,13 @@
     </style>
 </head>
 <body>
-    <h1>Editar/Ver Muestras</h1>
+    <h1>Reporteria de Muestras</h1>
     
-    <div class="filter-box">
-        <div class="filter-section">
-            <h2>Filtros de Muestra</h2>
-            <form action="/filter_samples" method="GET">
+    <div class="filter-box clearfix">
+        <form action="/sample_list" method="GET">
+            <!-- Filtros de Muestra -->
+            <div class="filter-section">
+                <h2>Filtros de Muestra</h2>
                 <div class="form-group">
                     <label for="subject_id">ID Sujeto:</label>
                     <input type="number" id="subject_id" name="subject_id">
@@ -90,11 +105,10 @@
                     <label for="sample_id">ID muestra:</label>
                     <input type="number" id="sample_id" name="sample_id">
                 </div>
-            </form>
-        </div>
-        <div class="filter-section">
-            <h2>Filtros de Ubicación</h2>
-            <form action="/home" method="GET">
+            </div>
+            <!-- Filtros de Ubicación -->
+            <div class="filter-section">
+                <h2>Filtros de Ubicación</h2>
                 <div class="form-group">
                     <label for="freezer_number">Freezer Nro:</label>
                     <input type="number" id="freezer_number" name="freezer_number">
@@ -107,9 +121,9 @@
                     <label for="box_number">Caja Nro:</label>
                     <input type="number" id="box_number" name="box_number">
                 </div>
-                <button onclick="redirectToHome()">Buscar</button>
-            </form>
-        </div>
+                <button type="submit">Buscar</button>
+            </div>
+        </form>
     </div>
     
     <div class="samples-list">
@@ -119,72 +133,33 @@
                 <tr>
                     <th>ID Sujeto</th>
                     <th>Fecha de Obtención</th>
-                    <th>Especimen</th>
-                    <th>Especificación</th>
+                    <th>Número de Muestra</th>
                     <th>Volumen (ml)</th>
+                    <th>Estado de Preservación</th>
                     <th>Freezer Nro</th>
                     <th>Rack Nro</th>
                     <th>Caja Nro</th>
                     <th>Celda Nro</th>
-                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- Valores de prueba -->
-                <tr>
-                    <td>101</td>
-                    <td>2023-10-10</td>
-                    <td>Sangre</td>
-                    <td>Plasma</td>
-                    <td>10</td>
-                    <td>1</td>
-                    <td>5</td>
-                    <td>10</td>
-                    <td>15</td>
-                    <td>
-                        <a href="/home">ver detalle</a>
-                    </td>
-                </tr>
-                <tr>
-                    <td>102</td>
-                    <td>2023-10-05</td>
-                    <td>Tejido</td>
-                    <td>Muscular</td>
-                    <td>5</td>
-                    <td>2</td>
-                    <td>3</td>
-                    <td>8</td>
-                    <td>12</td>
-                    <td>
-                        <a href="/home">ver detalle</a>
-                    </td>
-                </tr>
-                <!-- Fin de valores de prueba -->
-
                 {% for sample in samples %}
-                    <tr>
-                        <td>{{ sample.subject_id }}</td>
-                        <td>{{ sample.sample_date }}</td>
-                        <td>{{ sample.specimen }}</td>
-                        <td>{{ sample.specification }}</td>
-                        <td>{{ sample.volume }}</td>
-                        <td>{{ sample.freezer_number }}</td>
-                        <td>{{ sample.rack_number }}</td>
-                        <td>{{ sample.box_number }}</td>
-                        <td>{{ sample.cell_number }}</td>
-                        <td>
-                            <a href="/edit_sample/{{ sample.id }}">Editar</a>
-                        </td>
+                <tr>
+                    <td>{{ sample.id_subject }}</td>
+                        <td>{{ sample.date_sample }}</td>
+                        <td>{{ sample.id_sample }}</td>
+                        <td>{{ sample.ml_volume }}</td>
+                        <td class="preservation-display"> {% if sample.state_preservation %}Descongelado{% else %}Normal{% endif %} </td>
+                        <td class="freezer-display"> {{ sample.freezer_name }} </td>
+                        <td class="rack-display">{{ sample.rack_name }} </td>
+                        <td class="box-display"> {{ sample.box_name }}  </td>
+                        <td class="cell-display"> {{ sample.location_set.first.cell }} </td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-    <script>
-        function redirectToHome() {
-            window.location.href = "/home";
-        }
-    </script>
+    
 </body>
 </html>
 {% endblock %}

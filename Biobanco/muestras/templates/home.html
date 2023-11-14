@@ -7,29 +7,30 @@
     body {
         margin: 0;
         padding: 0;
-        font-family: Arial, sans-serif;
+        font-family: 'Arial', sans-serif;
         background-color: #F5EFE7;
     }
 
     .home {
-        margin-top: 60px; /* Asegúrate de que esta distancia es suficiente para no superponerse con el nav */
+        margin-top: 60px;
         display: flex;
         justify-content: space-around;
         align-items: center;
         padding: 10px;
-        flex-wrap: wrap; /* Permite que los elementos se ajusten en pantallas más pequeñas */
+        flex-wrap: wrap;
     }
 
     .left-section, .right-section {
-        flex: 1; 
+        flex: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
-        margin: 20px; /* Añade un margen alrededor de las secciones */
-        background-color: #D8C4B6; /* Color de fondo claro */
-        border-radius: 15px; /* Esquinas redondeadas */
-        padding: 20px; /* Espaciado interno */
-        max-width: 450px; /* Ancho máximo para mantener la legibilidad */
+        margin: 20px;
+        background-color: #D8C4B6;
+        border-radius: 15px;
+        padding: 20px;
+        max-width: 450px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
     .logo_home {
@@ -37,45 +38,78 @@
     }
 
     h1 {
-        font-size: 36px; 
-        color: #213555; /* Color de texto oscuro */
-        margin-bottom: 20px;
-    }
-
-    p {
-        font-size: 18px; 
-        color: #213555; 
-        text-align: center; /* Centra el texto */
+        font-size: 36px;
+        color: #213555;
         margin-bottom: 20px;
     }
 
     .info {
-        font-size: 20px; 
-        color: #213555; 
-        text-align: left; 
+        font-size: 20px;
+        color: #213555;
     }
 
     .info-item {
-        background-color: #F5EFE7; /* Color de fondo más claro para los items de información */
-        padding: 15px; 
-        margin-bottom: 10px; 
-        border-radius: 10px; /* Esquinas redondeadas */
-        width: 100%; /* Ocupa todo el ancho disponible */
-        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombra sutil para un efecto "elevado" */
+        background-color: #F5EFE7;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 10px;
+        width: 100%;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        font-size: 24px; /* Aumenta el tamaño de la fuente */
+        font-weight: bold; /* Hace que la fuente sea más gruesa */
+        color: #4F709C; /* Cambia el color de la fuente */
+        border: 2px solid #4F709C; /* Añade un borde */
+        transition: transform 0.3s ease-in-out; /* Añade una transición suave */
+    }
+
+    .info-item:hover {
+        transform: scale(1.05); /* Aumenta ligeramente el tamaño al pasar el mouse */
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Cambia la sombra para un efecto "elevado" */
     }
 </style>
 
 <div class="home" id="home">
     <div class="left-section">
         <img src="{% static 'biobanco/images/Biobanco.png' %}" alt="Logo" class="logo_home">
-        <h1>Bienvenido a BioBanco</h1>
+        <h1>Bienvenido, {{ user_name }}!</h1>
     </div>
     <div class="right-section">
         <div class="info">
-            <div class="info-item">X Muestras almacenadas </div>
-            <div class="info-item">X Envios realizados</div>
-            <div class="info-item">x Freezers habilitados</div>
+            <div class="info-item">{{ num_samples }} Muestras almacenadas </div>
+            <div class="info-item">{{ num_shipments }} Envíos realizados</div>
+            <div class="info-item">{{ num_freezers_enabled }} Freezers habilitados</div>
+            <div class="chart-container" style="position: relative; height:40vh; width:40vw">
+                <canvas id="freezerChart"></canvas>
+            </div>
         </div>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var ctx = document.getElementById('freezerChart').getContext('2d');
+    var freezerChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Habilitados', 'Deshabilitados'],
+            datasets: [{
+                label: 'Estado de Freezers',
+                data: [{{ num_freezers_enabled }}, {{ num_freezers_disabled }}],
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 99, 132, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 99, 132, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+        }
+    });
+</script>
 {% endblock %}

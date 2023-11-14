@@ -18,7 +18,25 @@ import json
 
 
 def home(request):
-    return render(request, 'home.html')
+    num_samples = Sample.objects.count()
+    num_shipments = Shipment.objects.count()
+    num_freezers_enabled = Storage.objects.filter(
+        STORAGE_TYPE_id_storagetype__name_storagetype=3, storage_state=True).count()
+    num_freezers_disabled = Storage.objects.filter(
+        STORAGE_TYPE_id_storagetype__name_storagetype=3, storage_state=False).count()
+
+    # Obtén el nombre de usuario del usuario actualmente autenticado
+    user_name = request.user.username if request.user.is_authenticated else 'Invitado'
+
+    context = {
+        'num_freezers_enabled': num_freezers_enabled,
+        'num_freezers_disabled': num_freezers_disabled,
+        'num_samples': num_samples,
+        'num_shipments': num_shipments,
+        'user_name': user_name,  # Agrega el nombre de usuario al contexto
+    }
+
+    return render(request, 'home.html', context)
 
 
 def signup(request):

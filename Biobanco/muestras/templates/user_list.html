@@ -39,30 +39,28 @@
             <button onclick="redirectToHome()">Buscar</button>
         </form>
     </div>
-    {% if users %}
-    <p>Hay {{ users.count }} usuario(s) para mostrar.</p>
-    {% else %}
-    <p>No hay usuarios para mostrar.</p>
-    {% endif %}
-
     <table>
         <thead>
             <tr>
-                <th>Nombre</th>
-                <th>Apellido</th>
-                <th>Correo</th>
-                <th>Rol</th>
-                <th>Estado de la Cuenta</th>
+                <th>Nombre de Usuario</th>
+                <th>Correo Electrónico</th>
+                <th>Administrador</th>
+                <th>Personal</th>
+                <th>Superusuario</th>
             </tr>
         </thead>
         <tbody>
             {% for user in users %}
                 <tr>
-                    <td>{{ user.first_name }}</td>
-                    <td>{{ user.last_name }}</td>
+                    <td>{{ user.username }}</td>
                     <td>{{ user.email }}</td>
-                    <td>{{ user.role }}</td>
-                    <td>{{ user.account_status }}</td>
+                    <td>{{ user.is_admin }}</td>
+                    <td>{{ user.is_staff }}</td>
+                    <td>{{ user.is_superuser }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5">No hay usuarios para mostrar.</td>
                 </tr>
             {% endfor %}
         </tbody>

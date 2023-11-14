@@ -2,7 +2,6 @@ from django.db import models
 from django.core.validators import MinValueValidator
 
 
-
 class StorageType(models.Model):
     """
     Modelo para representar los tipos de almacenamiento.
@@ -87,20 +86,20 @@ class Role(models.Model):
         db_table = 'ROLE'
 
 
-class User(models.Model):
-    id_user = models.CharField(max_length=20, primary_key=True)
-    name = models.CharField(max_length=20)
-    lastname = models.CharField(max_length=20)
-    email = models.CharField(max_length=20)
-    user_state = models.CharField(max_length=20)
-    password_hash = models.CharField(max_length=20)
-    ROLE_id_role = models.ForeignKey(Role, on_delete=models.CASCADE)
+# class User(models.Model):
+#    id_user = models.CharField(max_length=20, primary_key=True)
+#    name = models.CharField(max_length=20)
+#    lastname = models.CharField(max_length=20)
+#    email = models.CharField(max_length=20)
+#    user_state = models.CharField(max_length=20)
+#    password_hash = models.CharField(max_length=20)
+#    ROLE_id_role = models.ForeignKey(Role, on_delete=models.CASCADE)
 
-    def __str__(self):
-        return f"{self.name} {self.lastname}"
+#    def __str__(self):
+#        return f"{self.name} {self.lastname}"
 
-    class Meta:
-        db_table = 'USER'
+#    class Meta:
+#        db_table = 'USER'
 
 
 class Location(models.Model):
@@ -108,7 +107,8 @@ class Location(models.Model):
     cell = models.IntegerField(null=True, blank=True)
     SAMPLE_id_sample_1 = models.ForeignKey(Sample, on_delete=models.CASCADE)
     STORAGE_id_storage_1 = models.ForeignKey(Storage, on_delete=models.CASCADE)
-    STORAGE_TYPE_id_storagetype = models.ForeignKey(StorageType, on_delete=models.CASCADE)
+    STORAGE_TYPE_id_storagetype = models.ForeignKey(
+        StorageType, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"Location {self.id_location}"

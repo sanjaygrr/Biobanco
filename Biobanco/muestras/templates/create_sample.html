@@ -88,7 +88,10 @@
         
         <div>
             <label for="date_sample">Fecha de la Muestra:</label>
-            <input type="date" name="date_sample" required>
+            <input type="date" id="date_sample" name="date_sample" required max="">
+            <script>
+                document.getElementById('date_sample').max = new Date().toISOString().split('T')[0];
+            </script>
         </div>
 
         <div>
@@ -117,9 +120,9 @@
             <input type="text" name="specification" required>
         </div>
 
-        <div>
+        <div style="display: none;">
             <label for="SHIPMENT_id_shipment">ID de Envío:</label>
-            <input type="number" name="SHIPMENT_id_shipment">
+            <input type="number" name="SHIPMENT_id_shipment" value="0">
         </div>
 
         <div>
@@ -157,13 +160,13 @@
 
         <div>
             <label for="cell">Celda:</label>
-            <input type="number" name="cell" required>
+            <input type="number" name="cell" min="0" required>
         </div>
 
         <!-- Botones de acción -->
         <div>
             <button type="submit" name="action" value="add_another">Agregar Otra Muestra</button>
-            <button type="submit" name="action" value="submit">Finalizar</button>
+            <button type="submit" name="action" value="submit">Guardar y terminar</button>
         </div>
     </form>
     <script>

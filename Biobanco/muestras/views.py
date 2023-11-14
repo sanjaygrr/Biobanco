@@ -215,7 +215,7 @@ def create_sample(request):
         if action == "add_another":
             return redirect('create_sample')
         else:
-            return redirect('home')
+            return redirect('sample_list')
 
     else:
         # Cargar datos para el formulario

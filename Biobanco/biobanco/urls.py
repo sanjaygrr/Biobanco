@@ -11,7 +11,7 @@ urlpatterns = [
     path('space_list/', views.space_list, name='space_list'),
     path('', views.login_screen),
     path('create_sample/', views.create_sample, name='create_sample'),
-    path('sample_list/', views.sample_list),
+    path('sample_list/', views.sample_list, name='sample_list'),
     path('trazability/', views.trazability),
     path('update_space_status/',
          views.update_space_status, name='update_space_status'),

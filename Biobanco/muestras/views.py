@@ -1,18 +1,20 @@
-from django.shortcuts import render, redirect
+from .models import Storage, StorageType, Sample, Location, Shipment
+from django.views.decorators.http import require_http_methods
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
-from django.contrib.auth import login
-from django.db import IntegrityError
-from django.http import HttpResponse
-from django.http import JsonResponse
-import json
-from django.db.models import Q, Prefetch
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
-from .models import Storage, StorageType, Sample, Location, Shipment
+from django.shortcuts import get_object_or_404
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from django.db.models import Q, Prefetch
+from django.contrib.auth import login
+from django.db import IntegrityError
+from django.http import JsonResponse
+from django.http import HttpResponse
+from accounts.models import Account
 from django.contrib import messages
-from django.views.decorators.http import require_http_methods
 from django.urls import reverse
+import json
 
 
 def home(request):
@@ -20,36 +22,26 @@ def home(request):
 
 
 def signup(request):
-
-    if request.method == 'GET':
-        return render(request, 'signup.html', {
-            'form': UserCreationForm})
-
+    if request.method == 'POST':
+        try:
+            user = Account.objects.create_user(
+                email=request.POST['email'],
+                username=request.POST['username'],
+                password=request.POST['password']
+            )
+            user.save()
+            login(request, user)  # Inicia sesión al usuario
+            # Renderizar la misma plantilla con un mensaje de éxito
+            return render(request, 'signup.html', {'success': 'Usuario creado exitosamente. Ahora estás autenticado.'})
+        except IntegrityError:
+            # Mostrar mensaje de error si hay un problema
+            return render(request, 'signup.html', {'error': 'El correo ya existe'})
     else:
-        if request.POST['password1'] == request.POST['password2']:
-            try:
-                user = User.objects.create_user(
-                    username=request.POST['username'], password=request.POST['password1'])
-                user.save()
-                login(request, user)
-                return redirect('home')
-            except IntegrityError:
-                return render(request, 'signup.html', {
-                    'form': UserCreationForm,
-                    "error": 'Username already exists'
-                })
-        return render(request, 'signup.html', {
-            'form': UserCreationForm,
-            "error": 'Password do not match'
-        })
-
-
-def create_accounts(request):
-    return render(request, 'create_account.html')
+        return render(request, 'signup.html')
 
 
 def user_list(request):
-    users = User.objects.all()
+    users = Account.objects.all()
     return render(request, 'user_list.html', {'users': users})
 
 
@@ -255,34 +247,27 @@ def sample_list(request):
         if sample_date:
             samples = samples.filter(date_sample=sample_date)
         if freezer_number:
-            samples = samples.filter(
-                location_set__STORAGE_id_storage_1__storage_name=freezer_number,
-                # Asegúrate de que el ID de tipo de almacenamiento sea correcto
-                location_set__STORAGE_TYPE_id_storagetype_id=3
-            )
+            samples = samples.filter(location_set__STORAGE_id_storage_1__storage_name=freezer_number,
+                                     location_set__STORAGE_TYPE_id_storagetype__name_storagetype=3)
         if rack_number:
-            samples = samples.filter(
-                location_set__STORAGE_id_storage_1__storage_name=rack_number,
-                location_set__STORAGE_TYPE_id_storagetype_id=2
-            )
+            samples = samples.filter(location_set__STORAGE_id_storage_1__storage_name=rack_number,
+                                     location_set__STORAGE_TYPE_id_storagetype__name_storagetype=2)
         if box_number:
-            samples = samples.filter(
-                location_set__STORAGE_id_storage_1__storage_name=box_number,
-                location_set__STORAGE_TYPE_id_storagetype_id=1
-            )
+            samples = samples.filter(location_set__STORAGE_id_storage_1__storage_name=box_number,
+                                     location_set__STORAGE_TYPE_id_storagetype__name_storagetype=1)
 
         # Añadir información de ubicación a cada muestra
         for sample in samples:
             freezer_location = sample.location_set.filter(
-                STORAGE_TYPE_id_storagetype_id=3).first()  # ID para freezer
+                STORAGE_TYPE_id_storagetype__name_storagetype=3).first()
             sample.freezer_name = freezer_location.STORAGE_id_storage_1.storage_name if freezer_location else 'No Asignado'
 
             rack_location = sample.location_set.filter(
-                STORAGE_TYPE_id_storagetype_id=2).first()  # ID para rack
+                STORAGE_TYPE_id_storagetype__name_storagetype=2).first()
             sample.rack_name = rack_location.STORAGE_id_storage_1.storage_name if rack_location else 'No Asignado'
 
             box_location = sample.location_set.filter(
-                STORAGE_TYPE_id_storagetype_id=1).first()  # ID para caja
+                STORAGE_TYPE_id_storagetype__name_storagetype=1).first()
             sample.box_name = box_location.STORAGE_id_storage_1.storage_name if box_location else 'No Asignado'
 
     storages = Storage.objects.all().order_by('storage_name')
@@ -299,73 +284,57 @@ def sample_list(request):
 
 @csrf_exempt
 def edit_sample(request, sample_id):
-    print(f"Editando muestra con ID: {sample_id}")
-
     if request.method == 'POST':
-        print(f"Datos recibidos: {request.POST}")
+        # Convertir el cuerpo de la solicitud JSON a un diccionario Python
+        data = json.loads(request.body)
 
-        # Obtener la muestra
+        # Obtener la muestra por su ID
         sample = get_object_or_404(Sample, pk=sample_id)
 
-        # Actualizar datos de la muestra
-        sample.id_subject = request.POST.get('id_subject')
-        sample.date_sample = request.POST.get('date_sample')
-        sample.ml_volume = request.POST.get('ml_volume')
-        sample.state_preservation = request.POST.get(
-            'state_preservation') == '1'
+        # Actualizar los campos de la muestra
+        sample.state_preservation = data.get('state_preservation') == '1'
         sample.save()
-        print(f"Muestra actualizada: {sample.id}")
 
-        # IDs de ubicaciones (freezer, rack, box)
-        freezer_id = request.POST.get('freezer_id')
-        rack_id = request.POST.get('rack_id')
-        box_id = request.POST.get('box_id')
-        cell_id = request.POST.get('cell')
+        # Obtener y actualizar las ubicaciones
+        # Nota: Asegúrate de que estos campos existan en tu modelo y se ajusten a tus necesidades
+        freezer_id = data.get('freezer_id')
+        rack_id = data.get('rack_id')
+        box_id = data.get('box_id')
+        cell = data.get('cell')
 
-        # Actualizar ubicaciones
+        # Actualizar Freezer
         if freezer_id:
-            location_freezer = sample.location_set.filter(
-                STORAGE_TYPE_id_storagetype_id=3).first()
+            location_freezer = Location.objects.filter(
+                SAMPLE_id_sample_1=sample, STORAGE_TYPE_id_storagetype__name_storagetype=3).first()
             if location_freezer:
                 location_freezer.STORAGE_id_storage_1_id = freezer_id
-                # Asumiendo que la celda se actualiza para todos los tipos
-                location_freezer.cell = cell_id
+                location_freezer.cell = cell
                 location_freezer.save()
-                print(
-                    f"Ubicación de Freezer actualizada: {location_freezer.STORAGE_id_storage_1_id}, Celda: {location_freezer.cell}")
 
+        # Actualizar Rack
         if rack_id:
-            location_rack = sample.location_set.filter(
-                STORAGE_TYPE_id_storagetype_id=2).first()
+            location_rack = Location.objects.filter(
+                SAMPLE_id_sample_1=sample, STORAGE_TYPE_id_storagetype__name_storagetype=2).first()
             if location_rack:
                 location_rack.STORAGE_id_storage_1_id = rack_id
-                # Asumiendo que la celda se actualiza para todos los tipos
-                location_rack.cell = cell_id
+                location_rack.cell = cell
                 location_rack.save()
-                print(
-                    f"Ubicación de Rack actualizada: {location_rack.STORAGE_id_storage_1_id}, Celda: {location_rack.cell}")
 
+        # Actualizar Box
         if box_id:
-            location_box = sample.location_set.filter(
-                STORAGE_TYPE_id_storagetype_id=1).first()
+            location_box = Location.objects.filter(
+                SAMPLE_id_sample_1=sample, STORAGE_TYPE_id_storagetype__name_storagetype=1).first()
             if location_box:
                 location_box.STORAGE_id_storage_1_id = box_id
-                # Asumiendo que la celda se actualiza para todos los tipos
-                location_box.cell = cell_id
+                location_box.cell = cell
                 location_box.save()
-                print(
-                    f"Ubicación de Box actualizada: {location_box.STORAGE_id_storage_1_id}, Celda: {location_box.cell}")
 
-        # Redireccionar a la lista de muestras
-        return redirect('sample_list')
+        # Devuelve una respuesta JSON indicando éxito
+        return JsonResponse({'status': 'success', 'message': 'Muestra actualizada con éxito'})
+
     else:
-        # Manejar el caso de GET request
-        context = {
-            'samples': samples,
-            'storages': storages,
-            'storage_types': storage_types
-        }
-        return render(request, 'edit_sample.html', context)
+        # Manejar otros métodos HTTP, si es necesario
+        return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
 
 
 @csrf_exempt
@@ -409,8 +378,8 @@ def shipments(request):
     return render(request, 'shipments.html')
 
 
-def login(request):
-    return render(request, 'login.html')
+def login_screen(request):
+    return render(request, 'login_screen.html')
 
 
 def create_password(request):

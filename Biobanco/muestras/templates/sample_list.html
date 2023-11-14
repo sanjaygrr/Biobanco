@@ -201,7 +201,7 @@
                     <!-- Botones de acción -->
                     <td>
                         <button class="edit-btn">Editar</button>
-                        <button class="save-btn" onclick="guardar(this)" style="display:none;">Guardar</button>
+                        <button class="save-btn" data-sample-id="{{ sample.id_sample }}" onclick="guardar(this)">Guardar</button>
                         <button class="eliminar-btn" onclick="eliminar(this)">Eliminar</button>
                     </td>
                 </tr>
@@ -210,231 +210,177 @@
         </table>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
+<script>
+    function debugLog(message) {
+        console.log(`DEBUG: ${message}`);
+    }
 
-        function debugLog(message) {
-            console.log(`DEBUG: ${message}`);
-        }
-    
-    
-        function eliminar(btn) {
-            let fila = btn.parentNode.parentNode;
-            let sample_id = fila.cells[2].textContent; // Use the correct cell index that contains the sample ID
-        
-            // Use SweetAlert to confirm the deletion
-            Swal.fire({
-                title: '¿Estás seguro?',
-                text: "No podrás revertir esto!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Sí, eliminarlo!',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // If the user confirms, proceed with the deletion
-                    deleteSample(sample_id);
-                }
-            });
-        }
-        
-        function deleteSample(sample_id) {
-            // Logic to send a request to the server to delete the sample
-            fetch(`/delete_sample/${sample_id}/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken')
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === "success") {
-                    // Display a success message if the deletion was successful
-                    Swal.fire(
-                        'Eliminado!',
-                        'La muestra ha sido eliminada.',
-                        'success'
-                    ).then(() => {
-                        location.reload(); // Reload the page to see the changes
-                    });
-                } else {
-                    // Display an error message if there was an issue with the deletion
-                    Swal.fire(
-                        'Error',
-                        'Hubo un problema al eliminar la muestra: ' + data.message,
-                        'error'
-                    );
-                }
-            })
-            .catch((error) => {
-                // Display an error message if the fetch operation fails
+    function eliminar(btn) {
+        let fila = btn.parentNode.parentNode;
+        let sample_id = fila.cells[2].textContent; // Use the correct cell index that contains the sample ID
+
+        // Use SweetAlert to confirm the deletion
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "No podrás revertir esto!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminarlo!',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // If the user confirms, proceed with the deletion
+                deleteSample(sample_id);
+            }
+        });
+    }
+
+    function deleteSample(sample_id) {
+        // Logic to send a request to the server to delete the sample
+        fetch(`/delete_sample/${sample_id}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                // Display a success message if the deletion was successful
+                Swal.fire(
+                    'Eliminado!',
+                    'La muestra ha sido eliminada.',
+                    'success'
+                ).then(() => {
+                    location.reload(); // Reload the page to see the changes
+                });
+            } else {
+                // Display an error message if there was an issue with the deletion
                 Swal.fire(
                     'Error',
-                    'Hubo un problema al eliminar la muestra: ' + error.message,
+                    'Hubo un problema al eliminar la muestra: ' + data.message,
                     'error'
                 );
-            });
-        }
-        
-        document.addEventListener('DOMContentLoaded', (event) => {
-            // Configuramos los eventos para los botones de editar y guardar.
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    toggleEdit(this);
-                });
-            });
-        
-            document.querySelectorAll('.save-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    guardar(this);
-                });
-            });
-        });
-        
-        function toggleEdit(btn) {
-            let fila = btn.closest('tr');
-            let isEditing = fila.classList.contains('editing');
-            fila.classList.toggle('editing');
-            btn.textContent = isEditing ? 'Editar' : 'Guardar';
-            let textElements = fila.querySelectorAll('span');
-            let inputElements = fila.querySelectorAll('select, input[type="number"]');
-            textElements.forEach(el => el.style.display = isEditing ? 'inline' : 'none');
-            inputElements.forEach(el => el.style.display = isEditing ? 'none' : 'inline');
-            if (!isEditing) {
-                debugLog('Entrando en modo de edición');
-                btn.onclick = function() { guardar(this); };
-            } else {
-                debugLog('Saliendo del modo de edición');
-                // Aquí se debería llamar a una función de guardado o cancelación según corresponda
             }
-        }
-        
-        function guardar(buttonElement) {
-            var row = buttonElement.closest('tr');
-            var sampleId = row.dataset.sampleId;
-            console.log('Guardando muestra con ID:', sampleId);
-        
-            var formData = new FormData();
-            
-            // Agrega estos console.log para cada valor que estás recogiendo
-            console.log('Estado de preservación:', row.querySelector('select[name="state_preservation"]').value);
-            formData.append('state_preservation', row.querySelector('select[name="state_preservation"]').value);
-        
-            console.log('Freezer ID:', row.querySelector('select[name="freezer_id"]').value);
-            formData.append('freezer_id', row.querySelector('select[name="freezer_id"]').value);
-        
-            console.log('Rack ID:', row.querySelector('select[name="rack_id"]').value);
-            formData.append('rack_id', row.querySelector('select[name="rack_id"]').value);
-        
-            console.log('Box ID:', row.querySelector('select[name="box_id"]').value);
-            formData.append('box_id', row.querySelector('select[name="box_id"]').value);
-        
-            console.log('Celda:', row.querySelector('input[name="cell"]').value);
-            formData.append('cell', row.querySelector('input[name="cell"]').value);
-        
-            // Envío de la solicitud
-            fetch(`/edit_sample/${sampleId}/`, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken')
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok ' + response.statusText);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Respuesta del servidor:', data);
-                if (data.status === 'success') {
-                    // Código para manejar el éxito
-                } else {
-                    alert('Error al actualizar: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error de red: ' + error.message);
-            });
-        }
-        
-        // Asegúrate de que los eventos de click están vinculados a tus botones
-        document.addEventListener('DOMContentLoaded', (event) => {
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    toggleEdit(this);
-                });
-            });
-            document.querySelectorAll('.save-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    guardar(this);
-                });
-            });
+        })
+        .catch((error) => {
+            // Display an error message if the fetch operation fails
+            Swal.fire(
+                'Error',
+                'Hubo un problema al eliminar la muestra: ' + error.message,
+                'error'
+            );
         });
-        
-        function updateRowDisplay(row, formData) {
-            // Actualizamos los elementos de visualización con los valores de los inputs.
-            row.querySelectorAll('.display').forEach(el => {
-                let fieldName = el.getAttribute('data-field');
-                if (formData.has(fieldName)) {
-                    el.textContent = formData.get(fieldName) === '1' ? 'Descongelado' : 'Normal'; // Ajuste específico para el estado de preservación.
-                }
-            });
-        
-            // Cambiamos el texto del botón de guardar a editar y actualizamos el estado de edición.
-            let editBtn = row.querySelector('.edit-btn');
-            editBtn.textContent = 'Editar';
-            row.dataset.editing = "false";
-        
-            // Cambiamos la visibilidad de los botones.
-            editBtn.style.display = 'block';
-            row.querySelector('.save-btn').style.display = 'none';
-        }
-        
-        function getCookie(name) {
-            let value = `; ${document.cookie}`;
-            let parts = value.split(`; ${name}=`);
-            return parts.length === 2 ? parts.pop().split(';').shift() : null;
-        }
-        
-        document.addEventListener('DOMContentLoaded', (event) => {
-            document.addEventListener('click', function(event) {
-                if (event.target.matches('.editar-btn')) {
-                    editar(event.target);
-                } else if (event.target.matches('.eliminar-btn')) {
-                    eliminar(event.target);
-                }
-            });
-        });
-        document.addEventListener('click', function(event) {
-            if (event.target.matches('.edit-btn')) {
-                let tr = event.target.closest('tr');
-                let isEditing = tr.classList.contains('edit-mode');
-        
-                // Toggle edit mode
-                tr.classList.toggle('edit-mode');
-                event.target.textContent = isEditing ? 'Editar' : 'Guardar';
-                
-                let displayElements = tr.querySelectorAll('span');
-                let editElements = tr.querySelectorAll('.preservation-select, .freezer-select, .rack-select, .box-select, .cell-input');
-        
-                if (isEditing) {
+    }
 
-                    displayElements.forEach(el => el.style.display = 'inline');
-                    editElements.forEach(el => el.style.display = 'none');
-                } else {
-                    // Edit logic here
-                    displayElements.forEach(el => el.style.display = 'none');
-                    editElements.forEach(el => el.style.display = 'inline');
-                }
-            }
-        
-            // Add logic for save button as needed
+    
+
+    function toggleEdit(btn) {
+        let fila = btn.closest('tr');
+        let isEditing = fila.classList.contains('editing');
+        fila.classList.toggle('editing');
+        btn.textContent = isEditing ? 'Guardar' : 'Editar';
+        let textElements = fila.querySelectorAll('span');
+        let inputElements = fila.querySelectorAll('select, input[type="number"]');
+        textElements.forEach(el => el.style.display = isEditing ? 'none' : 'inline');
+        inputElements.forEach(el => el.style.display = isEditing ? 'inline' : 'none');
+    }
+
+
+    function guardar(btn) {
+        // Obtener el ID de la muestra directamente del botón
+        const sampleId = btn.getAttribute('data-sample-id');
+    
+        if (!sampleId) {
+            console.error('No se pudo obtener el ID de la muestra');
+            return;
+        }
+    
+        // Obtener la fila (tr) asociada con este botón
+        const fila = btn.closest('tr');
+    
+        // Aquí continúa tu código existente para obtener los valores de los elementos en la fila
+        // Ejemplo: 
+        const preservationState = fila.querySelector('.preservation-select').value;
+        const freezerIdRaw = fila.querySelector('.freezer-select').value;
+        const rackIdRaw = fila.querySelector('.rack-select').value;
+        const boxIdRaw = fila.querySelector('.box-select').value
+        const cellNumber = fila.querySelector('.cell-input').value;
+    
+        const freezerId = freezerIdRaw.split('-')[1];
+        const rackId = rackIdRaw.split('-')[1];
+        const boxId = boxIdRaw.split('-')[1];
+        const data = {
+            state_preservation: preservationState,
+            freezer_id: parseInt(freezerId, 10), // Convierte el valor a entero
+            rack_id: parseInt(rackId, 10),
+            box_id: parseInt(boxId, 10),
+            cell: cellNumber
+        };
+    
+        // Realizar la llamada AJAX
+    fetch(`/edit_sample/${sampleId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Actualizar la interfaz de usuario con los nuevos valores
+            const preservationDisplay = fila.querySelector('.preservation-display');
+            const freezerDisplay = fila.querySelector('.freezer-display');
+            const rackDisplay = fila.querySelector('.rack-display');
+            const boxDisplay = fila.querySelector('.box-display');
+
+            preservationDisplay.textContent = preservationState === '1' ? 'Descongelado' : 'Normal';
+            freezerDisplay.textContent = freezerId;
+            rackDisplay.textContent = rackId;
+            boxDisplay.textContent = boxId;
+
+            // Muestra un mensaje de éxito y recarga la página
+            Swal.fire(
+                '¡Guardado!',
+                'Los cambios en la muestra han sido guardados.',
+                'success'
+            ).then(() => {
+                location.reload();
+            });
+        } else {
+            Swal.fire('Error', data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Error', 'Hubo un problema al guardar los cambios: ' + error.message, 'error');
+    });
+}
+    
+    function getCookie(name) {
+        let value = `; ${document.cookie}`;
+        let parts = value.split(`; ${name}=`);
+        return parts.length === 2 ? parts.pop().split(';').shift() : null;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                toggleEdit(this);
+            });
         });
-    </script>
+        document.querySelectorAll('.save-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                guardar(this);
+            });
+        });
+    });
+</script>
+
     
 </body>
 </html>

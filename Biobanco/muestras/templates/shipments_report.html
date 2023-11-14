@@ -13,15 +13,48 @@
             background-color: #f8f8f8;
             padding: 20px;
         }
-        h1, h2 {
+        h1 {
             margin-bottom: 20px;
         }
-        .filter-box, .samples-selection, .samples-to-send {
+        .filter-box {
             background-color: #fff;
             padding: 20px;
             border-radius: 5px;
             margin-bottom: 20px;
+            display: block; 
+            width: 100%; 
         }
+        
+        .filter-section {
+            width: 48%; 
+            float: left; 
+            margin-right: 2%;
+        }
+        
+        /* Limpiar el float después de las secciones */
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: 75%; 
+            padding: 10px; 
+            box-sizing: border-box;
+            margin-bottom: 10px; 
+        }
+        .samples-list {
+            width: 100%;
+            margin-top: 30px;
+        }
+        
         button {
             background-color: #4F709C;
             color: white;
@@ -29,6 +62,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin-top: 20px; 
         }
         button:hover {
             background-color: rgb(79, 100, 150);
@@ -49,101 +83,123 @@
             background-color: #4F709C;
             color: white;
         }
+        th.sortable {
+            cursor: pointer;
+        }
+        
+        th.sortable:after {
+            content: ' \21D5'; /* Entidad HTML para flechas arriba y abajo */
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+    
+        th.sortable.th-sort-asc:after {
+            content: ' \2191'; /* Flecha arriba */
+        }
+    
+        th.sortable.th-sort-desc:after {
+            content: ' \2193'; /* Flecha abajo */
+        }
     </style>
 </head>
 <body>
-    <h1>Enviar Muestras</h1>
-    
+    <h1>Reporte de envíos</h1>
     <div class="filter-box">
-        <form action="/home" method="GET">
-            <label for="year">Año:</label>
-            <input type="number" id="year" name="year">
-            
-            <label for="month">Mes:</label>
-            <input type="number" id="month" name="month" min="1" max="12">
-            
-            <label for="subject_id">ID Sujeto:</label>
-            <input type="text" id="subject_id" name="subject_id">
-            
-            <label for="volume_condition">Volumen:</label>
-            <select id="volume_condition" name="volume_condition">
-                <option value="greater">Mayor a</option>
-                <option value="less">Menor a</option>
-                <option value="equal">Igual a</option>
-            </select>
-            <input type="number" id="volume" name="volume" min="0"> ml
-            
-            <button onclick="redirectToHome()">Buscar</button>
+        <form action="" method="get">
+            <div>
+                <label for="sender">Quien envía:</label>
+                <select name="sender" id="sender">
+                    <option value="" {% if not request.GET.sender %}selected{% endif %}>--Seleccionar Usuario--</option>
+                    {% for user in users %}
+                    <option value="{{ user.id }}" {% if request.GET.sender == user.id|stringformat:"s" %}selected{% endif %}>{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+    
+            <div>
+                <label for="date">Fecha de envío:</label>
+                <input type="date" name="date" id="date" value="{{ request.GET.date }}">
+            </div>
+    
+            <div>
+                <label for="laboratory">Laboratorio:</label>
+                <select name="laboratory" id="laboratory">
+                    <option value="" {% if not request.GET.laboratory %}selected{% endif %}>--Seleccionar Laboratorio--</option>
+                    {% for lab in laboratories %}
+                    <option value="{{ lab }}" {% if request.GET.laboratory == lab %}selected{% endif %}>{{ lab }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+    
+            <button type="submit">Buscar</button>
         </form>
     </div>
-    
-    <div class="samples-selection">
-        <h2>Seleccionar Muestras</h2>
-        <table id="samplesTable">
+    <div class="samples-to-send">
+        <h2>Envíos Realizados</h2>
+        <table id="sendTable">
             <thead>
                 <tr>
-                    <th>ID Sujeto</th>
-                    <th>Fecha</th>
-                    <th>Número de Muestra</th>
-                    <th>Volumen</th>
-                    <th>Estado de Preservación</th>
-                    <th>Freezer</th>
-                    <th>Rack</th>
-                    <th>Caja</th>
-                    <th>Celda</th>
-                    <th>Acciones</th>
+                    <th class="sortable">Quien envía</th>
+                    <th class="sortable">Fecha de envío</th>
+                    <th class="sortable">Laboratorio</th>
+                    <th class="sortable">Análisis</th>
+                    <th class="sortable">N de muestras enviadas</th>
+                    <th>Ver detalle</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- Valores de prueba -->
-                <tr data-sample-id="101">
-                    <td>101</td>
-                    <td>2023-10-10</td>
-                    <td>Muestra001</td>
-                    <td>10ml</td>
-                    <td>Normal</td>
-                    <td>1</td>
-                    <td>3</td>
-                    <td>4</td>
-                    <td>87</td>
+                {% for shipment in shipments %}
+                <tr>
+                    <td>{{ request.user.username }}</td> <!-- Muestra el nombre de usuario del usuario actual -->
+                    <td>{{ shipment.date_shipment }}</td>
+                    <td>{{ shipment.laboratory }}</td>
+                    <td>{{ shipment.analysis }}</td>
+                    <td>{{ shipment.num_samples }}</td>
                     <td>
-                        <button onclick="addToSendTable(101)">Agregar a Envíos</button>
+                        <a href="{% url 'shipments_detail' shipment.id_shipment %}">Detalle</a>
                     </td>
                 </tr>
-                <!-- ... (resto de valores de prueba y código no modificado) ... -->
+                {% endfor %}
             </tbody>
         </table>
     </div>
     
     
     <script>
-        function addToSendTable(sampleId) {
-            // Encuentra la fila en la tabla de selección basada en el ID de muestra
-            let row = document.querySelector(`#samplesTable tr[data-sample-id="${sampleId}"]`);
-            
-            // Crea una copia de esa fila
-            let newRow = row.cloneNode(true);
-            
-            // Agrega un botón de eliminar en la nueva fila
-            let deleteButtonCell = newRow.querySelector('td:last-child');
-            deleteButtonCell.innerHTML = '<button onclick="removeFromSendTable(this)">Quitar</button>';
-            
-            // Añade la nueva fila a la tabla de envío
-            document.querySelector('#sendTable tbody').appendChild(newRow);
-            
-            // Opcional: Elimina la fila de la tabla de selección
-            row.remove();
-        }
-
-        function removeFromSendTable(buttonElement) {
-            // Elimina la fila de la tabla de envío
-            buttonElement.closest('tr').remove();
-        }
-    </script>
-
-    <script>
-        function redirectToHome() {
-            window.location.href = "/home";
+        document.addEventListener('DOMContentLoaded', function() {
+            var table = document.getElementById('sendTable');
+            var headers = table.querySelectorAll('th.sortable');
+            headers.forEach(function(header, index) {
+                header.addEventListener('click', function() {
+                    sortTableByColumn(table, index);
+                });
+            });
+        });
+    
+        function sortTableByColumn(table, column) {
+            var rows = Array.from(table.tBodies[0].rows);
+            var header = table.querySelectorAll('th')[column];
+            var isAscending = header.classList.contains('th-sort-asc');
+            var newIsAscending = !isAscending;
+        
+            rows.sort(function(rowA, rowB) {
+                var cellA = rowA.cells[column].textContent.trim();
+                var cellB = rowB.cells[column].textContent.trim();
+        
+                if (!isNaN(parseFloat(cellA)) && !isNaN(parseFloat(cellB))) {
+                    return newIsAscending ? parseFloat(cellA) - parseFloat(cellB) : parseFloat(cellB) - parseFloat(cellA);
+                } else {
+                    return newIsAscending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+                }
+            });
+        
+            rows.forEach(function(row) {
+                table.tBodies[0].appendChild(row);
+            });
+        
+            table.querySelectorAll('th').forEach(th => th.classList.remove('th-sort-asc', 'th-sort-desc'));
+            header.classList.toggle('th-sort-asc', newIsAscending);
+            header.classList.toggle('th-sort-desc', !newIsAscending);
         }
     </script>
 

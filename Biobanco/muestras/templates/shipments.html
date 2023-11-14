@@ -57,10 +57,9 @@
 </head>
 <body>
     <h1>Datos de envio</h1>
-    <form action="" method="POST">
+    <form id="shipmentForm" action="" method="POST">
         {% csrf_token %}
         
-    
         <div class="form-group">
             <label for="date_shipment">Fecha: </label>
             <input type="date" id="date_shipment" name="date_shipment">
@@ -74,10 +73,37 @@
             <textarea id="analysis" name="analysis" required></textarea>
         </div>
         <button type="submit">Registrar Envío</button>
-        
     </form>
-    
-    
+
+    <script>
+        document.getElementById('shipmentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const date = document.getElementById('date_shipment').value;
+            const laboratory = document.getElementById('laboratory').value;
+            const analysis = document.getElementById('analysis').value;
+
+            Swal.fire({
+                title: '¿Seguro que todo está bien?',
+                html: `
+                    <strong>Fecha:</strong> ${date}<br>
+                    <strong>Laboratorio:</strong> ${laboratory}<br>
+                    <strong>Análisis:</strong> ${analysis}
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, enviar',
+                cancelButtonText: 'No, revisar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Si el usuario confirma, envía el formulario
+                    e.target.submit();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
 {% endblock %}

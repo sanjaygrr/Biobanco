@@ -479,7 +479,7 @@ def shipments_select(request):
 def update_samples_shipment(request):
     try:
         data = json.loads(request.body)
-        sample_ids = data.get('sample_ids')  # Una lista de IDs de muestra
+        sample_ids = data.get('sample_ids')
 
         if not sample_ids:
             return JsonResponse({'error': 'Faltan datos necesarios'}, status=400)
@@ -505,10 +505,47 @@ def update_samples_shipment(request):
 
 
 def shipments_report(request):
-    return render(request, 'shipments_report.html')
+    laboratories = Shipment.objects.values_list(
+        'laboratory', flat=True).distinct()
+    # Si decides mantener la lista de usuarios para otros propósitos
+    users = Account.objects.all()
+
+    # Inicia con todos los envíos
+    shipments = Shipment.objects.all()
+
+    # Aplica filtros solo si se proporcionan valores
+    sender_filter = request.GET.get('sender')
+    date_filter = request.GET.get('date')
+    laboratory_filter = request.GET.get('laboratory')
+
+    if sender_filter:
+        # Filtra por el remitente si se proporciona un valor
+        shipments = shipments.filter(created_by_id=sender_filter)
+
+    if date_filter:
+        # Filtra por la fecha si se proporciona un valor
+        shipments = shipments.filter(date_shipment=date_filter)
+
+    if laboratory_filter:
+        # Filtra por laboratorio si se proporciona un valor
+        shipments = shipments.filter(laboratory=laboratory_filter)
+
+    # Aplica el conteo de muestras a cada envío
+    for shipment in shipments:
+        shipment.num_samples = Sample.objects.filter(
+            SHIPMENT_id_shipment=shipment.id_shipment).count()
+
+    context = {
+        'shipments': shipments,
+        'laboratories': laboratories,
+        'users': users,
+    }
+
+    return render(request, 'shipments_report.html', context)
 
 
 def samples_report(request):
+
     samples = Sample.objects.all().prefetch_related(
         Prefetch('location_set', queryset=Location.objects.select_related(
             'STORAGE_id_storage_1'))
@@ -543,7 +580,6 @@ def samples_report(request):
                 location__STORAGE_id_storage_1__STORAGE_TYPE_id_storagetype_id=1
             )
 
-    # Agregando nombres de Freezer, Rack y Caja a cada sample
     for sample in samples:
         sample.freezer_name = sample.location_set.filter(
             STORAGE_TYPE_id_storagetype_id=3).first().STORAGE_id_storage_1.storage_name
@@ -557,3 +593,18 @@ def samples_report(request):
     }
 
     return render(request, 'samples_report.html', context)
+
+
+def shipments_detail(request, shipment_id):
+    # Obtiene el envío por su ID o devuelve una página de error 404 si no se encuentra
+    shipment = get_object_or_404(Shipment, pk=shipment_id)
+
+    # Obtiene todas las muestras asociadas con este envío
+    samples = Sample.objects.filter(SHIPMENT_id_shipment=shipment_id)
+
+    context = {
+        'shipment': shipment,
+        'samples': samples,
+    }
+
+    return render(request, 'shipments_detail.html', context)

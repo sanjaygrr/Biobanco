@@ -26,4 +26,7 @@ urlpatterns = [
     path('shipments_report/', views.shipments_report),
     path('samples_report/', views.samples_report),
     path('edit_sample/<sample_id>/', views.edit_sample, name='edit_sample'),
+    path('shipments/detail/<int:shipment_id>/',
+         views.shipments_detail, name='shipments_detail'),
+
 ]

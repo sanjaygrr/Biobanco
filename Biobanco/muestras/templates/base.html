@@ -12,7 +12,7 @@
             padding: 0;
             background-color: #F5EFE7;
         }
-        
+    
         nav {
             background-color: #213555;
             width: 100%;
@@ -26,41 +26,44 @@
             justify-content: space-between;
             padding: 0 1%;
         }
-        
+    
         main {
             margin-top: 80px;
         }
-
+    
         .logo {
             width: 65px;
-            height: auto;
-            }
-
-            ul {
-                list-style-type: none;
-                margin: 0;
-                padding: 0;
-                overflow: hidden;
-                display: flex;
-                justify-content: space-between;
-                width: 100%; /* Cambio del ancho al 100% */
-                margin-right: 100px;
-                margin-left: 100px;
-            }
-            
-            li a, .dropdown-btn {
-                display: inline-block;
-                color: white;
-                font-weight: bold;
-                text-align: center;
-                padding: 6px 4px; /* Reducción adicional del padding */
-                text-decoration: none;
-            }
-
-        li a:hover, .dropdown:hover .dropdown-btn, .dropdown-content a:hover {
-            background-color: #4F709C;
+            height: 65px; /* Hacerlo cuadrado */
+            border-radius: 50%; /* Hacerlo circular */
+            object-fit: cover; /* Asegurarse de que la imagen se ajuste */
+        }
+    
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-right: 100px;
+            margin-left: 100px;
+        }
+    
+        li a, .dropdown-btn {
+            display: inline-block;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            padding: 12px 8px; /* Aumento del padding */
+            text-decoration: none;
+            border-radius: 10px; /* Bordes redondeados */
         }
 
+        .dropdown:hover .dropdown-content {
+            display: block; /* Muestra el contenido del dropdown al hacer hover */
+        }
+    
         .dropdown-content {
             display: none;
             position: absolute;
@@ -68,46 +71,83 @@
             min-width: 160px;
             box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
             z-index: 1;
+            border-radius: 10px; /* Bordes redondeados */
         }
-
+    
         .dropdown-content a {
             color: #213555;
             padding: 12px 16px;
             text-decoration: none;
             display: block;
             text-align: left;
+            border-radius: 10px; /* Bordes redondeados */
         }
-
-        .dropdown:hover .dropdown-content {
-            display: block;
+    
+        .dropdown-content a:hover {
+            background-color: #EFEFEF;
+            color: #213555;
+            opacity: 0.8; /* Opacidad reducida al hacer hover */
         }
-
+    
+        li a.logout {
+            background-color: #B22222; /* Color rojo más elegante */
+            color: white;
+            border-radius: 10px; /* Bordes redondeados */
+        }
+    
+        li a.logout:hover {
+            background-color: #9B1C1C; /* Color rojo más oscuro y elegante al hacer hover */
+            color: white;
+        }
+    
         @media (max-width: 768px) {
             ul {
                 flex-direction: column;
                 align-items: center;
                 width: 100%;
             }
-
+    
             li {
                 width: 100%;
                 text-align: center;
             }
-
+    
             .dropdown-content {
                 min-width: 100%;
                 text-align: center;
             }
-
+    
             .dropdown-content a {
                 padding: 12px 24px;
             }
         }
     </style>
+    <script>
+        // Cuando el documento esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Encuentra todos los elementos con clase 'dropdown-btn'
+            var dropdowns = document.querySelectorAll('.dropdown-btn');
+    
+            // Agrega un evento de clic a cada botón desplegable
+            dropdowns.forEach(function(dropdown) {
+                dropdown.addEventListener('click', function() {
+                    // Encuentra el contenido desplegable relacionado
+                    var dropdownContent = this.nextElementSibling;
+    
+                    // Alterna la visibilidad del contenido desplegable
+                    if (dropdownContent.style.display === 'block') {
+                        dropdownContent.style.display = 'none';
+                    } else {
+                        dropdownContent.style.display = 'block';
+                    }
+                });
+            });
+        });
+    </script>
 </head>
 <body>
     <nav>
-        <img src="{% static 'biobanco/images/Biobanco.png' %}" alt="Logo" class="logo">
+        <img src="{% static 'biobanco/images/logo.png' %}" alt="Logo" class="logo">
         <ul>
             <li><a href="/home">Inicio</a></li>
             <li class="dropdown">
@@ -140,7 +180,7 @@
                     <a href="/trazability">Trazabilidad</a>
                 </div>
             </li>
-            <li><a href="/">Log Out</a></li>
+            <li><a href="/" class="logout">Log Out</a></li> 
         </ul>
     </nav>
     <main>

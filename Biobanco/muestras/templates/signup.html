@@ -138,7 +138,7 @@
 <div class="form-group">
     <label for="password">Contraseña:</label>
     <input type="password" id="password" name="password" required>
-    <p id="password-error" style="color: red; display: none;">La contraseña debe tener al menos 8 caracteres, incluyendo letras mayúsculas, minúsculas y números.</p>
+    <p id="password-error" style="color: red; display: none;">La contraseña debe tener al menos 12 caracteres, incluyendo letras mayúsculas, minúsculas y números.</p>
 </div>
 
         <!-- Campo de staff (miembro del personal) -->
@@ -170,7 +170,7 @@
         const passwordError = document.getElementById('password-error');
         
         // Valida la contraseña
-        if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+        if (password.length < 12 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
             passwordError.style.display = 'block';
         } else {
             passwordError.style.display = 'none';

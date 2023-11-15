@@ -281,7 +281,6 @@
         let fila = btn.closest('tr');
         let isEditing = fila.classList.contains('editing');
         fila.classList.toggle('editing');
-        btn.textContent = isEditing ? 'Guardar' : 'Editar';
         let textElements = fila.querySelectorAll('span');
         let inputElements = fila.querySelectorAll('select, input[type="number"]');
         textElements.forEach(el => el.style.display = isEditing ? 'none' : 'inline');

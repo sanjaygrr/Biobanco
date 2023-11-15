@@ -72,16 +72,16 @@
 <div class="home" id="home">
     <div class="left-section">
         <img src="{% static 'biobanco/images/Biobanco.png' %}" alt="Logo" class="logo_home">
-        <h1>Bienvenido, {{ user_name }}!</h1>
+        <h1>Bienvenid@, {{ user_name }}!</h1>
     </div>
     <div class="right-section">
         <div class="info">
             <div class="info-item">{{ num_samples }} Muestras almacenadas </div>
             <div class="info-item">{{ num_shipments }} Envíos realizados</div>
             <div class="info-item">{{ num_freezers_enabled }} Freezers habilitados</div>
-            <div class="chart-container" style="position: relative; height:40vh; width:40vw">
+            {% comment %} <div class="chart-container" style="position: relative; height:40vh; width:40vw">
                 <canvas id="freezerChart"></canvas>
-            </div>
+            </div> {% endcomment %}
         </div>
     </div>
 </div>

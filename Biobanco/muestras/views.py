@@ -256,7 +256,7 @@ def create_sample(request):
 
 @csrf_exempt
 def sample_list(request):
-    samples = Sample.objects.all().prefetch_related('location_set')
+    samples = Sample.objects.all()
 
     if request.method == "GET":
         subject_id = request.GET.get('subject_id')
@@ -264,21 +264,23 @@ def sample_list(request):
         freezer_number = request.GET.get('freezer_number')
         rack_number = request.GET.get('rack_number')
         box_number = request.GET.get('box_number')
+        sample_id = request.GET.get('sample_id')
 
-        # Aplicar filtros si se proporcionan
         if subject_id:
             samples = samples.filter(id_subject=subject_id)
         if sample_date:
             samples = samples.filter(date_sample=sample_date)
         if freezer_number:
-            samples = samples.filter(location_set__STORAGE_id_storage_1__storage_name=freezer_number,
-                                     location_set__STORAGE_TYPE_id_storagetype__name_storagetype=3)
+            samples = samples.filter(location__STORAGE_id_storage_1__storage_name=freezer_number,
+                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=3)
         if rack_number:
-            samples = samples.filter(location_set__STORAGE_id_storage_1__storage_name=rack_number,
-                                     location_set__STORAGE_TYPE_id_storagetype__name_storagetype=2)
+            samples = samples.filter(location__STORAGE_id_storage_1__storage_name=rack_number,
+                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=2)
         if box_number:
-            samples = samples.filter(location_set__STORAGE_id_storage_1__storage_name=box_number,
-                                     location_set__STORAGE_TYPE_id_storagetype__name_storagetype=1)
+            samples = samples.filter(location__STORAGE_id_storage_1__storage_name=box_number,
+                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=1)
+        if sample_id:
+            samples = samples.filter(id_sample__icontains=sample_id)
 
         # Añadir información de ubicación a cada muestra
         for sample in samples:

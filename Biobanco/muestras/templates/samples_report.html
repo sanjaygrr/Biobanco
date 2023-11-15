@@ -89,13 +89,13 @@
     <h1>Reporteria de Muestras</h1>
     
     <div class="filter-box clearfix">
-        <form action="/sample_list" method="GET">
+        <form action="/samples_report" method="GET">
             <!-- Filtros de Muestra -->
             <div class="filter-section">
                 <h2>Filtros de Muestra</h2>
                 <div class="form-group">
                     <label for="subject_id">ID Sujeto:</label>
-                    <input type="number" id="subject_id" name="subject_id">
+                    <input type="text" id="subject_id" name="subject_id">
                 </div>
                 <div class="form-group">
                     <label for="sample_date">Fecha de Obtención:</label>
@@ -107,25 +107,55 @@
                 </div>
             </div>
             <!-- Filtros de Ubicación -->
+            <!-- Filtros de Ubicación -->
             <div class="filter-section">
                 <h2>Filtros de Ubicación</h2>
-                <div class="form-group">
-                    <label for="freezer_number">Freezer Nro:</label>
-                    <input type="number" id="freezer_number" name="freezer_number">
+                <div>
+                    <label for="freezer_id">Freezer:</label>
+                    <select name="freezer_number">
+                        <option value="">--Seleccionar espacio--</option> <!-- Opción vacía por defecto -->
+                        {% for storage in storages %}
+                            {% if storage.STORAGE_TYPE_id_storagetype.name_storagetype == 3 %}
+                                <option value="{{ storage.storage_name }}">{{ storage.storage_name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
                 </div>
-                <div class="form-group">
-                    <label for="rack_number">Rack Nro:</label>
-                    <input type="number" id="rack_number" name="rack_number">
+
+                <div>
+                    <label for="rack_id">Rack:</label>
+                    <select name="rack_number">
+                        <option value="">--Seleccionar espacio--</option> <!-- Opción vacía por defecto -->
+                        {% for storage in storages %}
+                            {% if storage.STORAGE_TYPE_id_storagetype.name_storagetype == 2 %}
+                                <option value="{{ storage.storage_name }}">{{ storage.storage_name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
                 </div>
-                <div class="form-group">
-                    <label for="box_number">Caja Nro:</label>
-                    <input type="number" id="box_number" name="box_number">
+
+                <div>
+                    <label for="caja_id">Caja:</label>
+                    <select name="box_number">
+                        <option value="">--Seleccionar espacio--</option> <!-- Opción vacía por defecto -->
+                        {% for storage in storages %}
+                            {% if storage.STORAGE_TYPE_id_storagetype.name_storagetype == 1 %}
+                                <option value="{{ storage.storage_name }}">{{ storage.storage_name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
                 </div>
-                <button type="submit">Buscar</button>
+
+                <div>
+                    <label for="cell">Celda:</label>
+                    <input type="number" name="cell" placeholder="?" min="0">
+                </div>
             </div>
+
+            </div>
+            <button type="submit">Buscar</button>
         </form>
     </div>
-    
     <div class="samples-list">
         <h2>Lista de Muestras</h2>
         <table>

@@ -59,7 +59,13 @@ def signup(request):
 
 
 def user_list(request):
-    users = Account.objects.all()
+    search_query = request.GET.get('search')
+    if search_query:
+        users = Account.objects.filter(username__icontains=search_query) | Account.objects.filter(
+            email__icontains=search_query)
+    else:
+        users = Account.objects.all()
+
     return render(request, 'user_list.html', {'users': users})
 
 
@@ -545,39 +551,47 @@ def shipments_report(request):
 
 
 def samples_report(request):
-
     samples = Sample.objects.all().prefetch_related(
         Prefetch('location_set', queryset=Location.objects.select_related(
             'STORAGE_id_storage_1'))
     )
 
+    storages = Storage.objects.all().order_by('storage_name')
+    storage_types = StorageType.objects.all().order_by('name_storagetype')
+
     if request.method == "GET":
         subject_id = request.GET.get('subject_id')
         sample_date = request.GET.get('sample_date')
-        freezer_name = request.GET.get('freezer_number')
-        rack_name = request.GET.get('rack_number')
-        box_name = request.GET.get('box_number')
+        freezer_number = request.GET.get('freezer_number')
+        rack_number = request.GET.get('rack_number')
+        box_number = request.GET.get('box_number')
+        cell_number = request.GET.get('cell')
+        sample_id = request.GET.get('sample_id')
 
         if subject_id:
             samples = samples.filter(id_subject=subject_id)
         if sample_date:
             samples = samples.filter(date_sample=sample_date)
-
-        # Filtros para freezer_name, rack_name, y box_name usando el modelo relacionado `Location` y luego `Storage`
-        if freezer_name:
+        if sample_id:
+            samples = samples.filter(id_sample__icontains=sample_id)
+        if freezer_number:
             samples = samples.filter(
-                location__STORAGE_id_storage_1__storage_name=freezer_name,
+                location__STORAGE_id_storage_1__storage_name=freezer_number,
                 location__STORAGE_id_storage_1__STORAGE_TYPE_id_storagetype_id=3
             )
-        if rack_name:
+        if rack_number:
             samples = samples.filter(
-                location__STORAGE_id_storage_1__storage_name=rack_name,
+                location__STORAGE_id_storage_1__storage_name=rack_number,
                 location__STORAGE_id_storage_1__STORAGE_TYPE_id_storagetype_id=2
             )
-        if box_name:
+        if box_number:
             samples = samples.filter(
-                location__STORAGE_id_storage_1__storage_name=box_name,
+                location__STORAGE_id_storage_1__storage_name=box_number,
                 location__STORAGE_id_storage_1__STORAGE_TYPE_id_storagetype_id=1
+            )
+        if cell_number:  # Agregar este bloque
+            samples = samples.filter(
+                location__cell=cell_number
             )
 
     for sample in samples:
@@ -589,7 +603,9 @@ def samples_report(request):
             STORAGE_TYPE_id_storagetype_id=1).first().STORAGE_id_storage_1.storage_name
 
     context = {
-        'samples': samples
+        'samples': samples,
+        'storages': storages,
+        'storage_types': storage_types
     }
 
     return render(request, 'samples_report.html', context)

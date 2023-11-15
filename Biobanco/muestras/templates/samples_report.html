@@ -83,7 +83,41 @@
             background-color: #4F709C;
             color: white;
         }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #4F709C;
+            color: white;
+        }
+        th.sortable {
+            cursor: pointer;
+        }
+        
+        th.sortable:after {
+            content: ' \21D5'; /* Entidad HTML para flechas arriba y abajo */
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+    
+        th.sortable.th-sort-asc:after {
+            content: ' \2191'; /* Flecha arriba */
+        }
+    
+        th.sortable.th-sort-desc:after {
+            content: ' \2193'; /* Flecha abajo */
+        }
     </style>
+    
 </head>
 <body>
     <h1>Reportería de Muestras</h1>
@@ -120,7 +154,7 @@
                         {% endfor %}
                     </select>
                 </div>
-
+    
                 <div>
                     <label for="rack_id">Rack:</label>
                     <select name="rack_number">
@@ -132,7 +166,7 @@
                         {% endfor %}
                     </select>
                 </div>
-
+    
                 <div>
                     <label for="caja_id">Caja:</label>
                     <select name="box_number">
@@ -144,30 +178,29 @@
                         {% endfor %}
                     </select>
                 </div>
-
+    
                 <div>
                     <label for="cell">Celda:</label>
                     <input type="number" name="cell" placeholder="?" min="0">
                 </div>
                 <button type="submit">Buscar</button>
             </div>
-            
         </form>
     </div>
     <div class="samples-list">
         <h2>Lista de Muestras</h2>
-        <table>
+        <table id="sortableTable">
             <thead>
                 <tr>
-                    <th>ID Sujeto</th>
-                    <th>Fecha de Obtención</th>
-                    <th>Número de Muestra</th>
-                    <th>Volumen (ml)</th>
-                    <th>Estado de Preservación</th>
-                    <th>Freezer Nro</th>
-                    <th>Rack Nro</th>
-                    <th>Caja Nro</th>
-                    <th>Celda Nro</th>
+                    <th class="sortable">ID Sujeto</th>
+                    <th class="sortable">Fecha de Obtención</th>
+                    <th class="sortable">Número de Muestra</th>
+                    <th class="sortable">Volumen (ml)</th>
+                    <th class="sortable">Estado de Preservación</th>
+                    <th class="sortable">Freezer Nro</th>
+                    <th class="sortable" >Rack Nro</th>
+                    <th class="sortable">Caja Nro</th>
+                    <th class="sortable">Celda Nro</th>
                 </tr>
             </thead>
             <tbody>
@@ -177,17 +210,57 @@
                         <td>{{ sample.date_sample }}</td>
                         <td>{{ sample.id_sample }}</td>
                         <td>{{ sample.ml_volume }}</td>
-                        <td class="preservation-display"> {% if sample.state_preservation %}Descongelado{% else %}Normal{% endif %} </td>
-                        <td class="freezer-display"> {{ sample.freezer_name }} </td>
-                        <td class="rack-display">{{ sample.rack_name }} </td>
-                        <td class="box-display"> {{ sample.box_name }}  </td>
-                        <td class="cell-display"> {{ sample.location_set.first.cell }} </td>
+                        <td > {% if sample.state_preservation %}Descongelado{% else %}Normal{% endif %} </td>
+                        <td > {{ sample.freezer_name }} </td>
+                        <td >{{ sample.rack_name }} </td>
+                        <td> {{ sample.box_name }}  </td>
+                        <td > {{ sample.location_set.first.cell }} </td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+
+    
     
 </body>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var table = document.getElementById('sortableTable'); // Cambiar el ID aquí
+        var headers = table.querySelectorAll('th.sortable');
+        headers.forEach(function(header, index) {
+            header.addEventListener('click', function() {
+                sortTableByColumn(table, index);
+            });
+        });
+    });
+
+    function sortTableByColumn(table, column) {
+        var rows = Array.from(table.tBodies[0].rows);
+        var header = table.querySelectorAll('th')[column];
+        var isAscending = header.classList.contains('th-sort-asc');
+        var newIsAscending = !isAscending;
+
+        rows.sort(function(rowA, rowB) {
+            var cellA = rowA.cells[column].textContent.trim();
+            var cellB = rowB.cells[column].textContent.trim();
+
+            if (!isNaN(parseFloat(cellA)) && !isNaN(parseFloat(cellB))) {
+                return newIsAscending ? parseFloat(cellA) - parseFloat(cellB) : parseFloat(cellB) - parseFloat(cellA);
+            } else {
+                return newIsAscending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+            }
+        });
+
+        rows.forEach(function(row) {
+            table.tBodies[0].appendChild(row);
+        });
+
+        table.querySelectorAll('th').forEach(th => th.classList.remove('th-sort-asc', 'th-sort-desc'));
+        header.classList.toggle('th-sort-asc', newIsAscending);
+        header.classList.toggle('th-sort-desc', !newIsAscending);
+    }
+</script>
+
 </html>
 {% endblock %}

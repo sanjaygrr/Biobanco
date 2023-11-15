@@ -281,7 +281,12 @@
                 .then(data => {
                     // Maneja la respuesta del servidor aquí
                     if (data.message) {
-                        Swal.fire('Éxito', data.message, 'success');
+                        Swal.fire('Éxito', data.message, 'success')
+                        .then((result) => {
+                            if (result.isConfirmed || result.isDismissed) {
+                                location.reload(); // Recarga la página
+                            }
+                        });
                     } else {
                         Swal.fire('Error', data.error, 'error');
                     }

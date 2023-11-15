@@ -58,7 +58,7 @@ def signup(request):
         return render(request, 'signup.html')
 
 
-ddef user_list(request):
+def user_list(request):
     search_query = request.GET.get('search')
     if search_query:
         users = Account.objects.filter(username__icontains=search_query) | Account.objects.filter(

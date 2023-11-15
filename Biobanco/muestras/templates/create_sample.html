@@ -11,82 +11,82 @@
     <!-- Make sure to include the SweetAlert CSS if it's not globally included in your project -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 </head>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f8f8;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin-top: 10px;
-        }
-        h2 {
-            color: #4F709C;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .form-box {
-            background-color: #fff;
-            border-radius: 5px;
-            padding: 40px;
-            margin-bottom: 30px;
-            width: 70%;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .form-group {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 35px;
-            padding: 40px;
-        }
-        label {
-            flex-basis: 40%;
-            margin-right: 20px;
-            text-align: right;
-        }
-        input, select {
-            flex-basis: 55%;
-            padding: 12px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-        button {
-            background-color: #4F709C;
-            color: white;
-            padding: 15px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 40px;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #39506A;
-        }
-        .button-group {
-            display: flex;
-            justify-content: flex-start;
-        }
-    </style>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f8f8;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+    }
+    h2 {
+        color: #4F709C;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .form-box {
+        background-color: #fff;
+        border-radius: 5px;
+        padding: 30px;  /* Reducido para un poco menos de espacio interno */
+        margin-bottom: 30px;
+        width: 80%;  /* Más ancho */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .form-group {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px; /* Ligeramente menor separación entre grupos */
+    }
+    label {
+        flex-basis: 30%;
+        margin-right: 10px; /* Ligeramente menos espacio entre etiqueta y campo */
+        text-align: right;
+    }
+    input, select {
+        flex-basis: 65%;
+        padding: 10px; /* Un poco menos de relleno */
+        border-radius: 4px;
+        border: 1px solid #ccc;
+    }
+    button {
+        background-color: #4F709C;
+        color: white;
+        padding: 10px 18px; /* Ligeramente más pequeños */
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px; /* Tamaño de fuente ligeramente menor */
+        margin-top: 25px; /* Espacio antes de los botones */
+        margin-right: 10px; /* Separación entre botones */
+        transition: background-color 0.3s;
+    }
+    button:hover {
+        background-color: #39506A;
+    }
+    .button-group {
+        display: flex;
+        justify-content: space-between;
+    }
+</style>
 </head>
 <body>
     <h2>Crear Muestra</h2>
 
-    <form method="post">
-        {% csrf_token %}
+    <div class="form-box">
+        <form method="post">
+            {% csrf_token %}
 
         <!-- Datos de la muestra -->
-        <div>
+        <div class="form-group">
             <label for="id_subject">ID del Sujeto:</label>
             <input type="text" name="id_subject" required>
         </div>
         
-        <div>
+        <div class="form-group">
             <label for="date_sample">Fecha de la Muestra:</label>
             <input type="date" id="date_sample" name="date_sample" required max="">
             <script>
@@ -94,12 +94,12 @@
             </script>
         </div>
 
-        <div>
+        <div class="form-group">
             <label for="ml_volume">Volumen (ml):</label>
-            <input type="number" name="ml_volume" min="0" step="0.01" required>
+            <input type="number" name="ml_volume" min="0.1" step="0.01" required>
         </div>
 
-        <div style="display: none;">
+        <div class="form-group" style="display: none;">
             <label for="state_analysis">Estado de Análisis:</label>
             <select name="state_analysis">
                 <option value="0" selected>No analizada</option>
@@ -107,7 +107,7 @@
             </select>
         </div>
 
-        <div style="display: none;">
+        <div class="form-group">
             <label for="state_preservation">Estado de Preservación:</label>
             <select name="state_preservation">
                 <option value="0" selected>Normal</option>
@@ -115,17 +115,17 @@
             </select>
         </div>
 
-        <div>
+        <div class="form-group">
             <label for="specification">Especificación:</label>
             <input type="text" name="specification" required>
         </div>
 
-        <div style="display: none;">
+        <div class="form-group" style="display: none;">
             <label for="SHIPMENT_id_shipment">ID de Envío:</label>
             <input type="number" name="SHIPMENT_id_shipment" value="0">
         </div>
 
-        <div>
+        <div class="form-group">
             <label for="freezer_id">Freezer:</label>
             <select name="freezer_id">
                 {% for storage in storages %}
@@ -136,7 +136,7 @@
             </select>
         </div>
 
-        <div>
+        <div class="form-group">
             <label for="rack_id">Rack:</label>
             <select name="rack_id">
                 {% for storage in storages %}
@@ -147,7 +147,7 @@
             </select>
         </div>
 
-        <div>
+        <div class="form-group">
             <label for="caja_id">Caja:</label>
             <select name="caja_id">
                 {% for storage in storages %}
@@ -158,17 +158,19 @@
             </select>
         </div>
 
-        <div>
+        <div class="form-group">
             <label for="cell">Celda:</label>
             <input type="number" name="cell" min="0" required>
         </div>
 
         <!-- Botones de acción -->
-        <div>
+        <div class="button-group">
             <button type="submit" name="action" value="add_another">Agregar Otra Muestra</button>
             <button type="submit" name="action" value="submit">Guardar y terminar</button>
         </div>
     </form>
+</div>
+</body>
     <script>
         document.querySelector('form').onsubmit = function(e) {
             e.preventDefault(); // Prevent the default form submission
@@ -220,7 +222,6 @@
         });
         */
     </script>
-</body>
 </html>
 {% endblock %}
 

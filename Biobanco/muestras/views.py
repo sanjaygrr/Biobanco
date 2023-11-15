@@ -423,6 +423,18 @@ def shipments_select(request):
             volume_condition = request.POST.get('volume_condition')
             volume = request.POST.get('volume')
 
+            volume_condition = request.POST.get('volume_condition')
+            volume = request.POST.get('volume')
+
+            if volume_condition and volume:
+                # Aplicar el filtro de volumen según la condición seleccionada
+                if volume_condition == 'greater':
+                    samples = samples.filter(ml_volume__gt=float(volume))
+                elif volume_condition == 'less':
+                    samples = samples.filter(ml_volume__lt=float(volume))
+                elif volume_condition == 'equal':
+                    samples = samples.filter(ml_volume=float(volume))
+
             samples = Sample.objects.all().prefetch_related('location_set')
             if year:
                 samples = samples.filter(date_sample__year=year)

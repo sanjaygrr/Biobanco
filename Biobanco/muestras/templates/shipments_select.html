@@ -8,6 +8,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enviar Muestras</title>
     <style>
+        
+        .submit-button {
+            background-color: #4F709C;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        
+        .submit-button:hover {
+            background-color: #3A5677;
+        }
         body {
             font-family: Arial, sans-serif;
             background-color: #f8f8f8;
@@ -25,13 +40,15 @@
         button {
             background-color: #4F709C;
             color: white;
-            padding: 10px 15px;
+            padding: 10px 20px; /* Aumentar el padding horizontal para hacer el botón más grande */
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-weight: bold; /* Agregar negrita para mayor énfasis */
+            transition: background-color 0.3s ease; /* Agregar transición al color de fondo */
         }
         button:hover {
-            background-color: rgb(79, 100, 150);
+            background-color: #3A5677; /* Cambiar color de fondo al pasar el mouse */
         }
         table {
             width: 100%;
@@ -53,14 +70,13 @@
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
-    <body>
-        <h1>Enviar Muestras</h1>
-        
-        <!-- Formulario de Filtro -->
+    <h1>Enviar Muestras</h1>
+    
+    <!-- Formulario de Filtro -->
     <div class="filter-box">
         <form id="filter-form" method="POST" action="{% url 'shipments_select' %}">
             {% csrf_token %}
-                <!-- Campos de filtro -->
+            <!-- Campos de filtro -->
             <label for="year">Año:</label>
             <input type="number" id="year" name="year">
             
@@ -83,57 +99,9 @@
     </div>
     
     <!-- Tabla de Selección de Muestras -->
-<!-- Tabla de Selección de Muestras -->
-<form id="selection-form" method="POST" action="{% url 'shipments_select' %}">
-    {% csrf_token %}
     <div class="samples-selection">
         <h2>Seleccionar Muestras</h2>
         <table id="samplesTable">
-        <thead>
-            <tr>
-                <th>ID Sujeto</th>
-                <th>Fecha</th>
-                <th>Número de Muestra</th>
-                <th>Volumen</th>
-                <th>Estado de Preservación</th>
-                <th>Freezer</th>
-                <th>Rack</th>
-                <th>Caja</th>
-                <th>Celda</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-                {% for sample in samples %}
-                {% if sample.SHIPMENT_id_shipment == 0 %}
-                <tr data-sample-id="{{ sample.id_sample }}">
-                    <td>{{ sample.id_subject }}</td>
-                    <td>{{ sample.date_sample }}</td>
-                    <td>{{ sample.id_sample }}</td>
-                    <td>{{ sample.ml_volume }}</td>
-                    <td class="preservation-display"> {% if sample.state_preservation %}Descongelado{% else %}Normal{% endif %} </td>
-                    <td class="freezer-display"> {{ sample.freezer_name }} </td>
-                    <td class="rack-display">{{ sample.rack_name }} </td>
-                    <td class="box-display"> {{ sample.box_name }}  </td>
-                    <td class="cell-display"> {{ sample.location_set.first.cell }} </td>
-                    <td> <button onclick="addToSendTable('{{ sample.id_sample }}')">Agregar a Envíos</button> </td>
-                    <td>
-                        <input type="checkbox" name="selected_samples" style="display: none;" value="{{ sample.id_sample }}">
-                    </td>
-                </tr>
-                {% endif %}
-                {% endfor %}
-            </tbody>
-    </table>
-</div>
-
-    
-    <!-- Dentro de tu formulario en la sección de Muestras a Enviar -->
-<div class="samples-to-send">
-    <h2>Muestras a Enviar</h2>
-    <form id="send-form" method="POST" action="{% url 'shipments_select' %}">
-        {% csrf_token %}
-        <table id="sendTable">
             <thead>
                 <tr>
                     <th>ID Sujeto</th>
@@ -146,50 +114,91 @@
                     <th>Caja</th>
                     <th>Celda</th>
                     <th>Acciones</th>
-                    
                 </tr>
             </thead>
             <tbody>
-                <!-- Las filas aquí serán añadidas dinámicamente con JavaScript -->
+                {% for sample in samples %}
+                {% if sample.SHIPMENT_id_shipment == 0 %}
+                <tr data-sample-id="{{ sample.id_sample }}">
+                    <td>{{ sample.id_subject }}</td>
+                    <td>{{ sample.date_sample }}</td>
+                    <td>{{ sample.id_sample }}</td>
+                    <td>{{ sample.ml_volume }}</td>
+                    <td class="preservation-display"> {% if sample.state_preservation %}Descongelado{% else %}Normal{% endif %} </td>
+                    <td class="freezer-display"> {{ sample.freezer_name }} </td>
+                    <td class="rack-display">{{ sample.rack_name }} </td>
+                    <td class="box-display"> {{ sample.box_name }}  </td>
+                    <td class="cell-display"> {{ sample.location_set.first.cell }} </td>
+                    <td> <button class="add-to-send" type="button">Agregar a Envíos</button> </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
             </tbody>
         </table>
-        <input type="submit" value="Registrar Envío" name="register_action">
     </div>
-    </form>
+    
+    <!-- Dentro de tu formulario en la sección de Muestras a Enviar -->
+    <div class="samples-to-send">
+        <h2>Muestras a Enviar</h2>
+        <form id="send-form" method="POST" action="{% url 'shipments_select' %}">
+            {% csrf_token %}
+            <table id="sendTable">
+                <thead>
+                    <tr>
+                        <th>ID Sujeto</th>
+                        <th>Fecha</th>
+                        <th>Número de Muestra</th>
+                        <th>Volumen</th>
+                        <th>Estado de Preservación</th>
+                        <th>Freezer</th>
+                        <th>Rack</th>
+                        <th>Caja</th>
+                        <th>Celda</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Las filas aquí serán añadidas dinámicamente con JavaScript -->
+                </tbody>
+            </table>
+            <input type="submit" value="Registrar Envío" name="register_action" class="submit-button">
+        </form>
+    </div>
     
     <script>
         function addToSendTable(sampleId) {
-            let checkbox = document.querySelector(`#samplesTable input[type="checkbox"][value="${sampleId}"]`);
-            if (!checkbox) return;
-    
-            let row = checkbox.closest('tr');
+            let row = document.querySelector(`#samplesTable tr[data-sample-id="${sampleId}"]`);
+            if (!row) return;
+        
             let newRow = row.cloneNode(true);
     
-            let checkboxCell = newRow.querySelector('td:last-child');
-            checkboxCell.innerHTML = 'Agregado';
-    
+            let checkboxCell = newRow.querySelector('td:nth-last-child(2)');
+            checkboxCell.remove();
+        
+            // Cambiar el botón y el checkbox
+            let buttonCell = newRow.querySelector('td:last-child');
+            buttonCell.innerHTML = '<button onclick="returnToSelection(\'' + sampleId + '\')">Volver a Subir</button>';
+        
             document.querySelector('#sendTable tbody').appendChild(newRow);
+            row.remove();
+        }
+        
+        function returnToSelection(sampleId) {
+            let row = document.querySelector(`#sendTable tr[data-sample-id="${sampleId}"]`);
+            if (!row) return;
+        
+            let newRow = row.cloneNode(true);
+        
+            // Restablecer el botón original y el checkbox
+            let buttonCell = newRow.querySelector('td:last-child');
+            buttonCell.innerHTML = '<button onclick="addToSendTable(\'' + sampleId + '\')">Agregar a Envíos</button>';
+        
+            document.querySelector('#samplesTable tbody').appendChild(newRow);
             row.remove();
         }
     
         document.addEventListener('DOMContentLoaded', function() {
-            const selectionForm = document.querySelector('#selection-form');
-            if (!selectionForm) return;
-    
-            selectionForm.addEventListener('submit', function(event) {
-                let selectedSamples = Array.from(document.querySelectorAll('#sendTable tbody tr')).map(row => {
-                    return row.getAttribute('data-sample-id');
-                });
-    
-                if (selectedSamples.length === 0) {
-                    event.preventDefault();
-                    alert('No se han seleccionado muestras para enviar.');
-                } else {
-                    event.preventDefault();
-                    registerShipment(selectedSamples);
-                }
-            });
-    
+            // Agregar escuchadores de eventos a los botones existentes
             document.querySelectorAll('#samplesTable button').forEach(function(button) {
                 button.onclick = function(event) {
                     event.preventDefault();
@@ -197,6 +206,20 @@
                     addToSendTable(sampleId);
                 };
             });
+    
+            // Manejar el envío del formulario de selección
+            const selectionForm = document.querySelector('#selection-form');
+            if (selectionForm) {
+                selectionForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    let selectedSamples = Array.from(document.querySelectorAll('#sendTable tbody tr')).map(row => row.getAttribute('data-sample-id'));
+                    if (selectedSamples.length > 0) {
+                        registerShipment(selectedSamples);
+                    } else {
+                        alert('No se han seleccionado muestras para enviar.');
+                    }
+                });
+            }
         });
     
         function registerShipment(sampleIds) {
@@ -221,18 +244,15 @@
                 console.error('Error:', error);
             });
         }
+    
+        // Manejar el envío del formulario de envío
         document.getElementById('send-form').addEventListener('submit', function(event) {
             event.preventDefault();
-            let selectedSamples = Array.from(document.querySelectorAll('#sendTable tbody tr')).map(row => {
-                return row.getAttribute('data-sample-id');
-            });
-
+            let selectedSamples = Array.from(document.querySelectorAll('#sendTable tbody tr')).map(row => row.getAttribute('data-sample-id'));
             if (selectedSamples.length === 0) {
                 Swal.fire('Error', 'No se han seleccionado muestras para enviar.', 'error');
             } else {
-                // Construir el mensaje de confirmación con los IDs de las muestras seleccionadas
                 let message = 'Muestras seleccionadas: ' + selectedSamples.join(', ') + '. ¿Está todo correcto?';
-
                 Swal.fire({
                     title: '¿Seguro que todo está bien?',
                     text: message,
@@ -244,7 +264,6 @@
                     cancelButtonText: 'No, revisar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Si el usuario confirma, envía el formulario
                         event.target.submit();
                     }
                 });

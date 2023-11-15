@@ -415,14 +415,13 @@ def create_password(request):
 @require_http_methods(["GET", "POST"])
 def shipments_select(request):
     samples = Sample.objects.all().prefetch_related('location_set')
+
     if request.method == 'POST':
         if 'filter_action' in request.POST:
+            # Procesar el formulario de filtro
             year = request.POST.get('year')
             month = request.POST.get('month')
             subject_id = request.POST.get('subject_id')
-            volume_condition = request.POST.get('volume_condition')
-            volume = request.POST.get('volume')
-
             volume_condition = request.POST.get('volume_condition')
             volume = request.POST.get('volume')
 
@@ -435,14 +434,12 @@ def shipments_select(request):
                 elif volume_condition == 'equal':
                     samples = samples.filter(ml_volume=float(volume))
 
-            samples = Sample.objects.all().prefetch_related('location_set')
             if year:
                 samples = samples.filter(date_sample__year=year)
             if month:
                 samples = samples.filter(date_sample__month=month)
             if subject_id:
                 samples = samples.filter(id_subject=subject_id)
-            # Implementar lógica para el volumen según 'volume_condition' y 'volume'
 
         elif 'register_action' in request.POST:
             selected_samples = request.POST.getlist('selected_samples')
@@ -470,26 +467,24 @@ def shipments_select(request):
 
             messages.success(
                 request, f'El envío ha sido registrado con éxito. ID de envío: {new_shipment.id_shipment}')
-            # No rediriges a una nueva URL, simplemente vuelves a cargar la página con el mensaje de confirmación
             return redirect('shipments_select')
 
-    else:
-        # Este bloque maneja la acción de GET
-        samples = Sample.objects.all().prefetch_related('location_set')
+    # Este bloque maneja la acción de GET
+    samples = Sample.objects.all().prefetch_related('location_set')
 
-        # Añadir información de ubicación a cada muestra
-        for sample in samples:
-            freezer_location = sample.location_set.filter(
-                STORAGE_TYPE_id_storagetype_id=3).first()  # ID para freezer
-            sample.freezer_name = freezer_location.STORAGE_id_storage_1.storage_name if freezer_location else 'No Asignado'
+    # Añadir información de ubicación a cada muestra
+    for sample in samples:
+        freezer_location = sample.location_set.filter(
+            STORAGE_TYPE_id_storagetype_id=3).first()  # ID para freezer
+        sample.freezer_name = freezer_location.STORAGE_id_storage_1.storage_name if freezer_location else 'No Asignado'
 
-            rack_location = sample.location_set.filter(
-                STORAGE_TYPE_id_storagetype_id=2).first()  # ID para rack
-            sample.rack_name = rack_location.STORAGE_id_storage_1.storage_name if rack_location else 'No Asignado'
+        rack_location = sample.location_set.filter(
+            STORAGE_TYPE_id_storagetype_id=2).first()  # ID para rack
+        sample.rack_name = rack_location.STORAGE_id_storage_1.storage_name if rack_location else 'No Asignado'
 
-            box_location = sample.location_set.filter(
-                STORAGE_TYPE_id_storagetype_id=1).first()  # ID para caja
-            sample.box_name = box_location.STORAGE_id_storage_1.storage_name if box_location else 'No Asignado'
+        box_location = sample.location_set.filter(
+            STORAGE_TYPE_id_storagetype_id=1).first()  # ID para caja
+        sample.box_name = box_location.STORAGE_id_storage_1.storage_name if box_location else 'No Asignado'
 
     return render(request, 'shipments_select.html', {'samples': samples})
 
@@ -498,7 +493,8 @@ def shipments_select(request):
 @require_POST
 def update_samples_shipment(request):
     try:
-        data = json.loads(request.body)
+        # Decodifica el cuerpo de la solicitud
+        data = json.loads(request.body.decode('utf-8'))
         sample_ids = data.get('sample_ids')
 
         if not sample_ids:
@@ -509,12 +505,13 @@ def update_samples_shipment(request):
         if not last_shipment:
             return JsonResponse({'error': 'No se encontró ningún envío'}, status=404)
 
-        # Actualizar el SHIPMENT_id_shipment para cada muestra
-        Sample.objects.filter(id_sample__in=sample_ids).update(
-            SHIPMENT_id_shipment=last_shipment.id_shipment
-        )
+        # Actualizar los espacios para cada muestra
+        for sample_id in sample_ids:
+            sample = Sample.objects.get(id_sample=sample_id)
+            sample.SHIPMENT_id_shipment = last_shipment.id_shipment
+            sample.save()
 
-        return JsonResponse({'message': 'Envío actualizado con éxito'})
+        return JsonResponse({'message': 'Espacios actualizados con éxito'})
 
     except Sample.DoesNotExist:
         return JsonResponse({'error': 'Una o más muestras no encontradas'}, status=404)

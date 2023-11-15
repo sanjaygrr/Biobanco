@@ -165,63 +165,37 @@
 
         <!-- Botones de acción -->
         <div class="button-group">
-            <button type="submit" name="action" value="add_another">Agregar Otra Muestra</button>
-            <button type="submit" name="action" value="submit">Guardar y terminar</button>
+            <button onclick="handleSubmit('add_another', event)">Agregar Otra Muestra</button>
+            <button onclick="handleSubmit('submit', event)">Guardar y terminar</button>
         </div>
     </form>
 </div>
 </body>
-    <script>
-        document.querySelector('form').onsubmit = function(e) {
-            e.preventDefault(); // Prevent the default form submission
+<script>
+    function handleSubmit(actionValue, event) {
+        event.preventDefault();
 
-            // Assuming you have validation logic here or you just proceed with the submission
-
-            Swal.fire({
-                title: '¿Crear Muestra?',
-                text: "No podrás revertir esto!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: '¡Crear muestra!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // If the user confirms, submit the form programmatically
-                    e.target.submit();
-                }
-            });
-        };
-
-        // If you have an AJAX submission, you can handle success and error with SweetAlert like this:
-        /*
-        fetch('/your-endpoint', {
-            method: 'POST',
-            body: new FormData(document.querySelector('form')),
-            // Additional headers and configurations if needed
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
+        Swal.fire({
+            title: '¿Crear Muestra?',
+            text: "No podrás revertir esto!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: '¡Crear muestra!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                var form = document.querySelector('form');
+                var hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'action';
+                hiddenInput.value = actionValue;
+                form.appendChild(hiddenInput);
+                form.submit();
             }
-            return response.json();
-        })
-        .then(data => {
-            Swal.fire(
-                '¡Creado!',
-                'La muestra ha sido creada.',
-                'success'
-            );
-        })
-        .catch((error) => {
-            Swal.fire(
-                'Error',
-                'Hubo un problema al crear la muestra: ' + error.message,
-                'error'
-            );
         });
-        */
-    </script>
+    }
+</script>
 </html>
 {% endblock %}
 

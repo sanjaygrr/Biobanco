@@ -51,7 +51,46 @@
         button:hover {
             background-color: rgb(79, 100, 150);
         }
-    </style>
+        /* Estilos para los campos de selección personalizados */
+.styled-checkbox {
+    display: none; /* Oculta el checkbox estándar */
+}
+
+.styled-label {
+    display: inline-block;
+    padding-left: 30px;
+    position: relative;
+    cursor: pointer;
+}
+
+.styled-label:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid #4F709C;
+    background-color: #fff;
+}
+
+/* Estilos para el checkbox cuando está marcado */
+.styled-checkbox:checked + .styled-label:before {
+    background-color: #4F709C;
+}
+
+/* Estilos para la marca (✔️) dentro del checkbox cuando está marcado */
+.styled-checkbox:checked + .styled-label:before:after {
+    content: '\2714'; /* Carácter Unicode para el símbolo de marca (✔️) */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 16px;
+    color: #fff;
+}
+            </style>
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
@@ -84,22 +123,40 @@
         {{ error }}
 
         <!-- Campo de email -->
-        <div class="form-group">
-            <label for="email">Correo:</label>
-            <input type="email" id="email" name="email" placeholder="ejemplo@dominio.com" required>
+<div class="form-group">
+    <label for="email">Correo:</label>
+    <input type="email" id="email" name="email" placeholder="ejemplo@dominio.com" required>
+</div>
+
+<!-- Campo de nombre de usuario -->
+<div class="form-group">
+    <label for="username">Nombre de usuario:</label>
+    <input type="text" id="username" name="username" placeholder="Usuario123" required>
         </div>
 
-        <!-- Campo de nombre de usuario -->
-        <div class="form-group">
-            <label for="username">Nombre de usuario:</label>
-            <input type="text" id="username" name="username" placeholder="Usuario123" required>
-        </div>
-
+        <!-- Campo de contraseña -->
         <div class="form-group">
             <label for="password">Contraseña:</label>
             <input type="password" id="password" name="password" required>
         </div>
 
+        <!-- Campo de staff (miembro del personal) -->
+<div class="form-group">
+    <input type="checkbox" id="is_staff" name="is_staff" class="styled-checkbox">
+    <label class="styled-label" for="is_staff">¿Es miembro del personal?</label>
+</div>
+
+<!-- Campo de administrador -->
+<div class="form-group">
+    <input type="checkbox" id="is_admin" name="is_admin" class="styled-checkbox">
+    <label class="styled-label" for="is_admin">¿Es tecnico?</label>
+</div>
+
+<!-- Campo de superusuario -->
+<div class="form-group">
+    <input type="checkbox" id="is_superuser" name="is_superuser" class="styled-checkbox">
+    <label class="styled-label" for="is_superuser">¿Es supervisor?</label>
+</div>
         <!-- Botón de envío -->
         <button type="submit">Registrar</button>
     </form>

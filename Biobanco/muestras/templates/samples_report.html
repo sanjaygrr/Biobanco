@@ -86,7 +86,7 @@
     </style>
 </head>
 <body>
-    <h1>Reporteria de Muestras</h1>
+    <h1>Reportería de Muestras</h1>
     
     <div class="filter-box clearfix">
         <form action="/samples_report" method="GET">
@@ -106,7 +106,6 @@
                     <input type="number" id="sample_id" name="sample_id">
                 </div>
             </div>
-            <!-- Filtros de Ubicación -->
             <!-- Filtros de Ubicación -->
             <div class="filter-section">
                 <h2>Filtros de Ubicación</h2>
@@ -150,10 +149,9 @@
                     <label for="cell">Celda:</label>
                     <input type="number" name="cell" placeholder="?" min="0">
                 </div>
+                <button type="submit">Buscar</button>
             </div>
-
-            </div>
-            <button type="submit">Buscar</button>
+            
         </form>
     </div>
     <div class="samples-list">

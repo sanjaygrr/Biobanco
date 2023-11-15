@@ -58,7 +58,7 @@ def signup(request):
         return render(request, 'signup.html')
 
 
-def user_list(request):
+ddef user_list(request):
     search_query = request.GET.get('search')
     if search_query:
         users = Account.objects.filter(username__icontains=search_query) | Account.objects.filter(
@@ -551,13 +551,7 @@ def shipments_report(request):
 
 
 def samples_report(request):
-    samples = Sample.objects.all().prefetch_related(
-        Prefetch('location_set', queryset=Location.objects.select_related(
-            'STORAGE_id_storage_1'))
-    )
-
-    storages = Storage.objects.all().order_by('storage_name')
-    storage_types = StorageType.objects.all().order_by('name_storagetype')
+    samples = Sample.objects.all()
 
     if request.method == "GET":
         subject_id = request.GET.get('subject_id')
@@ -565,42 +559,40 @@ def samples_report(request):
         freezer_number = request.GET.get('freezer_number')
         rack_number = request.GET.get('rack_number')
         box_number = request.GET.get('box_number')
-        cell_number = request.GET.get('cell')
         sample_id = request.GET.get('sample_id')
 
         if subject_id:
             samples = samples.filter(id_subject=subject_id)
         if sample_date:
             samples = samples.filter(date_sample=sample_date)
+        if freezer_number:
+            samples = samples.filter(location__STORAGE_id_storage_1__storage_name=freezer_number,
+                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=3)
+        if rack_number:
+            samples = samples.filter(location__STORAGE_id_storage_1__storage_name=rack_number,
+                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=2)
+        if box_number:
+            samples = samples.filter(location__STORAGE_id_storage_1__storage_name=box_number,
+                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=1)
         if sample_id:
             samples = samples.filter(id_sample__icontains=sample_id)
-        if freezer_number:
-            samples = samples.filter(
-                location__STORAGE_id_storage_1__storage_name=freezer_number,
-                location__STORAGE_id_storage_1__STORAGE_TYPE_id_storagetype_id=3
-            )
-        if rack_number:
-            samples = samples.filter(
-                location__STORAGE_id_storage_1__storage_name=rack_number,
-                location__STORAGE_id_storage_1__STORAGE_TYPE_id_storagetype_id=2
-            )
-        if box_number:
-            samples = samples.filter(
-                location__STORAGE_id_storage_1__storage_name=box_number,
-                location__STORAGE_id_storage_1__STORAGE_TYPE_id_storagetype_id=1
-            )
-        if cell_number:  # Agregar este bloque
-            samples = samples.filter(
-                location__cell=cell_number
-            )
 
-    for sample in samples:
-        sample.freezer_name = sample.location_set.filter(
-            STORAGE_TYPE_id_storagetype_id=3).first().STORAGE_id_storage_1.storage_name
-        sample.rack_name = sample.location_set.filter(
-            STORAGE_TYPE_id_storagetype_id=2).first().STORAGE_id_storage_1.storage_name
-        sample.box_name = sample.location_set.filter(
-            STORAGE_TYPE_id_storagetype_id=1).first().STORAGE_id_storage_1.storage_name
+        # Añadir información de ubicación a cada muestra
+        for sample in samples:
+            freezer_location = sample.location_set.filter(
+                STORAGE_TYPE_id_storagetype__name_storagetype=3).first()
+            sample.freezer_name = freezer_location.STORAGE_id_storage_1.storage_name if freezer_location else 'No Asignado'
+
+            rack_location = sample.location_set.filter(
+                STORAGE_TYPE_id_storagetype__name_storagetype=2).first()
+            sample.rack_name = rack_location.STORAGE_id_storage_1.storage_name if rack_location else 'No Asignado'
+
+            box_location = sample.location_set.filter(
+                STORAGE_TYPE_id_storagetype__name_storagetype=1).first()
+            sample.box_name = box_location.STORAGE_id_storage_1.storage_name if box_location else 'No Asignado'
+
+    storages = Storage.objects.all().order_by('storage_name')
+    storage_types = StorageType.objects.all().order_by('name_storagetype')
 
     context = {
         'samples': samples,

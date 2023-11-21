@@ -93,12 +93,12 @@
                 <option value="equal">Igual a</option>
             </select>
             <input type="number" id="volume" name="volume" min="0"> ml
+            <input type="hidden" id="selected-samples" name="selected_samples" value="">
             
             <input type="submit" value="Buscar" name="filter_action">
         </form>
     </div>
     
-    <!-- Tabla de Selección de Muestras -->
     <div class="samples-selection">
         <h2>Seleccionar Muestras</h2>
         <table id="samplesTable">
@@ -119,7 +119,7 @@
             <tbody>
                 {% for sample in samples %}
                 {% if sample.SHIPMENT_id_shipment == 0 %}
-                <tr data-sample-id="{{ sample.id_sample }}">
+                <tr data-sample-id="{{ sample.id_sample }}" {% if sample.id_sample in selected_samples %}class="selected"{% endif %}>
                     <td>{{ sample.id_subject }}</td>
                     <td>{{ sample.date_sample }}</td>
                     <td>{{ sample.id_sample }}</td>
@@ -196,24 +196,27 @@
             }
         });
     
-        // Función para mover filas entre tablas y gestionar los inputs ocultos
         function moveRow(sampleId, targetTableId, buttonText, buttonClass) {
             let sourceRow = document.querySelector(`tr[data-sample-id="${sampleId}"]`);
             if (!sourceRow) return;
-    
+        
             let newRow = sourceRow.cloneNode(true);
             let button = newRow.querySelector('button');
             button.textContent = buttonText;
             button.className = buttonClass;
-    
+        
             document.getElementById(targetTableId).querySelector('tbody').appendChild(newRow);
             sourceRow.remove();
-    
+        
             if (targetTableId === 'sendTable') {
-                addHiddenInput(sampleId); // Añadir input oculto al formulario
+                addHiddenInput(sampleId); // Agregar input oculto al formulario
             } else {
                 removeHiddenInput(sampleId); // Eliminar input oculto del formulario
             }
+        
+            // Actualizar el campo oculto selected_samples con las muestras seleccionadas
+            let selectedSampleIds = Array.from(document.querySelectorAll('#sendTable tbody tr')).map(row => row.getAttribute('data-sample-id'));
+            document.getElementById('selected-samples').value = selectedSampleIds.join(',');
         }
     
         // Función para añadir inputs ocultos al formulario de envío

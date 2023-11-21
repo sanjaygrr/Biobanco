@@ -203,6 +203,17 @@ def create_sample(request):
             state_preservation=state_preservation,
             specification=specification
         )
+        storage_combination = f"{request.POST.get('freezer_id')}-{request.POST.get('rack_id')}-{request.POST.get('caja_id')}"
+        cell_value = int(request.POST.get('cell'))
+
+        existing_location = Location.objects.filter(
+            STORAGE_id_storage_1__storage_name=storage_combination,
+            cell=cell_value
+        ).first()
+
+        if existing_location:
+            # Si existe una ubicación en el mismo espacio, muestra una alerta de SweetAlert
+            return JsonResponse({'message': 'No se puede crear muestra en el mismo espacio repetida'}, status=400)
 
         if shipment_id:
             sample.SHIPMENT_id_shipment = int(shipment_id)
@@ -270,13 +281,13 @@ def sample_list(request):
             samples = samples.filter(date_sample=sample_date)
         if freezer_number:
             samples = samples.filter(location__STORAGE_id_storage_1__storage_name=freezer_number,
-                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=3)
+                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=1)
         if rack_number:
             samples = samples.filter(location__STORAGE_id_storage_1__storage_name=rack_number,
                                      location__STORAGE_TYPE_id_storagetype__name_storagetype=2)
         if box_number:
             samples = samples.filter(location__STORAGE_id_storage_1__storage_name=box_number,
-                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=1)
+                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=3)
         if sample_id:
             samples = samples.filter(id_sample__icontains=sample_id)
         if cell:
@@ -285,7 +296,7 @@ def sample_list(request):
         # Añadir información de ubicación a cada muestra
         for sample in samples:
             freezer_location = sample.location_set.filter(
-                STORAGE_TYPE_id_storagetype__name_storagetype=3).first()
+                STORAGE_TYPE_id_storagetype__name_storagetype=1).first()
             sample.freezer_name = freezer_location.STORAGE_id_storage_1.storage_name if freezer_location else 'No Asignado'
 
             rack_location = sample.location_set.filter(
@@ -293,7 +304,7 @@ def sample_list(request):
             sample.rack_name = rack_location.STORAGE_id_storage_1.storage_name if rack_location else 'No Asignado'
 
             box_location = sample.location_set.filter(
-                STORAGE_TYPE_id_storagetype__name_storagetype=1).first()
+                STORAGE_TYPE_id_storagetype__name_storagetype=3).first()
             sample.box_name = box_location.STORAGE_id_storage_1.storage_name if box_location else 'No Asignado'
 
     storages = Storage.objects.all().order_by('storage_name')
@@ -430,7 +441,7 @@ def shipments_select(request):
     # Añadir información de ubicación a cada muestra
     for sample in samples:
         freezer_location = sample.location_set.filter(
-            STORAGE_TYPE_id_storagetype_id=3).first()  # ID para freezer
+            STORAGE_TYPE_id_storagetype_id=1).first()  # ID para freezer
         sample.freezer_name = freezer_location.STORAGE_id_storage_1.storage_name if freezer_location else 'No Asignado'
 
         rack_location = sample.location_set.filter(
@@ -438,7 +449,7 @@ def shipments_select(request):
         sample.rack_name = rack_location.STORAGE_id_storage_1.storage_name if rack_location else 'No Asignado'
 
         box_location = sample.location_set.filter(
-            STORAGE_TYPE_id_storagetype_id=1).first()  # ID para caja
+            STORAGE_TYPE_id_storagetype_id=3).first()  # ID para caja
         sample.box_name = box_location.STORAGE_id_storage_1.storage_name if box_location else 'No Asignado'
 
     return render(request, 'shipments_select.html', {'samples': samples})
@@ -533,13 +544,13 @@ def samples_report(request):
             samples = samples.filter(date_sample=sample_date)
         if freezer_number:
             samples = samples.filter(location__STORAGE_id_storage_1__storage_name=freezer_number,
-                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=3)
+                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=1)
         if rack_number:
             samples = samples.filter(location__STORAGE_id_storage_1__storage_name=rack_number,
                                      location__STORAGE_TYPE_id_storagetype__name_storagetype=2)
         if box_number:
             samples = samples.filter(location__STORAGE_id_storage_1__storage_name=box_number,
-                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=1)
+                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=3)
         if sample_id:
             samples = samples.filter(id_sample__icontains=sample_id)
         if cell:
@@ -548,7 +559,7 @@ def samples_report(request):
         # Añadir información de ubicación a cada muestra
         for sample in samples:
             freezer_location = sample.location_set.filter(
-                STORAGE_TYPE_id_storagetype__name_storagetype=3).first()
+                STORAGE_TYPE_id_storagetype__name_storagetype=1).first()
             sample.freezer_name = freezer_location.STORAGE_id_storage_1.storage_name if freezer_location else 'No Asignado'
 
             rack_location = sample.location_set.filter(
@@ -556,7 +567,7 @@ def samples_report(request):
             sample.rack_name = rack_location.STORAGE_id_storage_1.storage_name if rack_location else 'No Asignado'
 
             box_location = sample.location_set.filter(
-                STORAGE_TYPE_id_storagetype__name_storagetype=1).first()
+                STORAGE_TYPE_id_storagetype__name_storagetype=3).first()
             sample.box_name = box_location.STORAGE_id_storage_1.storage_name if box_location else 'No Asignado'
 
     storages = Storage.objects.all().order_by('storage_name')

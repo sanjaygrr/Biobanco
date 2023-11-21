@@ -23,7 +23,7 @@
         min-height: 100vh;
     }
     h2 {
-        color: black;
+        color: #4F709C;
         text-align: center;
         margin-bottom: 30px;
     }
@@ -88,7 +88,7 @@
         
         <div class="form-group">
             <label for="date_sample">Fecha de la Muestra:</label>
-            <input type="date" id="date_sample" name="date_sample" required max="">
+            <input type="date" id="date_sample" name="date_sample" required min="2002-01-01">
             <script>
                 document.getElementById('date_sample').max = new Date().toISOString().split('T')[0];
             </script>
@@ -175,31 +175,48 @@
     function handleSubmit(actionValue, event) {
         event.preventDefault();
 
-        Swal.fire({
-            title: '¿Crear Muestra?',
-            text: "No podrás revertir esto!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: '¡Crear muestra!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                var form = document.querySelector('form');
-                var hiddenInput = document.createElement('input');
-                hiddenInput.type = 'hidden';
-                hiddenInput.name = 'action';
-                hiddenInput.value = actionValue;
-                form.appendChild(hiddenInput);
-                form.submit();
+        // Obtén todos los campos requeridos
+        var requiredFields = document.querySelectorAll('[required]');
+        var allFieldsFilled = true;
+
+        // Verifica si todos los campos requeridos están llenos
+        for (var i = 0; i < requiredFields.length; i++) {
+            if (requiredFields[i].value.trim() === '') {
+                allFieldsFilled = false;
+                break; // Si encuentra un campo vacío, detén la verificación
             }
-        });
+        }
+
+        if (!allFieldsFilled) {
+            // Si no todos los campos están llenos, muestra un mensaje de error
+            Swal.fire({
+                title: '',
+                text: 'Por favor, complete todos los campos',
+                icon: 'info'
+            });
+        } else {
+            // Si todos los campos están llenos, muestra la confirmación
+            Swal.fire({
+                title: '¿Crear Muestra?',
+                text: 'No podrás revertir esto!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: '¡Crear muestra!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var form = document.querySelector('form');
+                    var hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'action';
+                    hiddenInput.value = actionValue;
+                    form.appendChild(hiddenInput);
+                    form.submit();
+                }
+            });
+        }
     }
 </script>
 </html>
 {% endblock %}
-
-
-
-
-

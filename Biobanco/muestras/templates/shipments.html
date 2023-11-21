@@ -61,9 +61,20 @@
         {% csrf_token %}
         
         <div class="form-group">
-            <label for="date_shipment">Fecha: </label>
-            <input type="date" id="date_shipment" name="date_shipment">
+            <label for="date_shipment">Fecha:</label>
+            <input type="date" id="date_shipment" name="date_shipment" required>
         </div>
+        
+        <script>
+            const today = new Date();
+            const sevenDaysAgo = new Date(today);
+            sevenDaysAgo.setDate(today.getDate() - 7);
+            
+            const dateInput = document.getElementById('date_shipment');
+            
+            dateInput.min = sevenDaysAgo.toISOString().split('T')[0];
+            dateInput.max = today.toISOString().split('T')[0];
+        </script>
         <div class="form-group">
             <label for="laboratory">Laboratorio:</label>
             <textarea id="laboratory" name="laboratory" required></textarea>
@@ -78,11 +89,11 @@
     <script>
         document.getElementById('shipmentForm').addEventListener('submit', function(e) {
             e.preventDefault();
-
+    
             const date = document.getElementById('date_shipment').value;
             const laboratory = document.getElementById('laboratory').value;
             const analysis = document.getElementById('analysis').value;
-
+    
             Swal.fire({
                 title: '¿Seguro que todo está bien?',
                 html: `
@@ -104,6 +115,7 @@
             });
         });
     </script>
+    
 </body>
 </html>
 {% endblock %}

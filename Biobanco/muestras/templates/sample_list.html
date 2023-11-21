@@ -116,6 +116,9 @@
         th.sortable.th-sort-desc:after {
             content: ' \2193'; /* Flecha abajo */
         }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -147,7 +150,7 @@
                     <select name="freezer_number">
                         <option value="">--Seleccionar espacio--</option> <!-- Opción vacía por defecto -->
                         {% for storage in storages %}
-                            {% if storage.STORAGE_TYPE_id_storagetype.name_storagetype == 3 %}
+                            {% if storage.STORAGE_TYPE_id_storagetype.name_storagetype == 1 %}
                                 <option value="{{ storage.storage_name }}">{{ storage.storage_name }}</option>
                             {% endif %}
                         {% endfor %}
@@ -171,7 +174,7 @@
                     <select name="box_number">
                         <option value="">--Seleccionar espacio--</option> <!-- Opción vacía por defecto -->
                         {% for storage in storages %}
-                            {% if storage.STORAGE_TYPE_id_storagetype.name_storagetype == 1 %}
+                            {% if storage.STORAGE_TYPE_id_storagetype.name_storagetype == 3 %}
                                 <option value="{{ storage.storage_name }}">{{ storage.storage_name }}</option>
                             {% endif %}
                         {% endfor %}
@@ -206,7 +209,8 @@
             </thead>
             <tbody>
                 {% for sample in samples %}
-                <tr data-sample-id="{{ sample.id }}" data-editing="false">
+                {% if sample.SHIPMENT_id_shipment == 0 %}
+                <tr data-sample-id="{{ sample.id }}">
                     <td>{{ sample.id_subject }}</td>
                     <td>{{ sample.date_sample }}</td>
                     <td>{{ sample.id_sample }}</td>
@@ -261,11 +265,11 @@
             
                     <!-- Botones de acción -->
                     <td>
-                        <button class="edit-btn">Editar</button>
-                        <button class="save-btn" data-sample-id="{{ sample.id_sample }}" onclick="guardar(this)">Guardar</button>
+                        <button class="edit-btn" onclick="toggleEditMode(this)">Editar</button>
+                        <button class="save-btn hidden" data-sample-id="{{ sample.id }}">Guardar</button>
                         <button class="eliminar-btn" onclick="eliminar(this)">Eliminar</button>
-                    </td>
                 </tr>
+                {% endif %}
                 {% endfor %}
             </tbody>
         </table>
@@ -335,113 +339,30 @@
             );
         });
     }
-
+    function toggleEditMode(btn) {
+        let fila = btn.parentNode.parentNode;
+        let isEditing = fila.getAttribute('data-editing') === 'true';
     
-
-    function toggleEdit(btn) {
-        let fila = btn.closest('tr');
-        let isEditing = fila.classList.contains('editing');
-        fila.classList.toggle('editing');
-        let textElements = fila.querySelectorAll('span');
-        let inputElements = fila.querySelectorAll('select, input[type="number"]');
-        textElements.forEach(el => el.style.display = isEditing ? 'none' : 'inline');
-        inputElements.forEach(el => el.style.display = isEditing ? 'inline' : 'none');
-    }
-
-
-    function guardar(btn) {
-        // Obtener el ID de la muestra directamente del botón
-        const sampleId = btn.getAttribute('data-sample-id');
-    
-        if (!sampleId) {
-            console.error('No se pudo obtener el ID de la muestra');
-            return;
-        }
-    
-        // Obtener la fila (tr) asociada con este botón
-        const fila = btn.closest('tr');
-    
-        // Aquí continúa tu código existente para obtener los valores de los elementos en la fila
-        // Ejemplo: 
-        const preservationState = fila.querySelector('.preservation-select').value;
-        const freezerIdRaw = fila.querySelector('.freezer-select').value;
-        const rackIdRaw = fila.querySelector('.rack-select').value;
-        const boxIdRaw = fila.querySelector('.box-select').value
-        const cellNumber = fila.querySelector('.cell-input').value;
-    
-        const freezerId = freezerIdRaw.split('-')[1];
-        const rackId = rackIdRaw.split('-')[1];
-        const boxId = boxIdRaw.split('-')[1];
-        const data = {
-            state_preservation: preservationState,
-            freezer_id: parseInt(freezerId, 10), // Convierte el valor a entero
-            rack_id: parseInt(rackId, 10),
-            box_id: parseInt(boxId, 10),
-            cell: cellNumber
-        };
-    
-        // Realizar la llamada AJAX
-    fetch(`/edit_sample/${sampleId}/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken'),
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'success') {
-            // Actualizar la interfaz de usuario con los nuevos valores
-            const preservationDisplay = fila.querySelector('.preservation-display');
-            const freezerDisplay = fila.querySelector('.freezer-display');
-            const rackDisplay = fila.querySelector('.rack-display');
-            const boxDisplay = fila.querySelector('.box-display');
-
-            preservationDisplay.textContent = preservationState === '1' ? 'Descongelado' : 'Normal';
-            freezerDisplay.textContent = freezerId;
-            rackDisplay.textContent = rackId;
-            boxDisplay.textContent = boxId;
-
-            // Muestra un mensaje de éxito y recarga la página
-            Swal.fire(
-                '¡Guardado!',
-                'Los cambios en la muestra han sido guardados.',
-                'success'
-            ).then(() => {
-                location.reload();
-            });
-        } else {
-            Swal.fire('Error', data.message, 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        Swal.fire('Error', 'Hubo un problema al guardar los cambios: ' + error.message, 'error');
-    });
-}
-    
-    function getCookie(name) {
-        let value = `; ${document.cookie}`;
-        let parts = value.split(`; ${name}=`);
-        return parts.length === 2 ? parts.pop().split(';').shift() : null;
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.edit-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                toggleEdit(this);
-            });
+        fila.querySelectorAll('.edit-btn, .save-btn').forEach(button => {
+            button.classList.toggle('hidden');
         });
-        document.querySelectorAll('.save-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                guardar(this);
-            });
+    
+        fila.querySelectorAll('.preservation-select, .freezer-select, .rack-select, .box-select, .cell-input').forEach(element => {
+            element.style.display = isEditing ? 'none' : '';
+        });
+    
+        fila.querySelectorAll('.preservation-display, .freezer-display, .rack-display, .box-display, .cell-display').forEach(element => {
+            element.style.display = isEditing ? '' : 'none';
+        });
+    
+        fila.setAttribute('data-editing', isEditing ? 'false' : 'true');
+    }
+    document.querySelectorAll('.save-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            guardar(this);
         });
     });
-    
-</script>
-<script>
+
     document.addEventListener('DOMContentLoaded', function() {
         var table = document.getElementById('sendTable');
         var headers = table.querySelectorAll('th.sortable');
@@ -477,6 +398,71 @@
         header.classList.toggle('th-sort-asc', newIsAscending);
         header.classList.toggle('th-sort-desc', !newIsAscending);
     }
+    
+    function getCookie(name) {
+        let value = `; ${document.cookie}`;
+        let parts = value.split(`; ${name}=`);
+        return parts.length === 2 ? parts.pop().split(';').shift() : null;
+    }
+    function guardar(btn) {
+        let fila = btn.closest('tr');
+        console.log(fila); // Verificar el objeto fila
+        console.log(fila.dataset); // Verificar los datos del dataset
+        let sampleId = fila.dataset.sampleId;
+        console.log("Sample ID:", sampleId); 
+    
+        if (!sampleId) {
+            console.error("sampleId no está definido");
+            return;
+        }
+    
+
+        // Recolectar los valores editados
+        let preservationState = fila.querySelector('.preservation-select').value;
+        let freezerId = fila.querySelector('.freezer-select').value;
+        let rackId = fila.querySelector('.rack-select').value;
+        let boxId = fila.querySelector('.box-select').value;
+        let cellNumber = fila.querySelector('.cell-input').value;
+
+        // Construir el objeto con los datos
+        let data = {
+            id: sampleId,
+            state_preservation: preservationState,
+            freezer_id: freezerId,
+            rack_id: rackId,
+            box_id: boxId,
+            cell: cellNumber
+        };
+
+        // Enviar los datos al servidor mediante AJAX
+        fetch(`/update_sample/${sampleId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Actualizar la interfaz de usuario y mostrar un mensaje
+                toggleEditMode(btn);
+                alert('Muestra actualizada con éxito.');
+            } else {
+                alert('Error al actualizar la muestra: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Error al actualizar la muestra: ' + error);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+    });
+
+    
 </script>
 
     

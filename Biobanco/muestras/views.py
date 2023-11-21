@@ -187,7 +187,6 @@ def is_valid_int(value):
 
 def create_sample(request):
     if request.method == "POST":
-        # Obtener y procesar datos del formulario
         id_subject = request.POST.get('id_subject')
         date_sample = request.POST.get('date_sample')
         ml_volume = float(request.POST.get('ml_volume'))
@@ -196,7 +195,6 @@ def create_sample(request):
         specification = request.POST.get('specification')
         shipment_id = request.POST.get('SHIPMENT_id_shipment')
 
-        # Crear una nueva instancia de muestra
         sample = Sample(
             id_subject=id_subject,
             date_sample=date_sample,
@@ -234,7 +232,6 @@ def create_sample(request):
                 print(
                     f"Objeto Storage no encontrado para id: {storage_value}.")
 
-        # Redirigir según la acción
         action = request.POST.get('action')
         if action == "add_another":
             return redirect('create_sample')
@@ -242,7 +239,6 @@ def create_sample(request):
             return redirect('sample_list')
 
     else:
-        # Cargar datos para el formulario
         storages = Storage.objects.all().order_by('storage_name')
         storage_types = StorageType.objects.all().order_by('name_storagetype')
 
@@ -256,6 +252,7 @@ def create_sample(request):
 
 @csrf_exempt
 def sample_list(request):
+
     samples = Sample.objects.all()
 
     if request.method == "GET":
@@ -265,6 +262,7 @@ def sample_list(request):
         rack_number = request.GET.get('rack_number')
         box_number = request.GET.get('box_number')
         sample_id = request.GET.get('sample_id')
+        cell = request.GET.get('cell')
 
         if subject_id:
             samples = samples.filter(id_subject=subject_id)
@@ -281,6 +279,8 @@ def sample_list(request):
                                      location__STORAGE_TYPE_id_storagetype__name_storagetype=1)
         if sample_id:
             samples = samples.filter(id_sample__icontains=sample_id)
+        if cell:
+            samples = samples.filter(location__cell=cell)
 
         # Añadir información de ubicación a cada muestra
         for sample in samples:
@@ -309,58 +309,45 @@ def sample_list(request):
 
 
 @csrf_exempt
-def edit_sample(request, sample_id):
-    if request.method == 'POST':
-        # Convertir el cuerpo de la solicitud JSON a un diccionario Python
+@require_POST
+def update_sample(request, sample_id):
+    try:
         data = json.loads(request.body)
+        sample = Sample.objects.get(pk=sample_id)
 
-        # Obtener la muestra por su ID
-        sample = get_object_or_404(Sample, pk=sample_id)
-
-        # Actualizar los campos de la muestra
-        sample.state_preservation = data.get('state_preservation') == '1'
+        # Actualización de los datos básicos de la muestra
+        sample.state_preservation = data.get('state_preservation')
         sample.save()
 
-        # Obtener y actualizar las ubicaciones
-        # Nota: Asegúrate de que estos campos existan en tu modelo y se ajusten a tus necesidades
-        freezer_id = data.get('freezer_id')
-        rack_id = data.get('rack_id')
-        box_id = data.get('box_id')
-        cell = data.get('cell')
+        # Actualización de las ubicaciones
+        for storage_type_id, storage_id in [('3', 'freezer_id'), ('2', 'rack_id'), ('1', 'box_id')]:
+            storage_value = data.get(storage_id)
+            if storage_value:
+                location = Location.objects.filter(
+                    SAMPLE_id_sample_1=sample,
+                    STORAGE_TYPE_id_storagetype_id=storage_type_id
+                ).first()
+                if location:
+                    location.STORAGE_id_storage_1_id = storage_value
+                    # Actualizar celda si es necesario
+                    location.cell = data.get('cell', location.cell)
+                    location.save()
+                else:
+                    # Crear una nueva entrada si no existe
+                    new_location = Location(
+                        SAMPLE_id_sample_1=sample,
+                        STORAGE_id_storage_1_id=storage_value,
+                        STORAGE_TYPE_id_storagetype_id=storage_type_id,
+                        # Usar un valor predeterminado o el proporcionado
+                        cell=data.get('cell', 0)
+                    )
+                    new_location.save()
 
-        # Actualizar Freezer
-        if freezer_id:
-            location_freezer = Location.objects.filter(
-                SAMPLE_id_sample_1=sample, STORAGE_TYPE_id_storagetype__name_storagetype=3).first()
-            if location_freezer:
-                location_freezer.STORAGE_id_storage_1_id = freezer_id
-                location_freezer.cell = cell
-                location_freezer.save()
-
-        # Actualizar Rack
-        if rack_id:
-            location_rack = Location.objects.filter(
-                SAMPLE_id_sample_1=sample, STORAGE_TYPE_id_storagetype__name_storagetype=2).first()
-            if location_rack:
-                location_rack.STORAGE_id_storage_1_id = rack_id
-                location_rack.cell = cell
-                location_rack.save()
-
-        # Actualizar Box
-        if box_id:
-            location_box = Location.objects.filter(
-                SAMPLE_id_sample_1=sample, STORAGE_TYPE_id_storagetype__name_storagetype=1).first()
-            if location_box:
-                location_box.STORAGE_id_storage_1_id = box_id
-                location_box.cell = cell
-                location_box.save()
-
-        # Devuelve una respuesta JSON indicando éxito
-        return JsonResponse({'status': 'success', 'message': 'Muestra actualizada con éxito'})
-
-    else:
-        # Manejar otros métodos HTTP, si es necesario
-        return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+        return JsonResponse({'status': 'success', 'message': 'Sample updated successfully.'})
+    except Sample.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Sample not found.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 
 @csrf_exempt
@@ -524,7 +511,6 @@ def update_samples_shipment(request):
 def shipments_report(request):
     laboratories = Shipment.objects.values_list(
         'laboratory', flat=True).distinct()
-    # Si decides mantener la lista de usuarios para otros propósitos
     users = Account.objects.all()
 
     # Inicia con todos los envíos
@@ -571,6 +557,7 @@ def samples_report(request):
         rack_number = request.GET.get('rack_number')
         box_number = request.GET.get('box_number')
         sample_id = request.GET.get('sample_id')
+        cell = request.GET.get('cell')
 
         if subject_id:
             samples = samples.filter(id_subject=subject_id)
@@ -587,6 +574,8 @@ def samples_report(request):
                                      location__STORAGE_TYPE_id_storagetype__name_storagetype=1)
         if sample_id:
             samples = samples.filter(id_sample__icontains=sample_id)
+        if cell:
+            samples = samples.filter(location__cell=cell)
 
         # Añadir información de ubicación a cada muestra
         for sample in samples:

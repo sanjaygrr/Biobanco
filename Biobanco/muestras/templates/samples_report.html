@@ -31,7 +31,6 @@
             margin-right: 2%;
         }
         
-        /* Limpiar el float después de las secciones */
         .clearfix::after {
             content: "";
             clear: both;
@@ -148,7 +147,7 @@
                     <select name="freezer_number">
                         <option value="">--Seleccionar espacio--</option> <!-- Opción vacía por defecto -->
                         {% for storage in storages %}
-                            {% if storage.STORAGE_TYPE_id_storagetype.name_storagetype == 3 %}
+                            {% if storage.STORAGE_TYPE_id_storagetype.name_storagetype == 1 %}
                                 <option value="{{ storage.storage_name }}">{{ storage.storage_name }}</option>
                             {% endif %}
                         {% endfor %}
@@ -172,7 +171,7 @@
                     <select name="box_number">
                         <option value="">--Seleccionar espacio--</option> <!-- Opción vacía por defecto -->
                         {% for storage in storages %}
-                            {% if storage.STORAGE_TYPE_id_storagetype.name_storagetype == 1 %}
+                            {% if storage.STORAGE_TYPE_id_storagetype.name_storagetype == 3 %}
                                 <option value="{{ storage.storage_name }}">{{ storage.storage_name }}</option>
                             {% endif %}
                         {% endfor %}
@@ -183,6 +182,7 @@
                     <label for="cell">Celda:</label>
                     <input type="number" name="cell" placeholder="?" min="0">
                 </div>
+                
                 <button type="submit">Buscar</button>
             </div>
         </form>
@@ -205,6 +205,7 @@
             </thead>
             <tbody>
                 {% for sample in samples %}
+                {% if sample.SHIPMENT_id_shipment == 0 %}
                 <tr>
                     <td>{{ sample.id_subject }}</td>
                         <td>{{ sample.date_sample }}</td>
@@ -216,6 +217,7 @@
                         <td> {{ sample.box_name }}  </td>
                         <td > {{ sample.location_set.first.cell }} </td>
                     </tr>
+                {% endif %}
                 {% endfor %}
             </tbody>
         </table>

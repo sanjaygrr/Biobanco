@@ -150,8 +150,8 @@
             <tbody>
                 {% for shipment in shipments %}
                 <tr>
-                    <td>{{ request.user.username }}</td> <!-- Muestra el nombre de usuario del usuario actual -->
-                    <td>{{ shipment.date_shipment }}</td>
+                    <td>{{ request.user.username }}</td>
+                    <td>{{ shipment.date_shipment|date:"d/m/Y" }}</td>
                     <td>{{ shipment.laboratory }}</td>
                     <td>{{ shipment.analysis }}</td>
                     <td>{{ shipment.num_samples }}</td>

@@ -18,12 +18,14 @@ import json
 
 
 def home(request):
-    num_samples = Sample.objects.count()
     num_shipments = Shipment.objects.count()
     num_freezers_enabled = Storage.objects.filter(
         STORAGE_TYPE_id_storagetype__name_storagetype=3, storage_state=True).count()
     num_freezers_disabled = Storage.objects.filter(
         STORAGE_TYPE_id_storagetype__name_storagetype=3, storage_state=False).count()
+
+    # Agregar la consulta para contar muestras con SHIPMENT_id_shipment igual a 0
+    num_samples = Sample.objects.filter(SHIPMENT_id_shipment=0).count()
 
     # Obtén el nombre de usuario del usuario actualmente autenticado
     user_name = request.user.username if request.user.is_authenticated else 'Invitado'
@@ -33,6 +35,7 @@ def home(request):
         'num_freezers_disabled': num_freezers_disabled,
         'num_samples': num_samples,
         'num_shipments': num_shipments,
+        # Agrega el nuevo valor al contexto
         'user_name': user_name,  # Agrega el nombre de usuario al contexto
     }
 

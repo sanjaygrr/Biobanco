@@ -103,7 +103,7 @@
     <h1>Detalle del Envío</h1>
     <div>
         <h2>Información del Envío</h2>
-        <p><strong>Fecha de Envío:</strong> {{ shipment.date_shipment }}</p>
+        <p><strong>Fecha de Envío:</strong> {{ shipment.date_shipment|date:"d/m/Y" }}</p>
         <p><strong>Laboratorio:</strong> {{ shipment.laboratory }}</p>
         <p><strong>Análisis:</strong> {{ shipment.analysis }}</p>
     </div>
@@ -124,9 +124,9 @@
                 <tr>
                     <td>{{ sample.id_sample }}</td>
                     <td>{{ sample.id_subject }}</td>
-                    <td>{{ sample.date_sample }}</td>
+                    <td>{{ sample.date_sample|date:"d/m/Y" }}</td>
                     <td>{{ sample.ml_volume }} ml</td>
-                    <td>{% if sample.state_preservation %}Descongelado{% else %}Normal{% endif %}</td>
+                    <td>Descongelado</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -135,30 +135,27 @@
 
     <button id="download-csv">Descargar CSV</button>
 </body>
-
 <script>
-    document.getElementById('download-csv').addEventListener('click', function() {
-        // Crear un objeto CSV con los datos de las muestras
-        var csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += "ID Muestra,ID Sujeto,Fecha de Creación,Volumen,Estado de Preservación\n";
-        {% for sample in samples %}
-            csvContent += "{{ sample.id_sample }},{{ sample.id_subject }},{{ sample.date_sample }},{{ sample.ml_volume }} ml,{% if sample.state_preservation %}Descongelado{% else %}Normal{% endif %}\n";
-        {% endfor %}
+document.getElementById('download-csv').addEventListener('click', function() {
 
-        // Crear un enlace temporal y establecer su atributo href para que apunte a los datos CSV
-        var encodedUri = encodeURI(csvContent);
-        var link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "muestras.csv");
+    var csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "ID Muestra,ID Sujeto,Fecha de Creación,Volumen,Estado de Preservación\n";
+    {% for sample in samples %}
+        var formattedDate = "{{ sample.date_sample|date:'d/m/Y' }}";
+        var statePreservation = {% if sample.state_preservation %}"Descongelado"{% else %}"Normal"{% endif %}; 
+        csvContent += "{{ sample.id_sample }},{{ sample.id_subject }}," + formattedDate + ",{{ sample.ml_volume }} ml," + statePreservation + "\n";
+    {% endfor %}
 
-        // Simular un clic en el enlace para iniciar la descarga del archivo CSV
-        document.body.appendChild(link);
-        link.click();
+    var encodedUri = encodeURI(csvContent);
+    var link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "muestras.csv");
 
-        // Remover el enlace temporal del DOM
-        document.body.removeChild(link);
-    });
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+});
 </script>
-
 </html>
 {% endblock %}

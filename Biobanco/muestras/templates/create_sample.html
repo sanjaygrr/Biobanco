@@ -23,7 +23,7 @@
         min-height: 100vh;
     }
     h2 {
-        color: #4F709C;
+        color: black;
         text-align: center;
         margin-bottom: 30px;
     }
@@ -174,11 +174,11 @@
 <script>
     function handleSubmit(actionValue, event) {
         event.preventDefault();
-
+    
         // Obtén todos los campos requeridos
         var requiredFields = document.querySelectorAll('[required]');
         var allFieldsFilled = true;
-
+    
         // Verifica si todos los campos requeridos están llenos
         for (var i = 0; i < requiredFields.length; i++) {
             if (requiredFields[i].value.trim() === '') {
@@ -186,7 +186,7 @@
                 break; // Si encuentra un campo vacío, detén la verificación
             }
         }
-
+    
         if (!allFieldsFilled) {
             // Si no todos los campos están llenos, muestra un mensaje de error
             Swal.fire({
@@ -195,7 +195,7 @@
                 icon: 'info'
             });
         } else {
-            // Si todos los campos están llenos, muestra la confirmación
+            // Si todos los campos están llenos, realiza la solicitud AJAX
             Swal.fire({
                 title: '¿Crear Muestra?',
                 text: 'No podrás revertir esto!',
@@ -212,7 +212,34 @@
                     hiddenInput.name = 'action';
                     hiddenInput.value = actionValue;
                     form.appendChild(hiddenInput);
-                    form.submit();
+    
+                    // Realizar la solicitud AJAX para verificar la existencia de la ubicación
+                    fetch('/create_sample/', {  // Ajusta la URL según tu configuración de URLs
+                        method: 'POST',
+                        body: new FormData(form),
+                    })
+                    .then(response => {
+                        if (response.status === 400) {
+                            return response.json();
+                        }
+                        return response.text();
+                    })
+                    .then(data => {
+                        if (typeof data === 'object' && data.message) {
+                            // Si la respuesta es un objeto JSON con un mensaje de error
+                            Swal.fire({
+                                title: 'Error',
+                                text: data.message,
+                                icon: 'error',
+                            });
+                        } else {
+                            // Si no hay error, enviar el formulario
+                            form.submit();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
                 }
             });
         }

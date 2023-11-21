@@ -147,33 +147,39 @@
                     <select name="freezer_number">
                         <option value="">--Seleccionar espacio--</option> <!-- Opción vacía por defecto -->
                         {% for storage in storages %}
+                        {% if storage.storage_state != 0 %}
                             {% if storage.STORAGE_TYPE_id_storagetype.name_storagetype == 3 %}
                                 <option value="{{ storage.storage_name }}">{{ storage.storage_name }}</option>
                             {% endif %}
+                        {% endif %}
                         {% endfor %}
                     </select>
                 </div>
-    
+
                 <div>
                     <label for="rack_id">Rack:</label>
                     <select name="rack_number">
                         <option value="">--Seleccionar espacio--</option> <!-- Opción vacía por defecto -->
                         {% for storage in storages %}
+                        {% if storage.storage_state != 0 %}
                             {% if storage.STORAGE_TYPE_id_storagetype.name_storagetype == 2 %}
                                 <option value="{{ storage.storage_name }}">{{ storage.storage_name }}</option>
                             {% endif %}
+                        {% endif %}
                         {% endfor %}
                     </select>
                 </div>
-    
+
                 <div>
                     <label for="caja_id">Caja:</label>
                     <select name="box_number">
                         <option value="">--Seleccionar espacio--</option> <!-- Opción vacía por defecto -->
                         {% for storage in storages %}
+                        {% if storage.storage_state != 0 %}
                             {% if storage.STORAGE_TYPE_id_storagetype.name_storagetype == 1 %}
                                 <option value="{{ storage.storage_name }}">{{ storage.storage_name }}</option>
                             {% endif %}
+                        {% endif %}
                         {% endfor %}
                     </select>
                 </div>

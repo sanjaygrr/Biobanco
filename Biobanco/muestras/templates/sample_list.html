@@ -189,7 +189,7 @@
 
                 <div>
                     <label for="cell">Celda:</label>
-                    <input type="number" name="cell" placeholder="?" min="0">
+                    <input type="number" name="cell" placeholder="" min="0" max="99">
                 </div>
                 <button type="submit">Buscar</button>
             </div>
@@ -272,7 +272,7 @@
                     <!-- Celda -->
                     <td>
                         <span class="cell-display">{{ sample.location_set.first.cell }}</span>
-                        <input type="number" name="cell" class="cell-input" value="{{ sample.location_set.first.cell }}" style="display:none;">
+                        <input type="number" name="cell" class="cell-input" value="{{ sample.location_set.first.cell }}" style="display:none;" min="0" max="99">
                     </td>
             
                     <!-- Botones de acción -->

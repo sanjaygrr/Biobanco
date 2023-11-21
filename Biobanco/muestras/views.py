@@ -141,6 +141,14 @@ def update_space_status(request):
 
         for space_id, status in data['changes'].items():
             storage = Storage.objects.get(pk=space_id)
+
+            # Check if there are associated samples in this space
+            if status is False:  # If trying to disable the space
+                has_samples = Location.objects.filter(
+                    STORAGE_id_storage_1=storage).exists()
+                if has_samples:
+                    return JsonResponse({'error': 'No se puede deshabilitar el espacio porque contiene muestras.'}, status=400)
+
             storage.storage_state = status
             storage.save()
 

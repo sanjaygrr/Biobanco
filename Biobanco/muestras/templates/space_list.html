@@ -231,7 +231,7 @@
             })
             .then(data => {
                 if (data.error) {
-                    throw new Error(data.error);
+                    throw new Error(data.error); // Customize the error message here
                 } else {
                     changes = {};
                     // Si hay espacios para eliminar, procede con la eliminación
@@ -245,9 +245,8 @@
                             body: JSON.stringify(deletions),
                         });
                     } else {
-                        // Si no hay espacios para eliminar, simplemente muestra el mensaje de éxito y termina el flujo
                         swal("Éxito", "Los cambios de estado han sido guardados exitosamente", "success");
-                        throw new Error("No spaces to delete");
+                        // Remove the location.reload() call to prevent page refresh here
                     }
                 }
             })
@@ -259,19 +258,16 @@
             })
             .then(data => {
                 if (data.error) {
-                    throw new Error(data.error);
+                    throw new Error(data.error); // Customize the error message here
                 } else {
                     deletions = {};
                     return swal("Éxito", "Los espacios han sido eliminados exitosamente", "success");
                 }
             })
-            .then(() => {
-                location.reload();
-            })
             .catch((error) => {
-                if (error.message !== "User cancelled the operation" && error.message !== "No spaces to delete") {
+                if (error.message !== "User cancelled the operation") {
                     console.error('Fetch Error:', error);
-                    swal("Error", "Fetch Error: " + error, "error");
+                    swal("Error", "No se puede deshabilitar el espacio porque contiene muestras.", "error");
                 }
             });
         }

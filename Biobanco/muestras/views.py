@@ -381,9 +381,6 @@ def shipments(request):
         )
         shipment.save()
 
-        # Puedes usar el sistema de mensajes para enviar confirmaciones o errores
-        messages.success(request, 'Envío registrado con éxito.')
-
         # Redirige a la vista de selección de muestras
         return redirect('shipments_select')  # Usa el nombre de la ruta
 
@@ -402,6 +399,7 @@ def create_password(request):
 @require_http_methods(["GET", "POST"])
 def shipments_select(request):
     samples = Sample.objects.all().prefetch_related('location_set')
+    selected_samples = []
 
     if request.method == 'POST':
         if 'filter_action' in request.POST:
@@ -428,37 +426,7 @@ def shipments_select(request):
             if subject_id:
                 samples = samples.filter(id_subject=subject_id)
 
-        elif 'register_action' in request.POST:
-            selected_samples = request.POST.getlist('selected_samples')
-            if not selected_samples:
-                messages.error(
-                    request, 'No se seleccionaron muestras para el envío.')
-                return redirect('shipments_select')
-
-            # Asumiendo que tienes un input para la fecha, laboratorio y análisis en tu formulario
-            date_shipment = request.POST.get('date_shipment')
-            laboratory = request.POST.get('laboratory')
-            analysis = request.POST.get('analysis')
-
-            # Crea un nuevo Shipment
-            new_shipment = Shipment.objects.create(
-                date_shipment=date_shipment,
-                laboratory=laboratory,
-                analysis=analysis
-            )
-
-            # Actualiza el SHIPMENT_id_shipment de las muestras seleccionadas
-            Sample.objects.filter(id_sample__in=selected_samples).update(
-                SHIPMENT_id_shipment=new_shipment.id_shipment
-            )
-
-            messages.success(
-                request, f'El envío ha sido registrado con éxito. ID de envío: {new_shipment.id_shipment}')
-            return redirect('shipments_select')
-
     # Este bloque maneja la acción de GET
-    samples = Sample.objects.all().prefetch_related('location_set')
-
     # Añadir información de ubicación a cada muestra
     for sample in samples:
         freezer_location = sample.location_set.filter(

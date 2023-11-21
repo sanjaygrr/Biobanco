@@ -142,7 +142,7 @@ document.getElementById('download-csv').addEventListener('click', function() {
     csvContent += "ID Muestra,ID Sujeto,Fecha de Creación,Volumen,Estado de Preservación\n";
     {% for sample in samples %}
         var formattedDate = "{{ sample.date_sample|date:'d/m/Y' }}";
-        var statePreservation = {% if sample.state_preservation %}"Descongelado"{% else %}"Normal"{% endif %}; 
+        var statePreservation = "Descongelado"; 
         csvContent += "{{ sample.id_sample }},{{ sample.id_subject }}," + formattedDate + ",{{ sample.ml_volume }} ml," + statePreservation + "\n";
     {% endfor %}
 

@@ -174,8 +174,16 @@ def delete_spaces(request):
             return JsonResponse({'error': 'Formato de datos inválido'}, status=400)
 
         for space_id, should_delete in data.items():
+
             if should_delete:
                 storage = Storage.objects.get(pk=space_id)
+
+                # Verificar si hay muestras en este espacio (Location)
+                has_samples = Location.objects.filter(
+                    STORAGE_id_storage_1=storage).exists()
+                if has_samples:
+                    return JsonResponse({'error': 'No se puede eliminar el espacio porque contiene muestras.'}, status=400)
+
                 storage.delete()
 
         return JsonResponse({'message': 'Espacios eliminados con éxito'})

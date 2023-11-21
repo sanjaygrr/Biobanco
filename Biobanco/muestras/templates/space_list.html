@@ -258,7 +258,11 @@
             })
             .then(data => {
                 if (data.error) {
-                    throw new Error(data.error); // Customize the error message here
+                    if (data.error === "No se puede editar el espacio porque contiene muestras.") {
+                        swal("Error", data.error, "error");
+                    } else {
+                        throw new Error(data.error); // Customize the error message here
+                    }
                 } else {
                     deletions = {};
                     return swal("Éxito", "Los espacios han sido eliminados exitosamente", "success");
@@ -267,10 +271,11 @@
             .catch((error) => {
                 if (error.message !== "User cancelled the operation") {
                     console.error('Fetch Error:', error);
-                    swal("Error", "No se puede deshabilitar el espacio porque contiene muestras.", "error");
+                    swal("Error", "No se puede editar el espacio porque contiene muestras", "error");
                 }
             });
         }
+        
         
         document.addEventListener('DOMContentLoaded', function() {
             var headers = document.querySelectorAll('#spacesTable th');

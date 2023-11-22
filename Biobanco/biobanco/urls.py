@@ -25,7 +25,7 @@ urlpatterns = [
     path('delete_sample/<sample_id>/', views.delete_sample, name='delete_sample'),
     path('shipments_report/', views.shipments_report),
     path('samples_report/', views.samples_report),
-    path('update_sample/<int:sample_id>/',
+    path('update_sample/<str:sample_id>/',
          views.update_sample, name='update_sample'),
     path('shipments/detail/<int:shipment_id>/',
          views.shipments_detail, name='shipments_detail'),

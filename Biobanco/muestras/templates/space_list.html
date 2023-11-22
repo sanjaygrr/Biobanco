@@ -182,13 +182,13 @@
         var csrfToken = '{{ csrf_token }}';
         var changes = {};
         var deletions = {};
-        
+    
         function toggleStatus(spaceId, isChecked) {
             const status = isChecked ? true : false;
             changes[spaceId] = status;
             document.getElementById('statusText' + spaceId).innerText = isChecked ? 'Habilitado' : 'Inhabilitado';
         }
-        
+    
         function toggleDelete(spaceId, btnElement) {
             btnElement.classList.toggle('active');
             if (deletions[spaceId]) {
@@ -198,7 +198,7 @@
             }
             btnElement.closest('tr').classList.toggle('to-be-deleted');
         }
-        
+    
         function saveChanges() {
             swal({
                 title: "¿Estás seguro?",
@@ -210,73 +210,69 @@
             .then((willSave) => {
                 if (willSave) {
                     // Primera operación: Actualizar el estado del espacio
-                    return fetch(`/update_space_status/`, {
+                    fetch(`/update_space_status/`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-CSRFToken': csrfToken
                         },
                         body: JSON.stringify({changes: changes}),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error_messages.length > 0) {
+                            data.error_messages.forEach(errorMessage => {
+                                swal("Error", errorMessage, "error");
+                            });
+                        } else {
+                            data.success_messages.forEach(successMessage => {
+                                swal("Éxito", successMessage, "success");
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        swal("Error", error.message, "error");
+                    })
+                    .finally(() => {
+                        // Después de procesar las actualizaciones, procesar las eliminaciones
+                        if (Object.keys(deletions).length > 0) {
+                            fetch(`/delete_spaces/`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': csrfToken
+                                },
+                                body: JSON.stringify(deletions),
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.error_messages.length > 0) {
+                                    data.error_messages.forEach(errorMessage => {
+                                        swal("Error", errorMessage, "error");
+                                    });
+                                } else {
+                                    data.success_messages.forEach(successMessage => {
+                                        swal("Éxito", successMessage, "success");
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                swal("Error", error.message, "error");
+                            })
+                            .finally(() => {
+                                // Limpiar los cambios y eliminaciones después de procesar
+                                changes = {};
+                                deletions = {};
+                            });
+                        }
                     });
                 } else {
                     swal("Tus cambios no se han guardado");
                     throw new Error("User cancelled the operation");
                 }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => Promise.reject(text));
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.error) {
-                    throw new Error(data.error); // Customize the error message here
-                } else {
-                    changes = {};
-                    // Si hay espacios para eliminar, procede con la eliminación
-                    if (Object.keys(deletions).length > 0) {
-                        return fetch(`/delete_spaces/`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRFToken': csrfToken
-                            },
-                            body: JSON.stringify(deletions),
-                        });
-                    } else {
-                        swal("Éxito", "Los cambios de estado han sido guardados exitosamente", "success");
-                        // Remove the location.reload() call to prevent page refresh here
-                    }
-                }
-            })
-            .then(response => {
-                if (response && !response.ok) {
-                    return response.text().then(text => Promise.reject(text));
-                }
-                return response.json ? response.json() : response;
-            })
-            .then(data => {
-                if (data.error) {
-                    if (data.error === "No se puede editar el espacio porque contiene muestras.") {
-                        swal("Error", data.error, "error");
-                    } else {
-                        throw new Error(data.error); // Customize the error message here
-                    }
-                } else {
-                    deletions = {};
-                    return swal("Éxito", "Los espacios han sido eliminados exitosamente", "success");
-                }
-            })
-            .catch((error) => {
-                if (error.message !== "User cancelled the operation") {
-                    console.error('Fetch Error:', error);
-                    swal("Error", "No se puede editar el espacio porque contiene muestras", "error");
-                }
             });
         }
-        
-        
+    
         document.addEventListener('DOMContentLoaded', function() {
             var headers = document.querySelectorAll('#spacesTable th');
             headers.forEach(function(header, index) {
@@ -285,22 +281,22 @@
                 });
             });
         });
-        
+    
         function sortTable(columnIndex) {
             var table = document.getElementById('spacesTable');
             var tbody = table.querySelector('tbody');
             var rows = Array.from(tbody.querySelectorAll('tr'));
-            
+    
             rows.sort(function(rowA, rowB) {
                 var cellA = rowA.cells[columnIndex].innerText;
                 var cellB = rowB.cells[columnIndex].innerText;
                 return cellA.localeCompare(cellB);
             });
-            
+    
             while (tbody.firstChild) {
                 tbody.removeChild(tbody.firstChild);
             }
-            
+    
             rows.forEach(function(row) {
                 tbody.appendChild(row);
             });

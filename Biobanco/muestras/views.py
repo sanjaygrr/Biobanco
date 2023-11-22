@@ -139,6 +139,9 @@ def update_space_status(request):
         if not all(isinstance(space_id, str) and isinstance(status, bool) for space_id, status in data['changes'].items()):
             return JsonResponse({'error': 'Formato de datos inválido'}, status=400)
 
+        success_messages = []
+        error_messages = []
+
         for space_id, status in data['changes'].items():
             storage = Storage.objects.get(pk=space_id)
 
@@ -147,21 +150,29 @@ def update_space_status(request):
                 has_samples = Location.objects.filter(
                     STORAGE_id_storage_1=storage).exists()
                 if has_samples:
-                    return JsonResponse({'error': 'No se puede deshabilitar el espacio porque contiene muestras.'}, status=400)
+                    error_messages.append(
+                        f'No se puede deshabilitar el espacio {storage.storage_name} porque contiene muestras.')
+                else:
+                    storage.storage_state = status
+                    storage.save()
+                    success_messages.append(
+                        f'El espacio {storage.storage_name} ha sido deshabilitado con éxito.')
+            else:
+                storage.storage_state = status
+                storage.save()
+                success_messages.append(
+                    f'El espacio {storage.storage_name} ha sido habilitado con éxito.')
 
-            storage.storage_state = status
-            storage.save()
-
-        return JsonResponse({'message': 'Estados actualizados con éxito'})
+        return JsonResponse({'success_messages': success_messages, 'error_messages': error_messages})
 
     except Storage.DoesNotExist:
-        return JsonResponse({'error': 'Espacio no encontrado'}, status=404)
+        return JsonResponse({'error_messages': ['Espacio no encontrado']}, status=404)
     except json.JSONDecodeError:
-        return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
+        return JsonResponse({'error_messages': ['Datos JSON inválidos']}, status=400)
     except ValueError as ve:
-        return JsonResponse({'error': f'Error de valor: {str(ve)}'}, status=400)
+        return JsonResponse({'error_messages': [f'Error de valor: {str(ve)}']}, status=400)
     except Exception as e:
-        return JsonResponse({'error': f'Error inesperado: {str(e)}'}, status=500)
+        return JsonResponse({'error_messages': [f'Error inesperado: {str(e)}']}, status=500)
 
 
 @csrf_exempt
@@ -170,11 +181,10 @@ def delete_spaces(request):
     try:
         data = json.loads(request.body)
         print("Received data:", data)
-        if not all(isinstance(space_id, str) and isinstance(should_delete, bool) for space_id, should_delete in data.items()):
-            return JsonResponse({'error': 'Formato de datos inválido'}, status=400)
+        success_messages = []
+        error_messages = []
 
         for space_id, should_delete in data.items():
-
             if should_delete:
                 storage = Storage.objects.get(pk=space_id)
 
@@ -182,17 +192,21 @@ def delete_spaces(request):
                 has_samples = Location.objects.filter(
                     STORAGE_id_storage_1=storage).exists()
                 if has_samples:
-                    return JsonResponse({'error': 'No se puede eliminar el espacio porque contiene muestras.'}, status=400)
+                    error_messages.append(
+                        f'No se puede eliminar el espacio {storage.storage_name} porque contiene muestras.')
+                else:
+                    storage.delete()
+                    success_messages.append(
+                        f'El espacio {storage.storage_name} ha sido eliminado con éxito.')
 
-                storage.delete()
+        return JsonResponse({'success_messages': success_messages, 'error_messages': error_messages})
 
-        return JsonResponse({'message': 'Espacios eliminados con éxito'})
     except Storage.DoesNotExist:
-        return JsonResponse({'error': 'Espacio no encontrado'}, status=404)
+        return JsonResponse({'error_messages': ['Espacio no encontrado']}, status=404)
     except json.JSONDecodeError:
-        return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
+        return JsonResponse({'error_messages': ['Datos JSON inválidos']}, status=400)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({'error_messages': [str(e)]}, status=500)
 
 
 def is_valid_int(value):

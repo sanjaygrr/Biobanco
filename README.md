@@ -24,7 +24,9 @@ Recomendamos utilizar un entorno virtual para instalar las dependencias del proy
 2. Realiza las migraciones necesarias con:
 
 -`python3 manage.py makemigrations`
+
 -`python3 manage.py makemigrations acccounts`
+
 -`python3 manage.py migrate`
 
 

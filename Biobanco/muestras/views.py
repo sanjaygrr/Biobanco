@@ -294,6 +294,34 @@ def create_sample(request):
         return render(request, 'create_sample.html', context)
 
 
+def check_sample_space_duplicate(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        freezer_id = data.get('freezer_id')
+        rack_id = data.get('rack_id')
+        caja_id = data.get('caja_id')
+        cell = data.get('cell')
+
+        # Buscar objetos de Storage para freezer, rack y caja
+        try:
+            freezer = Storage.objects.get(
+                storage_name=freezer_id.split('-')[1])
+            rack = Storage.objects.get(storage_name=rack_id.split('-')[1])
+            caja = Storage.objects.get(storage_name=caja_id.split('-')[1])
+        except Storage.DoesNotExist:
+            return JsonResponse({'error': 'Storage no encontrado'}, status=400)
+
+        # Comprobar si ya existe una muestra en la ubicación específica
+        duplicate_exists = Location.objects.filter(
+            STORAGE_id_storage_1=caja,  # Suponiendo que caja es el nivel más específico
+            cell=cell
+        ).exists()
+
+        return JsonResponse({'is_duplicate': duplicate_exists})
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
 @csrf_exempt
 def sample_list(request):
 

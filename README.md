@@ -23,7 +23,8 @@ Recomendamos utilizar un entorno virtual para instalar las dependencias del proy
 1. Renombra el archivo `.env.example` a `.env` y configura las variables de entorno según sea necesario.
 2. Realiza las migraciones necesarias con:
 
-
+`python3 manage.py makemigrations`
+`python3 manage.py makemigrations acccounts`
 `python3 manage.py migrate`
 
 

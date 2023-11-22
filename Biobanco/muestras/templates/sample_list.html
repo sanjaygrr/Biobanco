@@ -420,7 +420,7 @@
         let fila = btn.closest('tr');
         console.log(fila); // Verificar el objeto fila
         console.log(fila.dataset); // Verificar los datos del dataset
-        let sampleId = fila.dataset.sampleId;
+        let sampleId = fila.cells[2].textContent; 
         console.log("Sample ID:", sampleId); 
     
         if (!sampleId) {

@@ -75,33 +75,6 @@ class Sample(models.Model):
         db_table = 'SAMPLE'
 
 
-#class Role(models.Model):
-#   id_role = models.AutoField(primary_key=True)
-#    role_name = models.CharField(max_length=15, null=False, blank=False)
-
-#    def __str__(self):
-#        return self.role_name
-
-#    class Meta:
-#        db_table = 'ROLE'
-
-
-# class User(models.Model):
-#    id_user = models.CharField(max_length=20, primary_key=True)
-#    name = models.CharField(max_length=20)
-#    lastname = models.CharField(max_length=20)
-#    email = models.CharField(max_length=20)
-#    user_state = models.CharField(max_length=20)
-#    password_hash = models.CharField(max_length=20)
-#    ROLE_id_role = models.ForeignKey(Role, on_delete=models.CASCADE)
-
-#    def __str__(self):
-#        return f"{self.name} {self.lastname}"
-
-#    class Meta:
-#        db_table = 'USER'
-
-
 class Location(models.Model):
     id_location = models.AutoField(primary_key=True)
     cell = models.IntegerField(null=True, blank=True)

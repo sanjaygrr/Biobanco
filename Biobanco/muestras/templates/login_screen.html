@@ -28,7 +28,7 @@
             width: 300px;
             margin-bottom: 20px;  <!-- Añadido margen abajo del formulario -->
         }
-        .form-group {
+        .form-Role {
             margin-bottom: 15px;
         }
         label {
@@ -69,11 +69,11 @@
         {% csrf_token %}
         {{ error }}
         
-        <div class="form-group">
+        <div class="form-Role">
             <label for="username">Usuario: </label>
             <input type="text" id="username" name="username" placeholder="Usuario123" required>
         </div>
-        <div class="form-group">
+        <div class="form-Role">
             <label for="password1">Contraseña:</label>
             <input type="password" id="password1" name="password1" placeholder="Contraseña" required>
         </div>

@@ -22,7 +22,7 @@
             border-radius: 5px;
             margin-bottom: 20px;
         }
-        .form-group {
+        .form-Role {
             margin-bottom: 15px;
         }
         label {
@@ -312,11 +312,11 @@
     <div class="filter-box">
         <h2>Criterios de Búsqueda</h2>
         <form action="{% url 'space_list' %}" method="GET">
-            <div class="form-group">
+            <div class="form-Role">
                 <label for="number">Numero de espacio:</label>
                 <input type="number" id="name" name="name">
             </div>
-            <div class="form-group">
+            <div class="form-Role">
                 <label for="type">Tipo de espacio:</label>
                 <select id="type" name="type">
                     <option value="">--Seleccionar--</option>
@@ -325,7 +325,7 @@
                 {% endfor %}
                 </select>
             </div>
-            <div class="form-group">
+            <div class="form-Role">
                 <label for="status">Estado:</label>
                 <select id="status" name="status">
                     <option value="">--Seleccionar--</option>

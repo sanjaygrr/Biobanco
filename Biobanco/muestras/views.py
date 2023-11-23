@@ -5,15 +5,16 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.db.models import Q, Prefetch
 from django.contrib.auth import login
 from django.db import IntegrityError
 from django.http import JsonResponse
 from django.http import HttpResponse
-from accounts.models import Account
+from accounts.models import Account, Group
 from django.contrib import messages
 from django.urls import reverse
+from django.contrib.auth.decorators import permission_required
 import json
 
 
@@ -41,26 +42,53 @@ def home(request):
 
     return render(request, 'home.html', context)
 
-
+#Creación usuario
+@permission_required('muestras.can_signup')
 def signup(request):
     if request.method == 'POST':
-        try:
+        try: 
+            email=request.POST.get('email'),
+            username=request.POST.get('username'),
+            password=request.POST.get('password'),
+            is_tecnico = request.POST.get('is_tecnico') == 'on',
+            is_admin = request.POST.get('is_admin') == 'on',
+            is_supervisor = request.POST.get('is_supervisor') == 'on'
+
+
             user = Account.objects.create_user(
                 email=request.POST['email'],
                 username=request.POST['username'],
-                password=request.POST['password']
+                password=request.POST['password'],
+                is_tecnico = request.POST['is_tecnico'] == 'on',
+                is_admin = request.POST['is_admin'] == 'on',
+                is_supervisor = request.POST['is_supervisor'] == 'on'
             )
+            if is_tecnico:
+                #tecnico_role = Role.objects.get(name='tecnico_role_name')
+                user.Roles.add(Group.objects.get(name='tecnico'))
+
+            elif is_admin:
+                #admin_role = Role.objects.get(name='admin_role_name')
+                user.Roles.add(Group.objects.get(name='administrador'))
+             
+            elif is_supervisor:
+                #supervisor_role = Role.objects.get(name='supervisor_role_name')
+                user.Roles.add(Group.objects.get(name='supervisor'))
+            
+            
+            
+         
             user.save()
             login(request, user)  # Inicia sesión al usuario
             # Renderizar la misma plantilla con un mensaje de éxito
             return render(request, 'signup.html', {'success': 'Usuario creado exitosamente. Ahora estás autenticado.'})
         except IntegrityError:
-            # Mostrar mensaje de error si hay un problema
-            return render(request, 'signup.html', {'error': 'El correo ya existe'})
+                # Mostrar mensaje de error si hay un problema
+                return render(request, 'signup.html', {'error': 'El correo ya existe'})
     else:
         return render(request, 'signup.html')
 
-
+@permission_required('muestras.can_view_user_list')
 def user_list(request):
     search_query = request.GET.get('search')
     if search_query:
@@ -71,7 +99,7 @@ def user_list(request):
 
     return render(request, 'user_list.html', {'users': users})
 
-
+@permission_required('muestras.can_create_space')
 def create_space(request):
     if request.method == 'POST':
         storage_type_id = request.POST.get('storage_type')
@@ -105,7 +133,7 @@ def create_space(request):
     storage_types = StorageType.objects.all()
     return render(request, 'create_space.html', {'storage_types': storage_types})
 
-
+@permission_required('muestras.can_view_space_list')
 def space_list(request):
     storages = Storage.objects.select_related(
         'STORAGE_TYPE_id_storagetype').all()
@@ -133,6 +161,7 @@ def space_list(request):
 
 @csrf_exempt
 @require_POST
+@permission_required('muestras.can_update_space_status')
 def update_space_status(request):
     try:
         data = json.loads(request.body)
@@ -177,6 +206,7 @@ def update_space_status(request):
 
 @csrf_exempt
 @require_POST
+@permission_required('muestras.can_delete_spaces')
 def delete_spaces(request):
     try:
         data = json.loads(request.body)
@@ -218,6 +248,7 @@ def is_valid_int(value):
         return False
 
 
+@permission_required('muestras.can_create_sample')
 def create_sample(request):
     if request.method == "POST":
         id_subject = request.POST.get('id_subject')
@@ -323,6 +354,7 @@ def check_sample_space_duplicate(request):
 
 
 @csrf_exempt
+@permission_required('muestras.can_view_sample_list')
 def sample_list(request):
 
     samples = Sample.objects.all()
@@ -382,6 +414,7 @@ def sample_list(request):
 
 @csrf_exempt
 @require_POST
+@permission_required('muestras.can_edit_sample')
 def update_sample(request, sample_id):
     try:
         data = json.loads(request.body)
@@ -424,6 +457,7 @@ def update_sample(request, sample_id):
 
 @csrf_exempt
 @require_POST
+@permission_required('muestras.can_delete_sample')
 def delete_sample(request, sample_id):
     try:
         sample = Sample.objects.get(pk=sample_id)
@@ -438,6 +472,7 @@ def trazability(request):
 
 
 @require_http_methods(["GET", "POST"])
+@permission_required('muestras.can_create_shipments')
 def shipments(request):
     if request.method == 'POST':
         # Aquí puedes añadir más validaciones si es necesario
@@ -463,12 +498,13 @@ def shipments(request):
 def login_screen(request):
     return render(request, 'login_screen.html')
 
-
+@permission_required('muestras.can_create_password')
 def create_password(request):
     return render(request, 'create_password.html')
 
 
 @require_http_methods(["GET", "POST"])
+@permission_required('muestras.can_view_shipments')
 def shipments_select(request):
     samples = Sample.objects.all().prefetch_related('location_set')
     selected_samples = []
@@ -518,6 +554,7 @@ def shipments_select(request):
 
 @csrf_exempt
 @require_POST
+@permission_required('muestras.can_edit_sample_shipments')
 def update_samples_shipment(request):
     try:
         # Decodifica el cuerpo de la solicitud
@@ -547,7 +584,7 @@ def update_samples_shipment(request):
     except Exception as e:
         return JsonResponse({'error': f'Error inesperado: {str(e)}'}, status=500)
 
-
+@permission_required('muestras.can_export_shipments_report')
 def shipments_report(request):
     laboratories = Shipment.objects.values_list(
         'laboratory', flat=True).distinct()
@@ -586,7 +623,7 @@ def shipments_report(request):
 
     return render(request, 'shipments_report.html', context)
 
-
+@permission_required('muestras.can_view_samples_report')
 def samples_report(request):
     samples = Sample.objects.all()
 
@@ -642,7 +679,7 @@ def samples_report(request):
 
     return render(request, 'samples_report.html', context)
 
-
+@permission_required('muestras.can_view_shipments_detail')
 def shipments_detail(request, shipment_id):
     # Obtiene el envío por su ID o devuelve una página de error 404 si no se encuentra
     shipment = get_object_or_404(Shipment, pk=shipment_id)

@@ -75,15 +75,15 @@ class Sample(models.Model):
         db_table = 'SAMPLE'
 
 
-class Role(models.Model):
-    id_role = models.AutoField(primary_key=True)
-    role_name = models.CharField(max_length=15, null=False, blank=False)
+#class Role(models.Model):
+#   id_role = models.AutoField(primary_key=True)
+#    role_name = models.CharField(max_length=15, null=False, blank=False)
 
-    def __str__(self):
-        return self.role_name
+#    def __str__(self):
+#        return self.role_name
 
-    class Meta:
-        db_table = 'ROLE'
+#    class Meta:
+#        db_table = 'ROLE'
 
 
 # class User(models.Model):

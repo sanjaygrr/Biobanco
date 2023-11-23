@@ -32,8 +32,17 @@ Recomendamos utilizar un entorno virtual para instalar las dependencias del proy
 
 3. Crea un superusuario para acceder al panel de administración con:
 
+    1. - abrir terminal de python para crear roles con: 
+    - `python manage.py shell`
 
-`python3 manage.py createsuperuser`
+    2. - Luego importar tabla de roles para crearlos : 
+    - `from accounts.models import Role`
+    - `Role.objects.create(role_name='Administrador')`
+    - `Role.objects.create(role_name='Tecnico')`
+    - `Role.objects.create(role_name='Supervisor')`
+
+    3. - Una vez creados se puede finalmente crear el superusuario:
+    - `python3 manage.py createsuperuser`
 
 
 ## ⚙️ Poner en marcha el proyecto

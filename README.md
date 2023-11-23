@@ -37,9 +37,9 @@ Recomendamos utilizar un entorno virtual para instalar las dependencias del proy
 
     2. - Luego importar tabla de roles para crearlos : 
     - `from accounts.models import Role`
-    - `Role.objects.create(role_name='Administrador')`
-    - `Role.objects.create(role_name='Tecnico')`
-    - `Role.objects.create(role_name='Supervisor')`
+    - `Role.objects.create(id_role=Role.ADMIN)`
+    - `Role.objects.create(id_role=Role.SUPERVISOR)`
+    - `Role.objects.create(id_role=Role.TECNICO)`
 
     3. - Una vez creados se puede finalmente crear el superusuario:
     - `python3 manage.py createsuperuser`

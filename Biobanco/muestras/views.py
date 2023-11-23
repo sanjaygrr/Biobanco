@@ -11,7 +11,7 @@ from django.contrib.auth import login
 from django.db import IntegrityError
 from django.http import JsonResponse
 from django.http import HttpResponse
-from accounts.models import Account
+from accounts.models import Account, Role
 from django.contrib import messages
 from django.urls import reverse
 import json
@@ -45,17 +45,26 @@ def home(request):
 def signup(request):
     if request.method == 'POST':
         try:
+            # Crear el usuario sin el rol
             user = Account.objects.create_user(
                 email=request.POST['email'],
                 username=request.POST['username'],
+                name=request.POST['name'],
+                lastname=request.POST['lastname'],
                 password=request.POST['password']
             )
+
+            # Asignar el rol y guardar el usuario
+            role_id = request.POST.get('role', Role.ADMIN)
+            user.ROLE_id_role = Role.objects.get(id_role=role_id)
+            user.is_staff = True
+            user.is_admin = True
+            user.is_superuser = True
             user.save()
-            login(request, user)  # Inicia sesión al usuario
-            # Renderizar la misma plantilla con un mensaje de éxito
+
+            login(request, user)
             return render(request, 'signup.html', {'success': 'Usuario creado exitosamente. Ahora estás autenticado.'})
         except IntegrityError:
-            # Mostrar mensaje de error si hay un problema
             return render(request, 'signup.html', {'error': 'El correo ya existe'})
     else:
         return render(request, 'signup.html')

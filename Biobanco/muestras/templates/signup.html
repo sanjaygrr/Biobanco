@@ -30,6 +30,7 @@
         }
         .form-group {
             margin-bottom: 15px;
+            position: relative; /* Añadido para posicionar el checkbox */
         }
         label {
             display: block;
@@ -47,50 +48,44 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin-top: 10px;
         }
         button:hover {
             background-color: rgb(79, 100, 150);
         }
-        /* Estilos para los campos de selección personalizados */
-.styled-checkbox {
-    display: none; /* Oculta el checkbox estándar */
-}
-
-.styled-label {
-    display: inline-block;
-    padding-left: 30px;
-    position: relative;
-    cursor: pointer;
-}
-
-.styled-label:before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 20px;
-    height: 20px;
-    border: 2px solid #4F709C;
-    background-color: #fff;
-}
-
-/* Estilos para el checkbox cuando está marcado */
-.styled-checkbox:checked + .styled-label:before {
-    background-color: #4F709C;
-}
-
-/* Estilos para la marca (✔️) dentro del checkbox cuando está marcado */
-.styled-checkbox:checked + .styled-label:before:after {
-    content: '\2714'; /* Carácter Unicode para el símbolo de marca (✔️) */
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 16px;
-    color: #fff;
-}
-            </style>
+    
+        .styled-checkbox {
+            display: none; /* Oculta completamente el checkbox original */
+        }
+        
+        .styled-label {
+            position: absolute;
+            right: 10px;
+            top: 70%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background-color: #ccc;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+    
+        .styled-label:after {
+            content: '';
+            display: block;
+            width: 12px;
+            height: 12px;
+            margin: 4px;
+            background-color: transparent; /* Color de fondo inicial transparente */
+            border-radius: 2px;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+    
+        .styled-checkbox:checked + .styled-label:after {
+            background-color: #4F709C; /* Cambia el color de fondo cuando está marcado */
+            transform: scale(1.1); /* Añade un ligero efecto de escala para mayor visibilidad */
+        }
+    </style>
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
@@ -99,31 +94,7 @@
     <form action="/signup/" method="POST">
         {% csrf_token %}
         
-        {% if error %}
-            <script>
-                Swal.fire({
-                    title: 'Error',
-                    text: '{{ error }}',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-            </script>
-        {% endif %}
-
-        {% if success %}
-            <script>
-                Swal.fire({
-                    title: 'Éxito',
-                    text: '{{ success }}',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                });
-            </script>
-        {% endif %}
-        {{ error }}
-
-
-
+       
 <!-- Campo de nombre de usuario -->
     <div class="form-group">
         <label for="username">Nombre de usuario:</label>
@@ -158,30 +129,78 @@
     <input type="email" id="email" name="email" placeholder="ejemplo@dominio.com" required>
 </div>
         <!-- Campo de contraseña -->
-<div class="form-group">
-    <label for="password">Contraseña:</label>
-    <input type="password" id="password" name="password" required>
-    <p id="password-error" style="color: red; display: none;">La contraseña debe tener al menos 12 caracteres, incluyendo letras mayúsculas, minúsculas y números.</p>
-</div>
+        <div class="form-group">
+            <label for="password">Contraseña:</label>
+            <div class="password-container">
+                <input type="password" id="password" name="password" required>
+                <input type="checkbox" id="togglePassword" onclick="togglePasswordVisibility()" class="styled-checkbox">
+                <label for="togglePassword" class="styled-label"></label>
+            </div>
+        </div>
 
+        <div>
+        {% if error %}
+        <script>
+            Swal.fire({
+                title: 'Error',
+                text: '{{ error }}',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        </script>
+    {% endif %}
+    
+    {% if success %}
+        <script>
+            Swal.fire({
+                title: 'Éxito',
+                text: '{{ success }}',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+        </script>
+    {% endif %}
+    {{ error }}
+    </div>
         <!-- Botón de envío -->
         <button type="submit">Registrar</button>
     </form>
 
 
-</body>
+
 <script>
-    document.getElementById('password').addEventListener('input', function () {
-        const password = this.value;
-        const passwordError = document.getElementById('password-error');
-        
-        // Valida la contraseña
-        if (password.length < 12 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
-            passwordError.style.display = 'block';
-        } else {
-            passwordError.style.display = 'none';
+    function validarContraseña() {
+        var contraseña = document.getElementById('password').value;
+        var regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{12,}$/;
+
+        if (!regex.test(contraseña)) {
+            Swal.fire({
+                title: 'Error',
+                text: 'La contraseña debe tener al menos 12 caracteres, incluyendo mayúsculas, minúsculas y números.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            return false;
         }
-    });
+        return true;
+    }
+
+    document.querySelector('form').onsubmit = function(e) {
+        if (!validarContraseña()) {
+            e.preventDefault();
+        }
+    };
 </script>
+
+<script>
+    function togglePasswordVisibility() {
+        var passwordInput = document.getElementById('password');
+        var toggleCheckbox = document.getElementById('togglePassword');
+        passwordInput.type = toggleCheckbox.checked ? 'text' : 'password';
+    }
+</script>
+
+
+</body>
 </html>
 {% endblock  %}

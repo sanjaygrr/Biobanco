@@ -1,4 +1,4 @@
-from .models import Storage, StorageType, Sample, Location, Shipment
+from .models import Storage, StorageType, Sample, Location, Shipment, SampleEvent
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.forms import UserCreationForm
 from django.views.decorators.http import require_POST
@@ -14,7 +14,9 @@ from django.http import HttpResponse
 from accounts.models import Account, Role
 from django.contrib import messages
 from django.urls import reverse
+from django.db import transaction
 import json
+from django.utils import timezone
 
 
 def home(request):
@@ -248,48 +250,78 @@ def create_sample(request):
         storage_combination = f"{request.POST.get('freezer_id')}-{request.POST.get('rack_id')}-{request.POST.get('caja_id')}"
         cell_value = int(request.POST.get('cell'))
 
-        existing_location = Location.objects.filter(
-            STORAGE_id_storage_1__storage_name=storage_combination,
-            cell=cell_value
-        ).first()
+        with transaction.atomic():
+            existing_location = Location.objects.filter(
+                STORAGE_id_storage_1__storage_name=storage_combination,
+                cell=cell_value
+            ).first()
 
-        if existing_location:
-            # Si existe una ubicación en el mismo espacio, muestra una alerta de SweetAlert
-            return JsonResponse({'message': 'No se puede crear muestra en el mismo espacio repetida'}, status=400)
+            if existing_location:
+                # Si existe una ubicación en el mismo espacio, muestra una alerta de SweetAlert
+                return JsonResponse({'message': 'No se puede crear muestra en el mismo espacio repetida'}, status=400)
 
-        if shipment_id:
-            sample.SHIPMENT_id_shipment = int(shipment_id)
+            existing_samples_in_location = Sample.objects.filter(
+                location__STORAGE_id_storage_1__storage_name=storage_combination,
+                location__cell=cell_value
+            )
 
-        sample.save()
+            if existing_samples_in_location.exists():
+                # Si existen muestras en la misma ubicación, muestra una alerta de SweetAlert
+                return JsonResponse({'message': 'Ya existe una muestra en esta ubicación'}, status=400)
 
-        # Lógica de Guardado de Ubicaciones
-        for storage_value_key in ['freezer_id', 'rack_id', 'caja_id']:
-            storage_value = request.POST.get(storage_value_key)
-            storage_type, storage_name = storage_value.split('-')
+            if shipment_id:
+                sample.SHIPMENT_id_shipment = int(shipment_id)
 
-            # Buscar el objeto Storage usando el nombre del almacenamiento:
-            storage_obj = Storage.objects.filter(
-                storage_name=storage_name).first()
-            if storage_obj:
-                cell_value = int(request.POST.get('cell'))
-                location = Location(
-                    cell=cell_value,
-                    SAMPLE_id_sample_1=sample,
-                    STORAGE_id_storage_1=storage_obj,
-                    STORAGE_TYPE_id_storagetype_id=int(storage_type)
-                )
-                location.save()
-                print(
-                    f"Ubicación para {storage_obj.storage_name} guardada con éxito.")
+            sample.save()
+
+            # Lógica para crear un registro en SampleEvent
+            event_user = request.user.username  # Obtener el nombre del usuario actual
+            action = "Registrar muestra"  # Acción por defecto
+            # Detalle
+            action_information = f"ID de la muestra: {sample.id_sample}"
+
+            sample_event = SampleEvent(
+                event_user=event_user,
+                event_date=date_sample,  # Puedes usar la fecha de la muestra o la fecha actual
+                action=action,
+                action_information=action_information,
+                SAMPLE_id_sample=sample
+            )
+            sample_event.save()
+
+            # Lógica de Guardado de Ubicaciones
+            for storage_value_key in ['freezer_id', 'rack_id', 'caja_id']:
+                storage_value = request.POST.get(storage_value_key)
+                storage_type, storage_name = storage_value.split('-')
+
+                # Buscar el objeto Storage usando el nombre del almacenamiento:
+                storage_obj = Storage.objects.filter(
+                    storage_name=storage_name).first()
+                if storage_obj:
+                    cell_value = int(request.POST.get('cell'))
+                    location = Location(
+                        cell=cell_value,
+                        SAMPLE_id_sample_1=sample,
+                        STORAGE_id_storage_1=storage_obj,
+                        STORAGE_TYPE_id_storagetype_id=int(storage_type)
+                    )
+                    location.save()
+                    if location.id_location:
+                        print(
+                            f"Ubicación para {storage_obj.storage_name} guardada con éxito.")
+                    else:
+                        print(
+                            f"Error al guardar la ubicación para {storage_obj.storage_name}.")
+                        return JsonResponse({'message': 'Error al guardar la ubicación'}, status=400)
+                else:
+                    print(
+                        f"Objeto Storage no encontrado para id: {storage_value}.")
+
+            action = request.POST.get('action')
+            if action == "add_another":
+                return redirect('create_sample')
             else:
-                print(
-                    f"Objeto Storage no encontrado para id: {storage_value}.")
-
-        action = request.POST.get('action')
-        if action == "add_another":
-            return redirect('create_sample')
-        else:
-            return redirect('sample_list')
+                return redirect('sample_list')
 
     else:
         storages = Storage.objects.all().order_by('storage_name')
@@ -303,32 +335,43 @@ def create_sample(request):
         return render(request, 'create_sample.html', context)
 
 
-def check_sample_space_duplicate(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        freezer_id = data.get('freezer_id')
-        rack_id = data.get('rack_id')
-        caja_id = data.get('caja_id')
-        cell = data.get('cell')
+# def check_sample_space_duplicate(request):
+#     if request.method == 'POST':
+#         data = json.loads(request.body)
+#         freezer_id = data.get('freezer_id', '')
+#         rack_id = data.get('rack_id', '')
+#         caja_id = data.get('caja_id', '')
+#         cell = data.get('cell')
 
-        # Buscar objetos de Storage para freezer, rack y caja
-        try:
-            freezer = Storage.objects.get(
-                storage_name=freezer_id.split('-')[1])
-            rack = Storage.objects.get(storage_name=rack_id.split('-')[1])
-            caja = Storage.objects.get(storage_name=caja_id.split('-')[1])
-        except Storage.DoesNotExist:
-            return JsonResponse({'error': 'Storage no encontrado'}, status=400)
+#         # Validación básica para asegurarse de que los IDs contienen '-'
+#         if '-' not in freezer_id or '-' not in rack_id or '-' not in caja_id:
+#             return JsonResponse({'error': 'Formato inválido de IDs de almacenamiento'}, status=400)
 
-        # Comprobar si ya existe una muestra en la ubicación específica
-        duplicate_exists = Location.objects.filter(
-            STORAGE_id_storage_1=caja,  # Suponiendo que caja es el nivel más específico
-            cell=cell
-        ).exists()
+#         try:
+#             # Separar el nombre del storage de su ID
+#             freezer_name = freezer_id.split('-')[1]
+#             rack_name = rack_id.split('-')[1]
+#             caja_name = caja_id.split('-')[1]
 
-        return JsonResponse({'is_duplicate': duplicate_exists})
+#             # Buscar objetos de Storage para freezer, rack y caja
+#             freezer = Storage.objects.get(storage_name=freezer_name)
+#             rack = Storage.objects.get(storage_name=rack_name)
+#             caja = Storage.objects.get(storage_name=caja_name)
 
-    return JsonResponse({'error': 'Invalid request'}, status=400)
+#         except Storage.DoesNotExist:
+#             return JsonResponse({'error': 'Storage no encontrado'}, status=400)
+#         except IndexError:
+#             return JsonResponse({'error': 'Error en el formato de IDs de almacenamiento'}, status=400)
+
+#         # Comprobar si ya existe una muestra en la ubicación específica
+#         duplicate_exists = Location.objects.filter(
+#             STORAGE_id_storage_1=caja,  # Suponiendo que caja es el nivel más específico
+#             cell=cell
+#         ).exists()
+
+#         return JsonResponse({'is_duplicate': duplicate_exists})
+
+#     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
 @csrf_exempt
@@ -433,23 +476,71 @@ def update_sample(request, sample_id):
 
 @csrf_exempt
 @require_POST
+@transaction.atomic
 def delete_sample(request, sample_id):
     try:
+        print(
+            f"Iniciando proceso de eliminación para la muestra con ID {sample_id}.")
         sample = Sample.objects.get(pk=sample_id)
+        print(f"Muestra encontrada: {sample}")
+
+        # Crear y guardar el SampleEvent antes de eliminar la muestra
+        sample_event = SampleEvent(
+            event_user=request.user.username,
+            event_date=timezone.now(),
+            action="Eliminar muestra",
+            action_information=f"Muestra con ID {sample_id} eliminada",
+            SAMPLE_id_sample=sample
+        )
+        sample_event.save()
+        print(f"SampleEvent creado con éxito: {sample_event.id_event}")
+
         sample.delete()
+        print(f"Muestra eliminada con éxito.")
+
         return JsonResponse({'status': 'success', 'message': 'Sample deleted successfully.'})
-    except Sample.DoesNotExist:
+
+    except Sample.DoesNotExist as e:
+        print(f"Error: la muestra con ID {sample_id} no existe. {e}")
         return JsonResponse({'status': 'error', 'message': 'Sample not found.'}, status=404)
+    except Exception as e:
+        print(
+            f"Error inesperado al eliminar la muestra con ID {sample_id}: {e}")
+        return JsonResponse({'error_messages': [str(e)]}, status=500)
 
 
 def trazability(request):
-    return render(request, 'trazability.html')
+    # Recupera los parámetros de búsqueda de request.GET
+    subject_id = request.GET.get('subject_id')
+    sample_date = request.GET.get('sample_date')
+    sample_number = request.GET.get('sample_number')
+
+    # Filtra los objetos SampleEvent en función de los parámetros de búsqueda
+    sample_events = SampleEvent.objects.all()
+
+    if subject_id:
+        if len(subject_id) == 1:
+            sample_events = sample_events.filter(event_user=subject_id)
+        else:
+            sample_events = sample_events.filter(
+                event_user__contains=subject_id)
+
+    if sample_date:
+        sample_events = sample_events.filter(event_date=sample_date)
+
+    if sample_number:
+        sample_events = sample_events.filter(
+            action_information__icontains=sample_number)
+
+    # Pasa los objetos filtrados al contexto de la plantilla
+    context = {'sample_events': sample_events}
+    return render(request, 'trazability.html', context)
 
 
 @require_http_methods(["GET", "POST"])
 def shipments(request):
     if request.method == 'POST':
-        # Aquí puedes añadir más validaciones si es necesario
+        # Recolección de datos del formulario
         date_shipment = request.POST.get('date_shipment')
         laboratory = request.POST.get('laboratory')
         analysis = request.POST.get('analysis')
@@ -462,10 +553,26 @@ def shipments(request):
         )
         shipment.save()
 
-        # Redirige a la vista de selección de muestras
-        return redirect('shipments_select')  # Usa el nombre de la ruta
+        # Obtener la última muestra guardada
+        # Asumiendo que 'id_sample' es la clave principal
+        last_sample = Sample.objects.latest('id_sample')
 
-    # Si es un GET, simplemente renderiza la página con el formulario
+        # Crear y guardar el SampleEvent
+        sample_event = SampleEvent(
+            # Asumiendo que quieres registrar el usuario que realiza la acción
+            event_user=request.user.username,
+            event_date=timezone.now(),  # Fecha actual
+            action="Crear envío",  # Acción realizada
+            action_information=f"Envío creado a laboratorio {shipment.laboratory}",
+            SAMPLE_id_sample=last_sample
+        )
+        sample_event.save()
+
+        # Redirigir a la vista de selección de muestras
+        # Asegúrate de que 'shipments_select' es el nombre correcto de la ruta
+        return redirect('shipments_select')
+
+    # Si es un GET, renderiza la página con el formulario
     return render(request, 'shipments.html')
 
 

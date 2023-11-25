@@ -71,14 +71,14 @@
         color: white;
     }
 </style>
-<h1>Trazabilidad</h1>
-    
+<h1>Trazabilidad de Muestras</h1>
+
 <div class="section">
     <div class="filter-box">
         <h2>Criterios de Búsqueda</h2>
-        <form action="/home" method="GET">
+        <form id="search-form">
             <div class="form-group">
-                <label for="subject_id">ID Sujeto:</label>
+                <label for="subject_id">usuario:</label>
                 <input type="text" id="subject_id" name="subject_id">
             </div>
             <div class="form-group">
@@ -89,15 +89,16 @@
                 <label for="sample_number">Número de Muestra:</label>
                 <input type="text" id="sample_number" name="sample_number">
             </div>
-            <button onclick="redirectToHome()">Ver Historial</button>
+            <button type="button" onclick="submitForm()">Ver Historial</button>
         </form>
     </div>
 </div>
-    
+
 <div class="section">
     <div class="samples-list">
-        <h2>Lista de Muestras</h2>
-        <table>
+        <h2>Lista de Eventos</h2>
+        <table id="sample-events-table">
+            <!-- Encabezados de tabla aquí -->
             <thead>
                 <tr>
                     <th>Usuario</th>
@@ -107,36 +108,24 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Valores de prueba -->
-                <tr>
-                    <td>Usuario1</td>
-                    <td>2023-10-10</td>
-                    <td>Acción A</td>
-                    <td>Detalle de la acción A</td>
-                </tr>
-                <tr>
-                    <td>Usuario2</td>
-                    <td>2023-10-05</td>
-                    <td>Acción B</td>
-                    <td>Detalle de la acción B</td>
-                </tr>
-                <!-- Fin de valores de prueba -->
-
-                {% for sample in samples %}
+                <!-- Datos de muestra de eventos aquí -->
+                {% for sample_event in sample_events %}
                     <tr>
-                        <td>{{ sample.user }}</td>
-                        <td>{{ sample.date }}</td>
-                        <td>{{ sample.action }}</td>
-                        <td>{{ sample.detail }}</td>
+                        <td>{{ sample_event.event_user }}</td>
+                        <td>{{ sample_event.event_date }}</td>
+                        <td>{{ sample_event.action }}</td>
+                        <td>{{ sample_event.action_information }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+
 <script>
-    function redirectToHome() {
-        window.location.href = "/home";
+    function submitForm() {
+        const form = document.getElementById('search-form');
+        form.submit();
     }
 </script>
 {% endblock %}

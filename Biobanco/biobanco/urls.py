@@ -29,7 +29,7 @@ urlpatterns = [
          views.update_sample, name='update_sample'),
     path('shipments/detail/<int:shipment_id>/',
          views.shipments_detail, name='shipments_detail'),
-    path('check_sample_space_duplicate/', views.check_sample_space_duplicate,
-         name='check_sample_space_duplicate'),
+    #     path('check_sample_space_duplicate/', views.check_sample_space_duplicate,
+    #          name='check_sample_space_duplicate'),
 
 ]

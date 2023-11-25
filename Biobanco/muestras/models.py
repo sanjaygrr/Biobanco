@@ -109,7 +109,8 @@ class SampleEvent(models.Model):
     event_date = models.DateField()
     action = models.CharField(max_length=15)
     action_information = models.CharField(max_length=100)
-    SAMPLE_id_sample = models.ForeignKey(Sample, on_delete=models.CASCADE)
+    SAMPLE_id_sample = models.ForeignKey(
+        Sample, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return f"Event {self.id_event} on Sample {self.SAMPLE_id_sample.id_sample}"

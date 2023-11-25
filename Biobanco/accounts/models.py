@@ -4,7 +4,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 
 class MyAccountManager(BaseUserManager):
 
-    def create_user(self, email, username, name, lastname, password=None):
+    def create_user(self, email, username, password=None, name=None, lastname=None):
         if not email:
             raise ValueError("Users must have an email address")
         if not username:
@@ -13,8 +13,8 @@ class MyAccountManager(BaseUserManager):
         user = self.model(
             email=self.normalize_email(email),
             username=username,
-            name=name,              # Agregar el manejo de 'name'
-            lastname=lastname       # Agregar el manejo de 'lastname'
+            name=name,
+            lastname=lastname,
         )
 
         user.set_password(password)
@@ -27,7 +27,8 @@ class MyAccountManager(BaseUserManager):
             username=username,
             password=password,
         )
-        # Asignar el rol después de crear el usuario
+
+        # Assign the role after creating the user
         role_admin = Role.objects.get(id_role=Role.ADMIN)
         user.ROLE_id_role = role_admin
 
@@ -35,9 +36,6 @@ class MyAccountManager(BaseUserManager):
         user.is_staff = True
         user.is_superuser = True
         user.save(using=self._db)
-
-    def get_by_natural_key(self, email):
-        return self.get(email=self.normalize_email(email))
 
 
 class Role(models.Model):

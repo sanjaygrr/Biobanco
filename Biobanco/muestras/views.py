@@ -606,7 +606,8 @@ def shipments(request):
         shipment = Shipment(
             date_shipment=date_shipment,
             laboratory=laboratory,
-            analysis=analysis
+            analysis=analysis,
+            sender=request.user  # Asignar el usuario actual como remitente
         )
         shipment.save()
 
@@ -737,8 +738,7 @@ def shipments_report(request):
     laboratory_filter = request.GET.get('laboratory')
 
     if sender_filter:
-        # Filtra por el remitente si se proporciona un valor
-        shipments = shipments.filter(created_by_id=sender_filter)
+        shipments = shipments.filter(sender_id=sender_filter)
 
     if date_filter:
         # Filtra por la fecha si se proporciona un valor

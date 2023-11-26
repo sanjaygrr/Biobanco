@@ -18,8 +18,8 @@ urlpatterns = [
     path('shipments/', views.shipments, name='shipments'),
     path('login_screen/', views.login_screen, name='login'),
     path('logout/', views.logout_screen, name='logout'),
-    #path('not_auth/', views.login_screen, name='not_auth'),
-    #path('display_message/', views.display_message, name='display_message'),
+    # path('not_auth/', views.login_screen, name='not_auth'),
+    # path('display_message/', views.display_message, name='display_message'),
     path('create_password/', views.create_password),
     path('shipments_select/', views.shipments_select, name='shipments_select'),
     path('update-shipment/', views.update_samples_shipment,
@@ -32,7 +32,5 @@ urlpatterns = [
          views.update_sample, name='update_sample'),
     path('shipments/detail/<int:shipment_id>/',
          views.shipments_detail, name='shipments_detail'),
-    #     path('check_sample_space_duplicate/', views.check_sample_space_duplicate,
-    #          name='check_sample_space_duplicate'),
 
 ]

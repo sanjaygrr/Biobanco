@@ -150,7 +150,7 @@
             <tbody>
                 {% for shipment in shipments %}
                 <tr>
-                    <td>{{ request.user.username }}</td>
+                    <td>{{ shipment.sender }}</td>
                     <td>{{ shipment.date_shipment|date:"d/m/Y" }}</td>
                     <td>{{ shipment.laboratory }}</td>
                     <td>{{ shipment.analysis }}</td>

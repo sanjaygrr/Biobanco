@@ -285,7 +285,7 @@ def create_sample(request):
 
             sample_event = SampleEvent(
                 event_user=event_user,
-                event_date=date_sample,  # Puedes usar la fecha de la muestra o la fecha actual
+                event_date=timezone.now(),
                 action=action,
                 action_information=action_information,
                 SAMPLE_id_sample=sample
@@ -491,7 +491,7 @@ def update_sample(request, sample_id):
         action_information = f"ID de la muestra: {sample.id_sample}"
         SampleEvent.objects.create(
             event_user=event_user,
-            event_date=sample.date_sample,
+            event_date=timezone.now(),
             action="Actualizar muestra",
             action_information=action_information,
             SAMPLE_id_sample=sample

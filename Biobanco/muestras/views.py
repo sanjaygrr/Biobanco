@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q, Prefetch
 from django.db import IntegrityError
 from django.http import JsonResponse
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseNotFound
 from accounts.models import Account, Role
 from django.contrib import messages
 from django.urls import reverse
@@ -22,6 +22,17 @@ from django.contrib.auth.decorators import login_required
 
 logger = logging.getLogger(__name__)
 
+#para errores en URL
+@login_required
+def custom_not_found_view(request, exception):
+    if request.user.is_authenticated:
+
+        return render(request, 'login', status=404)
+    else:
+
+        logout(request)
+
+        return redirect('login')
 
 def login_screen(request):
 
@@ -65,9 +76,14 @@ def logout_screen(request):
 
     return redirect('login')
 
-    
-#obtiene y elimina mensaje de la salida de sesión
+
 @login_required
+def redirect_login(request):
+
+    return redirect(request, 'login_screen.html') 
+
+#obtiene y elimina mensaje de la salida de sesión
+#@login_required
 #def display_message(request):
     #logout_message = request.session.pop('logout_message', None)  
     #return render(request, 'login_screen.html', {'logout_message':logout_message})

@@ -30,32 +30,30 @@ def login_screen(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-        
-        user = authenticate(username=username, password=password) 
 
-  
+        user = authenticate(username=username, password=password)
+
         if user is not None:
 
             login(request, user)
             if 'next' in request.POST:
                 return redirect(request.POST.get('next'))
-            
+
             else:
-                return redirect('home')    #redirecciona al home de biobanco
-        
+                return redirect('home')  # redirecciona al home de biobanco
+
         else:
-            messages.error(request, 'Usuario y/o Password incorrecto(s)') 
-            
+            messages.error(request, 'Usuario y/o Password incorrecto(s)')
+
             return render(request, 'login_screen.html')
-        
-    #si usuario no está autenticado
+
+    # si usuario no está autenticado
     if not request.user.is_authenticated and 'next' in request.GET:
 
-        messages.info(request, 'Debes estar autenticado para acceder a esta página')
-
+        messages.info(
+            request, 'Debes estar autenticado para acceder a esta página')
 
     return render(request, 'login_screen.html')
-
 
 
 @login_required
@@ -65,20 +63,18 @@ def logout_screen(request):
 
     return redirect('login')
 
-    
-#obtiene y elimina mensaje de la salida de sesión
+
+# obtiene y elimina mensaje de la salida de sesión
 @login_required
-#def display_message(request):
-    #logout_message = request.session.pop('logout_message', None)  
-    #return render(request, 'login_screen.html', {'logout_message':logout_message})
-    #if logout_message and 'logout_message_displayed' not in request.session:
-    #if logout_message:
-        #request.session['logout_message_displayed'] = True
-        #return render(request, 'login.html', {'logout_message':logout_message})
-    #else:
-        #return redirect('login')
-
-
+# def display_message(request):
+# logout_message = request.session.pop('logout_message', None)
+# return render(request, 'login_screen.html', {'logout_message':logout_message})
+# if logout_message and 'logout_message_displayed' not in request.session:
+# if logout_message:
+# request.session['logout_message_displayed'] = True
+# return render(request, 'login.html', {'logout_message':logout_message})
+# else:
+# return redirect('login')
 @login_required
 def home(request):
     num_shipments = Shipment.objects.count()
@@ -103,6 +99,7 @@ def home(request):
     }
 
     return render(request, 'home.html', context)
+
 
 @login_required
 def signup(request):
@@ -132,6 +129,7 @@ def signup(request):
     else:
         return render(request, 'signup.html')
 
+
 @login_required
 def user_list(request):
     search_query = request.GET.get('search')
@@ -142,6 +140,7 @@ def user_list(request):
         users = Account.objects.all()
 
     return render(request, 'user_list.html', {'users': users})
+
 
 @login_required
 def create_space(request):
@@ -176,6 +175,7 @@ def create_space(request):
 
     storage_types = StorageType.objects.all()
     return render(request, 'create_space.html', {'storage_types': storage_types})
+
 
 @login_required
 def space_list(request):
@@ -282,6 +282,7 @@ def delete_spaces(request):
     except Exception as e:
         return JsonResponse({'error_messages': [str(e)]}, status=500)
 
+
 @login_required
 def is_valid_int(value):
     """Función de ayuda para comprobar si un valor puede ser convertido a int."""
@@ -290,6 +291,7 @@ def is_valid_int(value):
         return True
     except ValueError:
         return False
+
 
 @login_required
 def create_sample(request):
@@ -310,27 +312,19 @@ def create_sample(request):
             state_preservation=state_preservation,
             specification=specification
         )
-        storage_combination = f"{request.POST.get('freezer_id')}-{request.POST.get('rack_id')}-{request.POST.get('caja_id')}"
-        cell_value = int(request.POST.get('cell'))
 
         with transaction.atomic():
-            existing_location = Location.objects.filter(
-                STORAGE_id_storage_1__storage_name=storage_combination,
-                cell=cell_value
+            # Validación de muestra repetida con criterios adicionales
+            existing_sample = Sample.objects.filter(
+                id_subject=id_subject,
+                date_sample=date_sample,
+                ml_volume=ml_volume,
+                state_preservation=state_preservation,
+                specification=specification
             ).first()
 
-            if existing_location:
-                # Si existe una ubicación en el mismo espacio, muestra una alerta de SweetAlert
-                return JsonResponse({'message': 'No se puede crear muestra en el mismo espacio repetida'}, status=400)
-
-            existing_samples_in_location = Sample.objects.filter(
-                location__STORAGE_id_storage_1__storage_name=storage_combination,
-                location__cell=cell_value
-            )
-
-            if existing_samples_in_location.exists():
-                # Si existen muestras en la misma ubicación, muestra una alerta de SweetAlert
-                return JsonResponse({'message': 'Ya existe una muestra en esta ubicación'}, status=400)
+            if existing_sample:
+                return JsonResponse({'message': 'Ya existe una muestra con los mismos detalles proporcionados'}, status=400)
 
             if shipment_id:
                 sample.SHIPMENT_id_shipment = int(shipment_id)
@@ -396,45 +390,6 @@ def create_sample(request):
         }
 
         return render(request, 'create_sample.html', context)
-
-
-# def check_sample_space_duplicate(request):
-#     if request.method == 'POST':
-#         data = json.loads(request.body)
-#         freezer_id = data.get('freezer_id', '')
-#         rack_id = data.get('rack_id', '')
-#         caja_id = data.get('caja_id', '')
-#         cell = data.get('cell')
-
-#         # Validación básica para asegurarse de que los IDs contienen '-'
-#         if '-' not in freezer_id or '-' not in rack_id or '-' not in caja_id:
-#             return JsonResponse({'error': 'Formato inválido de IDs de almacenamiento'}, status=400)
-
-#         try:
-#             # Separar el nombre del storage de su ID
-#             freezer_name = freezer_id.split('-')[1]
-#             rack_name = rack_id.split('-')[1]
-#             caja_name = caja_id.split('-')[1]
-
-#             # Buscar objetos de Storage para freezer, rack y caja
-#             freezer = Storage.objects.get(storage_name=freezer_name)
-#             rack = Storage.objects.get(storage_name=rack_name)
-#             caja = Storage.objects.get(storage_name=caja_name)
-
-#         except Storage.DoesNotExist:
-#             return JsonResponse({'error': 'Storage no encontrado'}, status=400)
-#         except IndexError:
-#             return JsonResponse({'error': 'Error en el formato de IDs de almacenamiento'}, status=400)
-
-#         # Comprobar si ya existe una muestra en la ubicación específica
-#         duplicate_exists = Location.objects.filter(
-#             STORAGE_id_storage_1=caja,  # Suponiendo que caja es el nivel más específico
-#             cell=cell
-#         ).exists()
-
-#         return JsonResponse({'is_duplicate': duplicate_exists})
-
-#     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
 @csrf_exempt
@@ -608,6 +563,7 @@ def delete_sample(request, sample_id):
             f"Error inesperado al eliminar la muestra con ID {sample_id}: {e}")
         return JsonResponse({'error_messages': [str(e)]}, status=500)
 
+
 @login_required
 def trazability(request):
     # Recupera los parámetros de búsqueda de request.GET
@@ -635,6 +591,7 @@ def trazability(request):
     # Pasa los objetos filtrados al contexto de la plantilla
     context = {'sample_events': sample_events}
     return render(request, 'trazability.html', context)
+
 
 @login_required
 @require_http_methods(["GET", "POST"])
@@ -676,10 +633,10 @@ def shipments(request):
     return render(request, 'shipments.html')
 
 
-
 @login_required
 def create_password(request):
     return render(request, 'create_password.html')
+
 
 @login_required
 @require_http_methods(["GET", "POST"])
@@ -764,6 +721,7 @@ def update_samples_shipment(request):
     except Exception as e:
         return JsonResponse({'error': f'Error inesperado: {str(e)}'}, status=500)
 
+
 @login_required
 def shipments_report(request):
     laboratories = Shipment.objects.values_list(
@@ -802,6 +760,7 @@ def shipments_report(request):
     }
 
     return render(request, 'shipments_report.html', context)
+
 
 @login_required
 def samples_report(request):
@@ -858,6 +817,7 @@ def samples_report(request):
     }
 
     return render(request, 'samples_report.html', context)
+
 
 @login_required
 def shipments_detail(request, shipment_id):

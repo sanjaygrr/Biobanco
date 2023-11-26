@@ -40,7 +40,7 @@
             padding: 8px;
             box-sizing: border-box;
         }
-        button {
+        /*button {
             background-color: #4F709C;
             color: white;
             padding: 10px 15px;
@@ -50,13 +50,42 @@
         }
         button:hover {
             background-color: rgb(79, 100, 150);
+        }*/
+        input[type="submit"] {
+            background-color: #4F709C; /* Blue background color */
+            color: white; /* Text color */
+            padding: 10px 20px; /* Padding */
+            border: none; /* Remove border */
+            border-radius: 5px; /* Rounded corners */
+            cursor: pointer; /* Change cursor on hover */
+            font-size: 16px; /* Font size */
         }
+
+        input[type="submit"]:hover {
+            background-color: rgb(79, 100, 150); /* Darker blue on hover */
+        }
+
+
         .forgot-password {
             text-align: center;  <!-- Centra el texto -->
             color: #555;
         }
         body.hide-nav nav {
             display: none;
+        }
+
+        .message {
+            text-align: center;
+            padding: 5px;
+            /*margin: 10px auto;*/
+            /*width: 50%;*/
+            border-radius: 2px;
+        }
+
+        .message.info {
+            /*background-color: #cce5ff; /* Light blue */
+            color: #ff0000;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -65,27 +94,34 @@
     <div class="left-section">
         <img src="{% static 'biobanco/images/Biobanco.png' %}" alt="Logo" class="logo">
     </div>
-    <form action="/login/" method="POST">
+    
+    <form action="{% url 'login' %}" method="POST">
         {% csrf_token %}
         {{ error }}
-        
+    
         <div class="form-group">
             <label for="username">Usuario: </label>
             <input type="text" id="username" name="username" placeholder="Usuario123" required>
         </div>
         <div class="form-group">
-            <label for="password1">Contraseña:</label>
-            <input type="password" id="password1" name="password1" placeholder="Contraseña" required>
+            <label for="password">Contraseña:</label>
+            <input type="password" id="password" name="password" placeholder="Contraseña" required>
         </div>
-        
-        <button type="button" id="homeButton">Enviar</button>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message info">
+                    <p>{{ message }}</p> 
+                </div>
+            {% endfor %}
+        {% endif %}
+        <input type="submit" value="Enviar">
     </form>
     <!-- Texto añadido abajo del formulario -->
     <p class="forgot-password">Si no recuerdas tu clave, por favor contacta a tu administrador</p>
     <script>
-        document.getElementById('homeButton').addEventListener('click', function() {
-            window.location.href = '/home';
-        });
+       //document.getElementById('homeButton').addEventListener('click', function() {
+          //  window.location.href = '/home';
+        //});
     </script>
 </body>
 </html>

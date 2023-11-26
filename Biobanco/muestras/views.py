@@ -23,33 +23,39 @@ from django.contrib.auth.decorators import login_required
 logger = logging.getLogger(__name__)
 
 
-
-
-
 def login_screen(request):
 
+    message = None
 
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         
-        user = authenticate(username=username, password=password)
-        
+        user = authenticate(username=username, password=password) 
+
+  
         if user is not None:
+
             login(request, user)
-            # redirecciona al home de biobanco
-            return redirect('home')  
+            if 'next' in request.POST:
+                return redirect(request.POST.get('next'))
+            
+            else:
+                return redirect('home')    #redirecciona al home de biobanco
+        
         else:
-
             messages.error(request, 'Usuario y/o Password incorrecto(s)') 
+            
+            return render(request, 'login_screen.html')
+        
+    #si usuario no está autenticado
+    if not request.user.is_authenticated and 'next' in request.GET:
 
-    
+        messages.info(request, 'Debes estar autenticado para acceder a esta página')
+
 
     return render(request, 'login_screen.html')
 
-
-#@login_required
-#def authenticated_view(request):
 
 
 @login_required

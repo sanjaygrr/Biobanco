@@ -18,6 +18,7 @@ urlpatterns = [
     path('shipments/', views.shipments, name='shipments'),
     path('login_screen/', views.login_screen, name='login'),
     path('logout/', views.logout_screen, name='logout'),
+    #path('not_auth/', views.login_screen, name='not_auth'),
     #path('display_message/', views.display_message, name='display_message'),
     path('create_password/', views.create_password),
     path('shipments_select/', views.shipments_select, name='shipments_select'),

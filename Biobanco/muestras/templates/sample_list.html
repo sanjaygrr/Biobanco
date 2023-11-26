@@ -119,7 +119,24 @@
         .hidden {
             display: none;
         }
+    
+        .eliminar-btn {
+            background-color: red; /* Cambia el color de fondo a rojo */
+            color: white; /* Cambia el color del texto a blanco */
+            width: 35px; /* Define el ancho del botón */
+            height: 35px; /* Define la altura del botón */
+            border: none; /* Elimina el borde del botón */
+            font-size: 14px; /* Cambia el tamaño de la fuente */
+            cursor: pointer; /* Cambia el cursor al pasar por encima del botón */
+            text-align: center; /* Centra el contenido horizontalmente */
+            display: inline-block; /* Utiliza inline-block para que estén en línea horizontal */
+        }
+        .eliminar-btn:hover {
+            background-color: darkred; /* Cambia el color de fondo cuando el cursor está sobre el botón */
+        }
+        
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
 </head>
 <body>
     <h1>Editar/Ver Muestras</h1>
@@ -279,7 +296,8 @@
                     <td>
                         <button class="edit-btn" onclick="toggleEditMode(this)">Editar</button>
                         <button class="save-btn hidden" data-sample-id="{{ sample.id  }}">Guardar</button>
-                        <button class="eliminar-btn" onclick="eliminar(this)">Eliminar</button>
+                        <button class="eliminar-btn" onclick="eliminar(this)"><i class="fas fa-times"></i></button>
+                    </td>
                 </tr>
                 {% endif %}
                 {% endfor %}

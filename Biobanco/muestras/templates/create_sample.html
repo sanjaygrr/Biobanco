@@ -166,8 +166,30 @@
 
         <div class="form-group">
             <label for="cell">Celda:</label>
-            <input type="number" name="cell" min="0" max="99" required>
+            <input type="number" name="cell" id="cellInput" min="0" max="99" required>
         </div>
+        
+        <script>
+            const cellInput = document.getElementById('cellInput');
+        
+            cellInput.addEventListener('input', function () {
+                let enteredValue = cellInput.value;
+        
+                // Eliminar ceros a la izquierda
+                enteredValue = enteredValue.replace(/^0+/, '');
+        
+                // Asegurarse de que el valor esté en el rango correcto
+                if (enteredValue < 0) {
+                    enteredValue = 0;
+                } else if (enteredValue > 99) {
+                    enteredValue = 99;
+                }
+        
+                // Actualizar el valor en el campo de entrada
+                cellInput.value = enteredValue;
+            });
+        </script>
+        
 
         <!-- Botones de acción -->
         <div class="button-group">

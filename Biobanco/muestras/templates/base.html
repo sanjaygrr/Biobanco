@@ -182,13 +182,14 @@
                     <a href="/trazability">Trazabilidad de muestras</a>
                 </div>
             </li>
-            <li><a href="/" class="logout">Log Out</a></li> 
+            <li><a href="{% url 'logout' %}" class="logout">Log Out</a></li> 
+            
         </ul>
     </nav>
     <main>
         {% block content %}
         {% endblock %}
     </main>
-
+   
 </body>
 </html>

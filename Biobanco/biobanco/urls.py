@@ -17,6 +17,8 @@ urlpatterns = [
          views.update_space_status, name='update_space_status'),
     path('shipments/', views.shipments, name='shipments'),
     path('login_screen/', views.login_screen, name='login'),
+    path('logout/', views.logout_screen, name='logout'),
+    #path('display_message/', views.display_message, name='display_message'),
     path('create_password/', views.create_password),
     path('shipments_select/', views.shipments_select, name='shipments_select'),
     path('update-shipment/', views.update_samples_shipment,

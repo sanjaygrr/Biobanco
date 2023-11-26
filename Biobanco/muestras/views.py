@@ -689,6 +689,8 @@ def update_samples_shipment(request):
         for sample_id in sample_ids:
             sample = Sample.objects.get(id_sample=sample_id)
             sample.SHIPMENT_id_shipment = last_shipment.id_shipment
+            sample.state_preservation = "1"
+            sample.state_analysis = "1"
             sample.save()
 
         return JsonResponse({'message': 'Espacios actualizados con éxito'})
@@ -758,13 +760,13 @@ def samples_report(request):
             samples = samples.filter(date_sample=sample_date)
         if freezer_number:
             samples = samples.filter(location__STORAGE_id_storage_1__storage_name=freezer_number,
-                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=1)
+                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=3)
         if rack_number:
             samples = samples.filter(location__STORAGE_id_storage_1__storage_name=rack_number,
                                      location__STORAGE_TYPE_id_storagetype__name_storagetype=2)
         if box_number:
             samples = samples.filter(location__STORAGE_id_storage_1__storage_name=box_number,
-                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=3)
+                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=1)
         if sample_id:
             samples = samples.filter(id_sample__icontains=sample_id)
         if cell:
@@ -773,7 +775,7 @@ def samples_report(request):
         # Añadir información de ubicación a cada muestra
         for sample in samples:
             freezer_location = sample.location_set.filter(
-                STORAGE_TYPE_id_storagetype__name_storagetype=1).first()
+                STORAGE_TYPE_id_storagetype__name_storagetype=3).first()
             sample.freezer_name = freezer_location.STORAGE_id_storage_1.storage_name if freezer_location else 'No Asignado'
 
             rack_location = sample.location_set.filter(
@@ -781,7 +783,7 @@ def samples_report(request):
             sample.rack_name = rack_location.STORAGE_id_storage_1.storage_name if rack_location else 'No Asignado'
 
             box_location = sample.location_set.filter(
-                STORAGE_TYPE_id_storagetype__name_storagetype=3).first()
+                STORAGE_TYPE_id_storagetype__name_storagetype=1).first()
             sample.box_name = box_location.STORAGE_id_storage_1.storage_name if box_location else 'No Asignado'
 
     storages = Storage.objects.all().order_by('storage_name')

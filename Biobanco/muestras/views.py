@@ -122,8 +122,7 @@ def signup(request):
             user.is_superuser = True
             user.save()
 
-            login(request, user)
-            return render(request, 'signup.html', {'success': 'Usuario creado exitosamente. Ahora estás autenticado.'})
+            return render(request, 'signup.html', {'success': 'Usuario creado exitosamente.'})
         except IntegrityError:
             return render(request, 'signup.html', {'error': 'El correo ya existe'})
     else:

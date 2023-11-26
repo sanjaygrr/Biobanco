@@ -216,7 +216,7 @@
             <tbody>
                 {% for sample in samples %}
                 {% if sample.SHIPMENT_id_shipment == 0 %}
-                <tr data-sample-id="{{ sample.id }}">
+                <tr data-sample-id="{{ sample.id }}" data-sample-row-id="{{ sample.id_sample }}">
                     <td>{{ sample.id_subject }}</td>
                     <td>{{ sample.date_sample }}</td>
                     <td>{{ sample.id_sample }}</td>
@@ -272,13 +272,34 @@
                     <!-- Celda -->
                     <td>
                         <span class="cell-display">{{ sample.location_set.first.cell }}</span>
-                        <input type="number" name="cell" class="cell-input" value="{{ sample.location_set.first.cell }}" style="display:none;" min="0" max="99">
+                        <input type="number" name="cell" id="cellInput" class="cell-input" value="{{ sample.location_set.first.cell }}" style="display:none;" min="0" max="99">
                     </td>
+
+                    <script>
+                        const cellInput = document.getElementById('cellInput');
+                    
+                        cellInput.addEventListener('input', function () {
+                            let enteredValue = cellInput.value;
+                    
+                            // Eliminar ceros a la izquierda
+                            enteredValue = enteredValue.replace(/^0+/, '');
+                    
+                            // Asegurarse de que el valor esté en el rango correcto
+                            if (enteredValue < 0) {
+                                enteredValue = 0;
+                            } else if (enteredValue > 99) {
+                                enteredValue = 99;
+                            }
+                    
+                            // Actualizar el valor en el campo de entrada
+                            cellInput.value = enteredValue;
+                        });
+                    </script>
             
                     <!-- Botones de acción -->
                     <td>
                         <button class="edit-btn" onclick="toggleEditMode(this)">Editar</button>
-                        <button class="save-btn hidden" data-sample-id="{{ sample.id }}">Guardar</button>
+                        <button class="save-btn hidden" data-sample-id="{{ sample.id  }}">Guardar</button>
                         <button class="eliminar-btn" onclick="eliminar(this)">Eliminar</button>
                 </tr>
                 {% endif %}
@@ -420,7 +441,7 @@
         let fila = btn.closest('tr');
         console.log(fila); // Verificar el objeto fila
         console.log(fila.dataset); // Verificar los datos del dataset
-        let sampleId = fila.cells[2].textContent; 
+        let sampleId = fila.getAttribute('data-sample-row-id');
         console.log("Sample ID:", sampleId); 
     
         if (!sampleId) {
@@ -428,14 +449,22 @@
             return;
         }
     
-
         // Recolectar los valores editados
         let preservationState = fila.querySelector('.preservation-select').value;
+        console.log("Preservation State:", preservationState);
+    
         let freezerId = fila.querySelector('.freezer-select').value;
+        console.log("Freezer ID:", freezerId);
+    
         let rackId = fila.querySelector('.rack-select').value;
+        console.log("Rack ID:", rackId);
+    
         let boxId = fila.querySelector('.box-select').value;
+        console.log("Box ID:", boxId);
+    
         let cellNumber = fila.querySelector('.cell-input').value;
-
+        console.log("Cell:", cellNumber);
+    
         // Construir el objeto con los datos
         let data = {
             id: sampleId,
@@ -445,7 +474,10 @@
             box_id: boxId,
             cell: cellNumber
         };
-
+    
+        // Agrega registros de consola para mostrar los valores de los select e input
+        console.log("Datos a enviar al servidor:", data);
+    
         // Enviar los datos al servidor mediante AJAX
         fetch(`/update_sample/${sampleId}/`, {
             method: 'POST',
@@ -458,18 +490,45 @@
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                // Actualizar la interfaz de usuario y mostrar un mensaje
+                // Actualizar la interfaz de usuario y mostrar un mensaje de éxito con SweetAlert
                 toggleEditMode(btn);
-                alert('Muestra actualizada con éxito.');
+                updateRowDisplay(fila, data);
+                
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: 'Muestra actualizada con éxito.',
+                    icon: 'success',
+                    confirmButtonText: 'Ok'
+                }).then(() => {
+                    location.reload(); // Recarga la página
+                });
             } else {
-                alert('Error al actualizar la muestra: ' + data.message);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error al actualizar la muestra: ' + data.message,
+                    icon: 'error',
+                    confirmButtonText: 'Ok'
+                });
             }
         })
         .catch(error => {
-            alert('Error al actualizar la muestra: ' + error);
+            Swal.fire({
+                title: 'Error',
+                text: 'Error al actualizar la muestra: ' + error,
+                icon: 'error',
+                confirmButtonText: 'Ok'
+            });
         });
+    } 
+    
+    function updateRowDisplay(fila, data) {
+        // Actualiza la fila de la tabla con los nuevos datos
+        fila.querySelector('.preservation-display').textContent = data.state_preservation === '1' ? 'Descongelado' : 'Normal';
+        fila.querySelector('.freezer-display').textContent = data.freezer_name;
+        fila.querySelector('.rack-display').textContent = data.rack_name;
+        fila.querySelector('.box-display').textContent = data.box_name;
+        fila.querySelector('.cell-display').textContent = data.cell;
     }
-
     document.addEventListener('DOMContentLoaded', () => {
 
     });

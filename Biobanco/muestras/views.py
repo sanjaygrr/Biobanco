@@ -15,8 +15,11 @@ from accounts.models import Account, Role
 from django.contrib import messages
 from django.urls import reverse
 from django.db import transaction
+import logging
 import json
 from django.utils import timezone
+
+logger = logging.getLogger(__name__)
 
 
 def home(request):
@@ -409,7 +412,7 @@ def sample_list(request):
         # Añadir información de ubicación a cada muestra
         for sample in samples:
             freezer_location = sample.location_set.filter(
-                STORAGE_TYPE_id_storagetype__name_storagetype=1).first()
+                STORAGE_TYPE_id_storagetype__name_storagetype=3).first()
             sample.freezer_name = freezer_location.STORAGE_id_storage_1.storage_name if freezer_location else 'No Asignado'
 
             rack_location = sample.location_set.filter(
@@ -417,7 +420,7 @@ def sample_list(request):
             sample.rack_name = rack_location.STORAGE_id_storage_1.storage_name if rack_location else 'No Asignado'
 
             box_location = sample.location_set.filter(
-                STORAGE_TYPE_id_storagetype__name_storagetype=3).first()
+                STORAGE_TYPE_id_storagetype__name_storagetype=1).first()
             sample.box_name = box_location.STORAGE_id_storage_1.storage_name if box_location else 'No Asignado'
 
     storages = Storage.objects.all().order_by('storage_name')
@@ -434,44 +437,78 @@ def sample_list(request):
 
 @csrf_exempt
 @require_POST
+@transaction.atomic
 def update_sample(request, sample_id):
     try:
         data = json.loads(request.body)
-        sample = Sample.objects.get(pk=sample_id)
 
-        # Actualización de los datos básicos de la muestra
-        sample.state_preservation = data.get('state_preservation')
+        # Obtener la muestra
+        sample = get_object_or_404(Sample, id_sample=sample_id)
+
+        # Actualizar el estado de preservación
+        state_preservation = data.get('state_preservation') == "1"
+        sample.state_preservation = state_preservation
         sample.save()
 
-        # Actualización de las ubicaciones
-        for storage_type_id, storage_id in [('3', 'freezer_id'), ('2', 'rack_id'), ('1', 'box_id')]:
-            storage_value = data.get(storage_id)
+        # Mapeo de los tipos de almacenamiento
+        storage_mappings = {
+            'freezer_id': '3',  # Asumiendo que 3 es para Freezer
+            'rack_id': '2',     # Asumiendo que 2 es para Rack
+            'box_id': '1'       # Asumiendo que 1 es para Caja
+        }
+
+        for storage_key, expected_storage_type_id in storage_mappings.items():
+            storage_value = data.get(storage_key)
             if storage_value:
+                # Dividir el ID de almacenamiento combinado para obtener el tipo y el nombre
+                storage_type_id, storage_name = storage_value.split('-')
+
+                # Verificar que el tipo de almacenamiento sea el esperado
+                if storage_type_id != expected_storage_type_id:
+                    return JsonResponse({'error': f'Tipo de almacenamiento incorrecto para {storage_key}'}, status=400)
+
+                # Buscar el objeto StorageType y Storage
+                storage_type = StorageType.objects.get(
+                    name_storagetype=storage_type_id)
+                storage = Storage.objects.get(
+                    STORAGE_TYPE_id_storagetype=storage_type, storage_name=storage_name)
+
+                # Buscar y actualizar la ubicación existente
                 location = Location.objects.filter(
                     SAMPLE_id_sample_1=sample,
-                    STORAGE_TYPE_id_storagetype_id=storage_type_id
+                    STORAGE_TYPE_id_storagetype=storage_type
                 ).first()
+
                 if location:
-                    location.STORAGE_id_storage_1_id = storage_value
-                    # Actualizar celda si es necesario
-                    location.cell = data.get('cell', location.cell)
+                    location.STORAGE_id_storage_1 = storage
+                    location.cell = data.get('cell')
                     location.save()
                 else:
-                    # Crear una nueva entrada si no existe
-                    new_location = Location(
-                        SAMPLE_id_sample_1=sample,
-                        STORAGE_id_storage_1_id=storage_value,
-                        STORAGE_TYPE_id_storagetype_id=storage_type_id,
-                        # Usar un valor predeterminado o el proporcionado
-                        cell=data.get('cell', 0)
-                    )
-                    new_location.save()
+                    return JsonResponse({'error': f'Ubicación no encontrada para el tipo de almacenamiento: {storage_type_id}'}, status=404)
 
-        return JsonResponse({'status': 'success', 'message': 'Sample updated successfully.'})
+        # Registrar el evento (opcional)
+        event_user = request.user.username
+        action_information = f"ID de la muestra: {sample.id_sample}"
+        SampleEvent.objects.create(
+            event_user=event_user,
+            event_date=sample.date_sample,
+            action="Actualizar muestra",
+            action_information=action_information,
+            SAMPLE_id_sample=sample
+        )
+
+        return JsonResponse({'status': 'success'})
+
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Error al decodificar JSON'}, status=400)
     except Sample.DoesNotExist:
-        return JsonResponse({'status': 'error', 'message': 'Sample not found.'}, status=404)
+        return JsonResponse({'error': 'Muestra no encontrada'}, status=404)
+    except StorageType.DoesNotExist:
+        return JsonResponse({'error': 'Tipo de almacenamiento no encontrado'}, status=404)
+    except Storage.DoesNotExist:
+        return JsonResponse({'error': 'Almacenamiento no encontrado'}, status=404)
     except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 @csrf_exempt

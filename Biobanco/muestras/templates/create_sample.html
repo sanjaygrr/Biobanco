@@ -259,6 +259,11 @@
                                 title: 'Error',
                                 text: data.message,
                                 icon: 'error',
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    // Recargar la página cuando el usuario presione "OK"
+                                    location.reload();
+                                }
                             });
                         } else {
                             // Si no hay error, mostrar una alerta de éxito y redirigir si es necesario

@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.db.models import Q, Prefetch
@@ -25,8 +25,10 @@ logger = logging.getLogger(__name__)
 
 
 
+
 def login_screen(request):
-   
+
+
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -38,10 +40,37 @@ def login_screen(request):
             # redirecciona al home de biobanco
             return redirect('home')  
         else:
-            messages.error(request, 'Usuario y/o Password incorrecto(s)')
+
+            messages.error(request, 'Usuario y/o Password incorrecto(s)') 
+
+    
 
     return render(request, 'login_screen.html')
 
+
+#@login_required
+#def authenticated_view(request):
+
+
+@login_required
+def logout_screen(request):
+    logout(request)
+    request.session['logout_message'] = "You have been logged out successfully."
+
+    return redirect('login')
+
+    
+#obtiene y elimina mensaje de la salida de sesión
+@login_required
+#def display_message(request):
+    #logout_message = request.session.pop('logout_message', None)  
+    #return render(request, 'login_screen.html', {'logout_message':logout_message})
+    #if logout_message and 'logout_message_displayed' not in request.session:
+    #if logout_message:
+        #request.session['logout_message_displayed'] = True
+        #return render(request, 'login.html', {'logout_message':logout_message})
+    #else:
+        #return redirect('login')
 
 
 @login_required

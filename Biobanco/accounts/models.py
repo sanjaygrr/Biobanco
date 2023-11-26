@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, Group, Permission
 
 
 class MyAccountManager(BaseUserManager):
@@ -52,6 +52,13 @@ class Role(models.Model):
     id_role = models.PositiveSmallIntegerField(
         choices=ROLE_CHOICES, primary_key=True)
 
+    
+    #def role_with_permissions(cls):
+
+    #   admin_role = Group.objects.get_or_create(ADMIN) 
+
+    
+    
     def __str__(self):
         return self.get_id_role_display()
 
@@ -59,7 +66,7 @@ class Role(models.Model):
 class Account(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(verbose_name="email", max_length=60, unique=True)
     username = models.CharField(
-        verbose_name="username", max_length=30)
+        verbose_name="username", max_length=30, unique=True)
     name = models.CharField(max_length=20, null=True)
     lastname = models.CharField(max_length=20, null=True)
     ROLE_id_role = models.ForeignKey(
@@ -74,14 +81,15 @@ class Account(AbstractBaseUser, PermissionsMixin):
 
     objects = MyAccountManager()
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email']
 
     def __str__(self):
         return self.username
 
-    def has_perm(self, perm, obj=None):
-        return self.is_admin
+    #def has_perm(self, perm, obj=None):
+    #   return self.is_admin
 
     def has_module_perms(self, app_label):
         return True
+

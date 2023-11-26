@@ -16,7 +16,7 @@ urlpatterns = [
     path('update_space_status/',
          views.update_space_status, name='update_space_status'),
     path('shipments/', views.shipments, name='shipments'),
-    path('login_screen/', views.login_screen),
+    path('login_screen/', views.login_screen, name='login'),
     path('create_password/', views.create_password),
     path('shipments_select/', views.shipments_select, name='shipments_select'),
     path('update-shipment/', views.update_samples_shipment,

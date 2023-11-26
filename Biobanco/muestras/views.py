@@ -4,10 +4,10 @@ from django.contrib.auth.forms import UserCreationForm
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
+from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.db.models import Q, Prefetch
-from django.contrib.auth import login
 from django.db import IntegrityError
 from django.http import JsonResponse
 from django.http import HttpResponse
@@ -17,8 +17,31 @@ from django.urls import reverse
 from django.db import transaction
 import json
 from django.utils import timezone
+from django.contrib.auth.decorators import login_required
 
 
+
+
+def login_screen(request):
+   
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        user = authenticate(username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            # redirecciona al home de biobanco
+            return redirect('home')  
+        else:
+            messages.error(request, 'Usuario y/o Password incorrecto(s)')
+
+    return render(request, 'login_screen.html')
+
+
+
+@login_required
 def home(request):
     num_shipments = Shipment.objects.count()
     num_freezers_enabled = Storage.objects.filter(
@@ -43,7 +66,7 @@ def home(request):
 
     return render(request, 'home.html', context)
 
-
+@login_required
 def signup(request):
     if request.method == 'POST':
         try:
@@ -71,7 +94,7 @@ def signup(request):
     else:
         return render(request, 'signup.html')
 
-
+@login_required
 def user_list(request):
     search_query = request.GET.get('search')
     if search_query:
@@ -82,7 +105,7 @@ def user_list(request):
 
     return render(request, 'user_list.html', {'users': users})
 
-
+@login_required
 def create_space(request):
     if request.method == 'POST':
         storage_type_id = request.POST.get('storage_type')
@@ -116,7 +139,7 @@ def create_space(request):
     storage_types = StorageType.objects.all()
     return render(request, 'create_space.html', {'storage_types': storage_types})
 
-
+@login_required
 def space_list(request):
     storages = Storage.objects.select_related(
         'STORAGE_TYPE_id_storagetype').all()
@@ -143,6 +166,7 @@ def space_list(request):
 
 
 @csrf_exempt
+@login_required
 @require_POST
 def update_space_status(request):
     try:
@@ -187,6 +211,7 @@ def update_space_status(request):
 
 
 @csrf_exempt
+@login_required
 @require_POST
 def delete_spaces(request):
     try:
@@ -219,7 +244,7 @@ def delete_spaces(request):
     except Exception as e:
         return JsonResponse({'error_messages': [str(e)]}, status=500)
 
-
+@login_required
 def is_valid_int(value):
     """Función de ayuda para comprobar si un valor puede ser convertido a int."""
     try:
@@ -228,7 +253,7 @@ def is_valid_int(value):
     except ValueError:
         return False
 
-
+@login_required
 def create_sample(request):
     if request.method == "POST":
         id_subject = request.POST.get('id_subject')
@@ -375,6 +400,7 @@ def create_sample(request):
 
 
 @csrf_exempt
+@login_required
 def sample_list(request):
 
     samples = Sample.objects.all()
@@ -433,6 +459,7 @@ def sample_list(request):
 
 
 @csrf_exempt
+@login_required
 @require_POST
 def update_sample(request, sample_id):
     try:
@@ -475,6 +502,7 @@ def update_sample(request, sample_id):
 
 
 @csrf_exempt
+@login_required
 @require_POST
 @transaction.atomic
 def delete_sample(request, sample_id):
@@ -508,7 +536,7 @@ def delete_sample(request, sample_id):
             f"Error inesperado al eliminar la muestra con ID {sample_id}: {e}")
         return JsonResponse({'error_messages': [str(e)]}, status=500)
 
-
+@login_required
 def trazability(request):
     # Recupera los parámetros de búsqueda de request.GET
     subject_id = request.GET.get('subject_id')
@@ -536,7 +564,7 @@ def trazability(request):
     context = {'sample_events': sample_events}
     return render(request, 'trazability.html', context)
 
-
+@login_required
 @require_http_methods(["GET", "POST"])
 def shipments(request):
     if request.method == 'POST':
@@ -576,14 +604,12 @@ def shipments(request):
     return render(request, 'shipments.html')
 
 
-def login_screen(request):
-    return render(request, 'login_screen.html')
 
-
+@login_required
 def create_password(request):
     return render(request, 'create_password.html')
 
-
+@login_required
 @require_http_methods(["GET", "POST"])
 def shipments_select(request):
     samples = Sample.objects.all().prefetch_related('location_set')
@@ -633,6 +659,7 @@ def shipments_select(request):
 
 
 @csrf_exempt
+@login_required
 @require_POST
 def update_samples_shipment(request):
     try:
@@ -663,7 +690,7 @@ def update_samples_shipment(request):
     except Exception as e:
         return JsonResponse({'error': f'Error inesperado: {str(e)}'}, status=500)
 
-
+@login_required
 def shipments_report(request):
     laboratories = Shipment.objects.values_list(
         'laboratory', flat=True).distinct()
@@ -702,7 +729,7 @@ def shipments_report(request):
 
     return render(request, 'shipments_report.html', context)
 
-
+@login_required
 def samples_report(request):
     samples = Sample.objects.all()
 
@@ -758,7 +785,7 @@ def samples_report(request):
 
     return render(request, 'samples_report.html', context)
 
-
+@login_required
 def shipments_detail(request, shipment_id):
     # Obtiene el envío por su ID o devuelve una página de error 404 si no se encuentra
     shipment = get_object_or_404(Shipment, pk=shipment_id)

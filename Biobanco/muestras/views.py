@@ -72,7 +72,7 @@ def login_screen(request):
 @login_required
 def logout_screen(request):
     logout(request)
-    request.session['logout_message'] = "You have been logged out successfully."
+    #request.session['logout_message'] = "You have been logged out successfully."
 
     return redirect('login')
 

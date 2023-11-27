@@ -70,6 +70,24 @@
         background-color: #4F709C;
         color: white;
     }
+    th.sortable {
+        cursor: pointer;
+    }
+    
+    th.sortable:after {
+        content: ' \21D5'; /* Entidad HTML para flechas arriba y abajo */
+        font-size: 0.8em;
+        margin-left: 5px;
+    }
+
+    th.sortable.th-sort-asc:after {
+        content: ' \2191'; /* Flecha arriba */
+    }
+
+    th.sortable.th-sort-desc:after {
+        content: ' \2193'; /* Flecha abajo */
+    }
+        
 </style>
 <h1>Trazabilidad de Muestras</h1>
 
@@ -78,7 +96,7 @@
         <h2>Criterios de Búsqueda</h2>
         <form id="search-form">
             <div class="form-group">
-                <label for="subject_id">usuario:</label>
+                <label for="subject_id">Usuario:</label>
                 <input type="text" id="subject_id" name="subject_id">
             </div>
             <div class="form-group">
@@ -97,14 +115,14 @@
 <div class="section">
     <div class="samples-list">
         <h2>Lista de Eventos</h2>
-        <table id="sample-events-table">
+        <table id="sortableTable">
             <!-- Encabezados de tabla aquí -->
             <thead>
                 <tr>
-                    <th>Usuario</th>
-                    <th>Fecha</th>
-                    <th>Acción</th>
-                    <th>Detalle</th>
+                    <th class="sortable">Usuario</th>
+                    <th class="sortable">Fecha</th>
+                    <th class="sortable">Acción</th>
+                    <th class="sortable">Detalle</th>
                 </tr>
             </thead>
             <tbody>
@@ -128,4 +146,44 @@
         form.submit();
     }
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.34.8/js/jquery.tablesorter.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var table = document.getElementById('sortableTable'); // Cambiar el ID aquí
+        var headers = table.querySelectorAll('th.sortable');
+        headers.forEach(function(header, index) {
+            header.addEventListener('click', function() {
+                sortTableByColumn(table, index);
+            });
+        });
+    });
+
+    function sortTableByColumn(table, column) {
+        var rows = Array.from(table.tBodies[0].rows);
+        var header = table.querySelectorAll('th')[column];
+        var isAscending = header.classList.contains('th-sort-asc');
+        var newIsAscending = !isAscending;
+
+        rows.sort(function(rowA, rowB) {
+            var cellA = rowA.cells[column].textContent.trim();
+            var cellB = rowB.cells[column].textContent.trim();
+
+            if (!isNaN(parseFloat(cellA)) && !isNaN(parseFloat(cellB))) {
+                return newIsAscending ? parseFloat(cellA) - parseFloat(cellB) : parseFloat(cellB) - parseFloat(cellA);
+            } else {
+                return newIsAscending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+            }
+        });
+
+        rows.forEach(function(row) {
+            table.tBodies[0].appendChild(row);
+        });
+
+        table.querySelectorAll('th').forEach(th => th.classList.remove('th-sort-asc', 'th-sort-desc'));
+        header.classList.toggle('th-sort-asc', newIsAscending);
+        header.classList.toggle('th-sort-desc', !newIsAscending);
+    }
+</script>
+
 {% endblock %}

@@ -51,7 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'muestras.error_middleware.CustomErrorMiddleware',
+    # 'muestras.error_middleware.CustomErrorMiddleware',
 ]
 
 ROOT_URLCONF = 'biobanco.urls'
@@ -140,8 +140,8 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-#unauthenticate a user for browser closed and inactivity session  
+# unauthenticate a user for browser closed and inactivity session
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-SESSION_COOKIE_AGE = 1200 #20 minutos
+SESSION_COOKIE_AGE = 1200  # 20 minutos

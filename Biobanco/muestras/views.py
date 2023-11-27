@@ -641,20 +641,57 @@ def create_password(request):
 @login_required
 @require_http_methods(["GET", "POST"])
 def shipments_select(request):
-    samples = Sample.objects.all().prefetch_related('location_set')
-    selected_samples = []
-
     if request.method == 'POST':
-        if 'filter_action' in request.POST:
-            # Procesar el formulario de filtro
+        # Verificar si es una solicitud AJAX
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # Manejo de la petición AJAX
+            data = json.loads(request.body)
+            year = data.get('year')
+            month = data.get('month')
+            subject_id = data.get('subject_id')
+            volume_condition = data.get('volume_condition')
+            volume = data.get('volume')
+
+            samples = Sample.objects.all()
+            # Filtros basados en los datos recibidos
+            if year:
+                samples = samples.filter(date_sample__year=year)
+            if month:
+                samples = samples.filter(date_sample__month=month)
+            if subject_id:
+                samples = samples.filter(id_subject=subject_id)
+            if volume_condition and volume:
+                if volume_condition == 'greater':
+                    samples = samples.filter(ml_volume__gt=volume)
+                elif volume_condition == 'less':
+                    samples = samples.filter(ml_volume__lt=volume)
+                elif volume_condition == 'equal':
+                    samples = samples.filter(ml_volume=volume)
+
+            samples_data = list(samples.values(
+                'id_sample', 'id_subject', 'date_sample',
+                'ml_volume', 'state_preservation'
+                # Añade otros campos necesarios
+            ))
+
+            return JsonResponse({'samples': samples_data})
+
+        else:
+            # Manejo de la acción POST no AJAX
             year = request.POST.get('year')
             month = request.POST.get('month')
             subject_id = request.POST.get('subject_id')
             volume_condition = request.POST.get('volume_condition')
             volume = request.POST.get('volume')
 
+            samples = Sample.objects.all()
+            if year:
+                samples = samples.filter(date_sample__year=year)
+            if month:
+                samples = samples.filter(date_sample__month=month)
+            if subject_id:
+                samples = samples.filter(id_subject=subject_id)
             if volume_condition and volume:
-                # Aplicar el filtro de volumen según la condición seleccionada
                 if volume_condition == 'greater':
                     samples = samples.filter(ml_volume__gt=float(volume))
                 elif volume_condition == 'less':
@@ -662,14 +699,10 @@ def shipments_select(request):
                 elif volume_condition == 'equal':
                     samples = samples.filter(ml_volume=float(volume))
 
-            if year:
-                samples = samples.filter(date_sample__year=year)
-            if month:
-                samples = samples.filter(date_sample__month=month)
-            if subject_id:
-                samples = samples.filter(id_subject=subject_id)
+    else:
+        # Manejo de la acción GET no AJAX
+        samples = Sample.objects.all().prefetch_related('location_set')
 
-    # Este bloque maneja la acción de GET
     # Añadir información de ubicación a cada muestra
     for sample in samples:
         freezer_location = sample.location_set.filter(
@@ -712,7 +745,7 @@ def update_samples_shipment(request):
             sample.state_analysis = "1"
             sample.save()
 
-        return JsonResponse({'message': 'Espacios actualizados con éxito'})
+        return JsonResponse({'message': '¡Muestras para envío registradas con éxito! '})
 
     except Sample.DoesNotExist:
         return JsonResponse({'error': 'Una o más muestras no encontradas'}, status=404)

@@ -26,7 +26,7 @@ urlpatterns = [
          name='update_samples_shipment'),
     path('delete_spaces/', views.delete_spaces, name='delete_spaces'),
     path('delete_sample/<sample_id>/', views.delete_sample, name='delete_sample'),
-    path('shipments_report/', views.shipments_report),
+    path('shipments_report/', views.shipments_report, name='shipments_report'),
     path('samples_report/', views.samples_report),
     path('update_sample/<str:sample_id>/',
          views.update_sample, name='update_sample'),

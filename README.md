@@ -1,69 +1,96 @@
 # 🧬 Biobanco
 
-Bienvenido al repositorio de **Biobanco**, una aplicación **Django** diseñada para facilitar la gestión y almacenamiento de información para biobancos.
+Bienvenido al repositorio de **Biobanco**, una aplicación innovadora desarrollada con **Django** que se especializa en la gestión y almacenamiento eficiente de muestras para biobancos. Esta herramienta proporciona una plataforma robusta para rastrear muestras y envíos con un enfoque en la trazabilidad y la seguridad de los datos.
 
 ## 📋 Requisitos previos
 
-Asegúrate de tener instalado:
+Antes de comenzar, asegúrate de tener:
 
-- Python 3.8 o superior 🐍
-- Django 3.2 o superior 🕸
+- **Python 3.8** o superior 🐍
+- **Django 3.2** o superior 🕸
 
 ## 🛠 Configuración del entorno de desarrollo
 
-Recomendamos utilizar un entorno virtual para instalar las dependencias del proyecto. Sigue estos pasos para crearlo y activarlo:
+Para una gestión eficiente de las dependencias, recomendamos usar un entorno virtual:
 
-`python3 -m venv venv`
-
-`source venv/bin/activate`  # En Windows use: `.\venv\Scripts\activate`
-
+```bash
+python3 -m venv venv
+# En Windows use: .\venv\Scripts\activate
+# En MacOS/Linux use: source venv/bin/activate
+```
 
 ## 🚀 Configuración del proyecto
 
-1. Renombra el archivo `.env.example` a `.env` y configura las variables de entorno según sea necesario.
-2. Realiza las migraciones necesarias con:
+Sigue estos pasos para configurar tu proyecto:
 
-- `python3 manage.py makemigrations`
+1. **Configuración del entorno**:
+   - Renombra `.env.example` a `.env`.
+   - Ajusta las variables de entorno según tus necesidades.
 
-- `python3 manage.py makemigrations acccounts`
+2. **Migraciones de la base de datos**:
+   ```bash
+   python3 manage.py makemigrations
+   python3 manage.py makemigrations accounts
+   python3 manage.py migrate
+   ```
 
-- `python3 manage.py migrate`
+3. **Creación del superusuario y roles**:
+   - Accede a la terminal de Python:
+     ```bash
+     python manage.py shell
+     ```
+   - Importa y crea roles:
+     ```python
+     from accounts.models import Role
+     Role.objects.create(id_role=Role.ADMIN)
+     Role.objects.create(id_role=Role.SUPERVISOR)
+     Role.objects.create(id_role=Role.TECNICO)
+     ```
+   - Finalmente, crea el superusuario:
+     ```bash
+     python3 manage.py createsuperuser
+     ```
 
+## 🧱 Gestión de Espacios de Almacenamiento
 
-3. Crea un superusuario para acceder al panel de administración con:
+Después de crear el superusuario, sigue estos pasos para configurar los espacios de almacenamiento:
 
-    1. - abrir terminal de python para crear roles con: 
-    - `python manage.py shell`
+1. Accede al panel de administración de Django.
+2. Crea los espacios de almacenamiento necesarios:
+   - **Freezers**
+   - **Racks**
+   - **Cajas**
 
-    2. - Luego importar tabla de roles para crearlos : 
-    - `from accounts.models import Role`
-    - `Role.objects.create(id_role=Role.ADMIN)`
-    - `Role.objects.create(id_role=Role.SUPERVISOR)`
-    - `Role.objects.create(id_role=Role.TECNICO)`
+   Asegúrate de que estos espacios estén correctamente registrados y existan en el sistema antes de proceder.
 
-    3. - Una vez creados se puede finalmente crear el superusuario:
-    - `python3 manage.py createsuperuser`
+3. Una vez configurados, puedes comenzar a crear **muestras** y **envíos**. La aplicación proporciona una trazabilidad completa de muestras, envíos y acciones realizadas.
 
+## ⚙️ Iniciar el proyecto
 
-## ⚙️ Poner en marcha el proyecto
+Para lanzar el servidor de desarrollo:
 
-Para iniciar el servidor de desarrollo, usa:
+```bash
+python3 manage.py runserver
+```
 
-
-`python3 manage.py runserver`
-
-
-Ahora, abre tu navegador y visita [http://127.0.0.1:8000/](http://127.0.0.1:8000/) para ver la aplicación en funcionamiento.
+Visita [http://127.0.0.1:8000/](http://127.0.0.1:8000/) en tu navegador para acceder a la aplicación.
 
 ## 🧪 Tests
 
-Para ejecutar las pruebas del proyecto, use:
+Ejecuta las pruebas con:
 
+```bash
+python3 manage.py test
+```
 
-`python3 manage.py test`
+## 🔐 Roles y permisos
 
+El sistema cuenta con tres roles fundamentales:
 
+- **ADMIN**: Gestión total del sistema.
+- **SUPERVISOR**: Supervisa las operaciones y maneja datos críticos.
+- **TECNICO**: Encargado de la gestión de muestras y registros.
 
 ## 📜 Licencia
 
-Este proyecto está licenciado bajo la Licencia MIT 
+Este proyecto está bajo la Licencia MIT.

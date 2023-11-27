@@ -401,7 +401,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.message) {
-                    Swal.fire('Éxito', data.message, 'success')
+                    Swal.fire('Éxito todo ha salido bien', data.message, 'success')
                     .then(() => {
                         window.location.href = "{% url 'shipments_report' %}";
                     });

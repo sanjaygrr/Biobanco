@@ -30,6 +30,7 @@
         }
         .form-group {
             margin-bottom: 15px;
+            position: relative; /* Añadido para posicionar el checkbox */
         }
         label {
             display: block;
@@ -47,10 +48,40 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin-top: 10px;
         }
         button:hover {
             background-color: rgb(79, 100, 150);
         }
+    
+        .password-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .styled-checkbox {
+            display: none; /* Oculta completamente el checkbox original */
+        }
+            
+        .styled-label {
+            position: absolute;
+            right: 10px; /* Ajusta esta propiedad para cambiar la posición horizontal */
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+        .styled-label:after {
+            content: '';
+            display: block;
+            width: 12px;
+            height: 12px;
+            margin: 4px;
+            background-color: transparent; /* Color de fondo inicial transparente */
+            border-radius: 2px;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+    
         .username-box {
             background-color: #ddd; /* Color gris */
             padding: 10px;
@@ -89,12 +120,44 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="form-group">
-            <label for="password">Contraseña:</label>
-            <input type="password" id="password" name="password" placeholder="Nueva contraseña">
+        <div class="password-container">
+            <input type="password" id="password" name="password" required>
+            <label for="togglePassword" class="styled-label">&#128065;</label> <!-- Ícono de ojo -->
+            <input type="checkbox" id="togglePassword" onclick="togglePasswordVisibility()" class="styled-checkbox">
         </div>
         <button type="submit">Actualizar Usuario</button>
     </form>
+<script>
+    function validarContraseña() {
+        var contraseña = document.getElementById('password').value;
+        var regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{12,}$/;
+
+        if (!regex.test(contraseña)) {
+            Swal.fire({
+                title: 'Error',
+                text: 'La contraseña debe tener al menos 12 caracteres, incluyendo mayúsculas, minúsculas y números.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            return false;
+        }
+        return true;
+    }
+
+    document.querySelector('form').onsubmit = function(e) {
+        if (!validarContraseña()) {
+            e.preventDefault();
+        }
+    };
+</script>
+
+<script>
+    function togglePasswordVisibility() {
+        var passwordInput = document.getElementById('password');
+        var toggleCheckbox = document.getElementById('togglePassword');
+        passwordInput.type = toggleCheckbox.checked ? 'text' : 'password';
+    }
+</script>
 </body>
 </html>
 {% endblock %}

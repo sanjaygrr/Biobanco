@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BioBanco</title>
+
+    <link rel="icon" href="{% static 'biobanco/images/logo.png' %}">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -121,6 +123,20 @@
                 padding: 12px 24px;
             }
         }
+        * Estilos específicos para la barra de navegación del Supervisor */
+        .nav-supervisor ul {
+            display: flex;
+            justify-content: center; /* Centra los elementos */
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+        }
+
+        .nav-supervisor ul li {
+            margin: 0 10px; /* Agrega un margen a los lados de cada <li> */
+            text-align: center;
+        }
     </style>
     <script>
         // Cuando el documento esté listo
@@ -147,46 +163,102 @@
  
 </head>
 <body>
-    <nav>
-        <a href="/home">
-        <img src="{% static 'biobanco/images/logo.png' %}" alt="Logo" class="logo">
-        </a>
-        <ul>
-            <li><a href="/home">Inicio</a></li>
-            <li class="dropdown">
-                <a href="javascript:void(0)" class="dropdown-btn">Cuentas de Usuario</a>
-                <div class="dropdown-content">
-                    <a href="/signup">Crear Usuario</a>
-                    <a href="/user_list">Ver/Editar Usuarios</a>
-                </div>
-            </li>
-            <li class="dropdown">
-                <a href="javascript:void(0)" class="dropdown-btn">Espacios</a>
-                <div class="dropdown-content">
-                    <a href="/create_space">Registrar Espacio</a>
-                    <a href="/space_list">Ver/Cambiar Espacio</a>
-                </div>
-            </li>
-            <li class="dropdown">
-                <a href="javascript:void(0)" class="dropdown-btn">Muestras</a>
-                <div class="dropdown-content">
-                    <a href="/create_sample">Registrar Muestras</a>
-                    <a href="/sample_list">Editar Muestras</a>
-                </div>
-            </li>
-            <li><a href="/shipments">Envíos</a></li>
-            <li class="dropdown">
-                <a href="javascript:void(0)" class="dropdown-btn">Reporteria</a>
-                <div class="dropdown-content">
-                    <a href="/samples_report">Reporte de Muestras</a>
-                    <a href="/shipments_report">Reporte de Envíos</a>
-                    <a href="/trazability">Trazabilidad de muestras</a>
-                </div>
-            </li>
-            <li><a href="{% url 'logout' %}" class="logout">Log Out</a></li> 
-            
-        </ul>
-    </nav>
+
+    {% if request.user.is_authenticated %}
+        {% if request.user.ROLE_id_role_id == 1 %}
+            <!-- Barra de navegación para Admin -->
+            <nav>
+                <a href="/home">
+                <img src="{% static 'biobanco/images/logo.png' %}" alt="Logo" class="logo">
+                </a>
+                <ul>
+                    <li><a href="/home">Inicio</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropdown-btn">Cuentas de Usuario</a>
+                        <div class="dropdown-content">
+                            <a href="/signup">Crear Usuario</a>
+                            <a href="/user_list">Ver/Editar Usuarios</a>
+                        </div>
+                    </li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropdown-btn">Espacios</a>
+                        <div class="dropdown-content">
+                            <a href="/create_space">Registrar Espacio</a>
+                            <a href="/space_list">Ver/Cambiar Espacio</a>
+                        </div>
+                    </li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropdown-btn">Muestras</a>
+                        <div class="dropdown-content">
+                            <a href="/create_sample">Registrar Muestras</a>
+                            <a href="/sample_list">Editar Muestras</a>
+                        </div>
+                    </li>
+                    <li><a href="/shipments">Envíos</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropdown-btn">Reporteria</a>
+                        <div class="dropdown-content">
+                            <a href="/samples_report">Reporte de Muestras</a>
+                            <a href="/shipments_report">Reporte de Envíos</a>
+                            <a href="/trazability">Trazabilidad de muestras</a>
+                        </div>
+                    </li>
+                    <li><a href="{% url 'logout' %}" class="logout">Cerrar sesión</a></li> 
+                    
+                </ul>
+            </nav>
+        {% elif request.user.ROLE_id_role_id == 2 %}
+            <!-- Barra de navegación para Supervisor -->
+            <nav class="nav-supervisor">
+
+                <a href="/home">
+                <img src="{% static 'biobanco/images/logo.png' %}" alt="Logo" class="logo">
+                </a>
+                <ul>
+                    <li><a href="/home">Inicio</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropdown-btn">Reporteria</a>
+                        <div class="dropdown-content">
+                            <a href="/samples_report">Reporte de Muestras</a>
+                            <a href="/shipments_report">Reporte de Envíos</a>
+                            <a href="/trazability">Trazabilidad de muestras</a>
+                        </div>
+                    </li>
+                    <li><a href="{% url 'logout' %}" class="logout">Cerrar sesión</a></li> 
+                    
+                </ul>
+            </nav>
+        {% elif request.user.ROLE_id_role_id == 3 %}
+            <!-- Barra de navegación para Técnico -->
+            <nav>
+                <a href="/home">
+                <img src="{% static 'biobanco/images/logo.png' %}" alt="Logo" class="logo">
+                </a>
+                <ul>
+                    <li><a href="/home">Inicio</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropdown-btn">Muestras</a>
+                        <div class="dropdown-content">
+                            <a href="/create_sample">Registrar Muestras</a>
+                            <a href="/sample_list">Editar Muestras</a>
+                        </div>
+                    </li>
+                    <li><a href="/shipments">Envíos</a></li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0)" class="dropdown-btn">Reporteria</a>
+                        <div class="dropdown-content">
+                            <a href="/samples_report">Reporte de Muestras</a>
+                            <a href="/shipments_report">Reporte de Envíos</a>
+                            <a href="/trazability">Trazabilidad de muestras</a>
+                        </div>
+                    </li>
+                    <li><a href="{% url 'logout' %}" class="logout">Cerrar sesión</a></li> 
+                    
+                </ul>
+            </nav>
+        {% endif %}
+    {% endif %}
+    
     <main>
         {% block content %}
         {% endblock %}

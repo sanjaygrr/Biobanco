@@ -259,10 +259,22 @@
                                 title: 'Error',
                                 text: data.message,
                                 icon: 'error',
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    // Recargar la página cuando el usuario presione "OK"
+                                    location.reload();
+                                }
                             });
                         } else {
-                            // Si no hay error, enviar el formulario
-                            form.submit();
+                            // Si no hay error, mostrar una alerta de éxito y redirigir si es necesario
+                            Swal.fire({
+                                title: 'Éxito',
+                                text: 'La muestra ha sido creada con éxito',
+                                icon: 'success',
+                            }).then(() => {
+                                // Redirigir a la página de lista de muestras u otra página
+                                window.location.href = '/sample_list/'; // Ajusta la URL según sea necesario
+                            });
                         }
                     })
                     .catch(error => {
@@ -273,5 +285,6 @@
         }
     }
 </script>
+
 </html>
 {% endblock %}

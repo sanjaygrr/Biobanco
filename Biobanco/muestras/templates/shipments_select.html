@@ -164,143 +164,84 @@
             <input type="submit" value="Registrar Envío" name="register_action" class="submit-button">
         </form>
     </div>
-    
     <script>
         // Define la variable csrf_token con el valor del token CSRF
         var csrf_token = "{{ csrf_token }}";
+
+        // (Funciones y eventos para filtrar y actualizar tabla de muestras)
     
-        // Manejar el envío del formulario de envío
-        document.getElementById('send-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            let selectedSamples = Array.from(document.querySelectorAll('#sendTable tbody tr')).map(row => row.getAttribute('data-sample-id'));
-            if (selectedSamples.length === 0) {
-                Swal.fire('Error', 'No se han seleccionado muestras para enviar.', 'error');
-            } else {
-                let message = 'Muestras seleccionadas: ' + selectedSamples.join(', ') + '. ¿Está todo correcto?';
-                Swal.fire({
-                    title: '¿Seguro que todo está bien?',
-                    text: message,
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Sí, enviar',
-                    cancelButtonText: 'No, revisar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Agregar console.log para depuración
-                        console.log('Enviando formulario...');
-                        event.target.submit();
-                    }
-                });
-            }
-        });
-    
-        function moveRow(sampleId, targetTableId, buttonText, buttonClass) {
-            let sourceRow = document.querySelector(`tr[data-sample-id="${sampleId}"]`);
-            if (!sourceRow) return;
-        
-            let newRow = sourceRow.cloneNode(true);
-            let button = newRow.querySelector('button');
-            button.textContent = buttonText;
-            button.className = buttonClass;
-        
-            document.getElementById(targetTableId).querySelector('tbody').appendChild(newRow);
-            sourceRow.remove();
-        
-            if (targetTableId === 'sendTable') {
-                addHiddenInput(sampleId); // Agregar input oculto al formulario
-            } else {
-                removeHiddenInput(sampleId); // Eliminar input oculto del formulario
-            }
-        
-            // Actualizar el campo oculto selected_samples con las muestras seleccionadas
-            let selectedSampleIds = Array.from(document.querySelectorAll('#sendTable tbody tr')).map(row => row.getAttribute('data-sample-id'));
-            document.getElementById('selected-samples').value = selectedSampleIds.join(',');
+        // Función para mover una fila de una tabla a otra
+        function moveRow(row, targetTableId) {
+            var targetTable = document.querySelector(`#${targetTableId} tbody`);
+            targetTable.appendChild(row);
         }
-    
-        // Función para añadir inputs ocultos al formulario de envío
-        function addHiddenInput(sampleId) {
-            const form = document.getElementById('send-form');
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'selected_samples';
-            input.value = sampleId;
-            form.appendChild(input);
-        }
-    
-        // Función para eliminar inputs ocultos del formulario de envío
-        function removeHiddenInput(sampleId) {
-            let inputToRemove = document.querySelector(`input[name="selected_samples"][value="${sampleId}"]`);
-            if (inputToRemove) {
-                inputToRemove.remove();
-            }
-        }
-    
-        // Eventos para botones en la tabla de selección de muestras
+
+        // Eventos para agregar muestras a la lista de envíos
         document.querySelector('#samplesTable').addEventListener('click', function(event) {
             if (event.target.matches('.add-to-send')) {
-                let sampleId = event.target.closest('tr').getAttribute('data-sample-id');
-                moveRow(sampleId, 'sendTable', 'Volver a Subir', 'return-to-selection');
+                var row = event.target.closest('tr');
+                moveRow(row, 'sendTable');
             }
         });
-    
-        // Eventos para botones en la tabla de muestras a enviar
-        document.querySelector('#sendTable').addEventListener('click', function(event) {
-            if (event.target.matches('.return-to-selection')) {
-                let sampleId = event.target.closest('tr').getAttribute('data-sample-id');
-                moveRow(sampleId, 'samplesTable', 'Agregar a Envíos', 'add-to-send');
-            }
-        });
-    
-        // Manejar el envío del formulario de envío
+
+        // Evento para manejar el envío de las muestras seleccionadas
         document.getElementById('send-form').addEventListener('submit', function(event) {
             event.preventDefault();
-            let selectedSamples = Array.from(document.querySelectorAll('#sendTable tbody tr')).map(row => row.getAttribute('data-sample-id'));
+
+            // Obtener los IDs de las muestras seleccionadas
+            var selectedSamples = Array.from(document.querySelectorAll('#sendTable tbody tr')).map(row => row.getAttribute('data-sample-id'));
+
+            // Verificar si se han seleccionado muestras
             if (selectedSamples.length === 0) {
                 Swal.fire('Error', 'No se han seleccionado muestras para enviar.', 'error');
-            } else {
-                // Realizar la solicitud POST para registrar el envío
-                let form = document.getElementById('send-form');
-                let formData = new FormData(form);
-                formData.append('selected_samples', selectedSamples.join(','));
-    
-                // Agregar console.log para depuración
-                console.log('Enviando solicitud al servidor...');
-                const dataToSend = {
-                    sample_ids: selectedSamples // selectedSamples es un array de IDs de muestras seleccionadas
-                };
-                
-                // Realizar la solicitud POST con los datos formateados como JSON
-                fetch('/update-shipment/', {
-                    method: 'POST',
-                    body: JSON.stringify(dataToSend), // Convierte el objeto a una cadena JSON
-                    headers: {
-                        'X-CSRFToken': csrf_token,
-                        'Content-Type': 'application/json', // Indica que estás enviando datos JSON
-                    },
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // Maneja la respuesta del servidor aquí
-                    if (data.message) {
-                        Swal.fire('Éxito', data.message, 'success')
-                        .then((result) => {
-                            if (result.isConfirmed || result.isDismissed) {
-                                location.reload(); // Recarga la página
-                            }
-                        });
-                    } else {
-                        Swal.fire('Error', data.error, 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error en la solicitud:', error);
-                });
+                return;
             }
+
+            // Confirmación antes de enviar
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "No podrás revertir esto",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, enviar!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Enviar la solicitud al servidor
+                    fetch('/update-shipment/', {
+                        method: 'POST',
+                        body: JSON.stringify({ sample_ids: selectedSamples }),
+                        headers: {
+                            'X-CSRFToken': csrf_token,
+                            'Content-Type': 'application/json',
+                        },
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('La solicitud al servidor falló');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.error) {
+                            Swal.fire('Error', data.error, 'error');
+                        } else {
+                            Swal.fire('Éxito', 'Muestras enviadas con éxito', 'success')
+                                .then(() => {
+                                    window.location.href = '/shipments_report';
+                                });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Error', 'Ocurrió un error al procesar la solicitud', 'error');
+                    });
+                }
+            });
         });
     </script>
-    
 </body>
 </html>
 {% endblock %}
+

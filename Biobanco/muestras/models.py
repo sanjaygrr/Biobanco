@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator
+from django.conf import settings
 
 
 class StorageType(models.Model):
@@ -95,6 +96,12 @@ class Shipment(models.Model):
     date_shipment = models.DateField()
     laboratory = models.CharField(max_length=30)
     analysis = models.CharField(max_length=50)
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='shipments',
+        null=True  # Permite valores nulos
+    )
 
     def __str__(self):
         return f"Shipment {self.id_shipment}"

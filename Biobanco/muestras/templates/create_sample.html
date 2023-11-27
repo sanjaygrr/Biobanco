@@ -198,15 +198,14 @@
         </div>
     </form>
 </div>
-</body>
 <script>
     function handleSubmit(actionValue, event) {
         event.preventDefault();
-    
+
         // Obtén todos los campos requeridos
         var requiredFields = document.querySelectorAll('[required]');
         var allFieldsFilled = true;
-    
+
         // Verifica si todos los campos requeridos están llenos
         for (var i = 0; i < requiredFields.length; i++) {
             if (requiredFields[i].value.trim() === '') {
@@ -214,7 +213,7 @@
                 break; // Si encuentra un campo vacío, detén la verificación
             }
         }
-    
+
         if (!allFieldsFilled) {
             // Si no todos los campos están llenos, muestra un mensaje de error
             Swal.fire({
@@ -240,7 +239,7 @@
                     hiddenInput.name = 'action';
                     hiddenInput.value = actionValue;
                     form.appendChild(hiddenInput);
-    
+
                     // Realizar la solicitud AJAX para verificar la existencia de la ubicación
                     fetch('/create_sample/', {  // Ajusta la URL según tu configuración de URLs
                         method: 'POST',
@@ -267,14 +266,11 @@
                             });
                         } else {
                             // Si no hay error, mostrar una alerta de éxito y redirigir si es necesario
-                            Swal.fire({
-                                title: 'Éxito',
-                                text: 'La muestra ha sido creada con éxito',
-                                icon: 'success',
-                            }).then(() => {
-                                // Redirigir a la página de lista de muestras u otra página
-                                window.location.href = '/sample_list/'; // Ajusta la URL según sea necesario
-                            });
+                            if (actionValue === 'add_another') {
+                                window.location.href = '/create_sample/'; // Redirigir para agregar otra muestra
+                            } else if (actionValue === 'submit') {
+                                window.location.href = '/sample_list/'; // Redirigir a la lista de muestras
+                            }
                         }
                     })
                     .catch(error => {
@@ -285,6 +281,9 @@
         }
     }
 </script>
+
+</body>
+
 
 </html>
 {% endblock %}

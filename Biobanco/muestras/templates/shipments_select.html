@@ -98,7 +98,17 @@
 </head>
 <body>
     <h1>Enviar Muestras</h1>
-    
+    {% if last_shipment %}
+        <div>
+            <p><strong>Laboratorio:</strong> {{ last_shipment.laboratory }}</p>
+            <p><strong>Fecha:</strong> {{ last_shipment.date_shipment|date:"d M Y" }}</p>
+            <p><strong>Análisis:</strong> {{ last_shipment.analysis }}</p>
+        </div>
+    {% else %}
+        <p>No hay envíos anteriores registrados.</p>
+    {% endif %}
+
+
     <!-- Formulario de Filtro -->
 
     <div class="filter-box">
@@ -163,6 +173,7 @@
             <input type="hidden" id="selected-samples" name="selected_samples" value="">
         </form>
     </div>
+
     <div class="samples-selection">
         <h2>Seleccionar Muestras</h2>
         <table id="samplesTable">
@@ -200,6 +211,8 @@
             </tbody>
         </table>
     </div>
+    
+
     
     <!-- Dentro de tu formulario en la sección de Muestras a Enviar -->
     <div class="samples-to-send">

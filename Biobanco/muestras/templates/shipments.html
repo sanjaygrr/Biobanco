@@ -52,6 +52,23 @@
         button:hover {
             background-color: rgb(79, 100, 150);
         }
+        .continue-button {
+            display: inline-block;
+            margin-top: 20px;
+            background-color: #6c757d; /* Gris */
+            color: white;
+            padding: 10px 15px;
+            border: 1px solid #5a6268; /* Borde ligeramente más oscuro */
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 16px; /* Tamaño de fuente ajustable */
+        }
+    
+        .continue-button:hover {
+            background-color: #5a6268; /* Gris un poco más oscuro al pasar el ratón */
+        }
+    
     </style>
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -83,9 +100,15 @@
             <label for="analysis">Análisis:</label>
             <textarea id="analysis" name="analysis" required></textarea>
         </div>
-        <button type="submit">Registrar Envío</button>
-    </form>
+        <button type="submit">Registrar nuevo envío</button>
 
+        <button id="continueShipmentButton" class="continue-button">Continuar con el último envío</button>
+    </form>
+    <script>
+        document.getElementById('continueShipmentButton').addEventListener('click', function() {
+            window.location.href = "{% url 'shipments_select' %}";
+        });
+    </script>
     <script>
         document.getElementById('shipmentForm').addEventListener('submit', function(e) {
             e.preventDefault();

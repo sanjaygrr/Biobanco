@@ -22,7 +22,9 @@ from django.contrib.auth.decorators import login_required
 
 logger = logging.getLogger(__name__)
 
-#para errores en URL
+# para errores en URL
+
+
 @login_required
 def custom_not_found_view(request, exception):
     if request.user.is_authenticated:
@@ -33,6 +35,7 @@ def custom_not_found_view(request, exception):
         logout(request)
 
         return redirect('login')
+
 
 def login_screen(request):
 
@@ -70,26 +73,17 @@ def login_screen(request):
 @login_required
 def logout_screen(request):
     logout(request)
-    #request.session['logout_message'] = "You have been logged out successfully."
+    # request.session['logout_message'] = "You have been logged out successfully."
 
     return redirect('login')
+
 
 @login_required
 def redirect_login(request):
 
-    return redirect(request, 'login_screen.html') 
+    return redirect(request, 'login_screen.html')
 
-# obtiene y elimina mensaje de la salida de sesión
-@login_required
-# def display_message(request):
-# logout_message = request.session.pop('logout_message', None)
-# return render(request, 'login_screen.html', {'logout_message':logout_message})
-# if logout_message and 'logout_message_displayed' not in request.session:
-# if logout_message:
-# request.session['logout_message_displayed'] = True
-# return render(request, 'login.html', {'logout_message':logout_message})
-# else:
-# return redirect('login')
+
 @login_required
 def home(request):
     num_shipments = Shipment.objects.count()

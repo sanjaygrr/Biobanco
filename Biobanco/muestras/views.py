@@ -160,6 +160,48 @@ def delete_user(request, user_id):
 
 
 @login_required
+def edit_user(request, user_id):
+    user = get_object_or_404(Account, id=user_id)
+    roles = Role.objects.all()
+
+    context = {
+        'user': user,
+        'roles': roles
+    }
+
+    return render(request, 'edit_user.html', context)
+
+
+@login_required
+def update_user(request, user_id):
+    user = get_object_or_404(Account, id=user_id)
+
+    if request.method == 'POST':
+        user.email = request.POST.get('email')
+        user.name = request.POST.get('name')
+        user.lastname = request.POST.get('lastname')
+
+        # Actualizar rol si es necesario
+        role_id = request.POST.get('role')
+        try:
+            user.ROLE_id_role = Role.objects.get(id_role=role_id)
+        except Role.DoesNotExist:
+            messages.error(request, 'Rol seleccionado no válido.')
+
+        # Actualizar contraseña si se proporcionó una nueva
+        new_password = request.POST.get('password')
+        if new_password:
+            user.set_password(new_password)
+
+        user.save()
+        messages.success(request, 'Usuario actualizado correctamente.')
+        # Asume que tienes una vista para listar usuarios
+        return redirect('user_list')
+
+    return render(request, 'edit_user.html', {'user': user, 'roles': Role.objects.all()})
+
+
+@login_required
 def create_space(request):
     if request.method == 'POST':
         storage_type_id = request.POST.get('storage_type')

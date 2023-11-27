@@ -36,4 +36,7 @@ urlpatterns = [
          views.shipments_detail, name='shipments_detail'),
     #     re_path(r'^.*$', views.custom_not_found_view),
     path('delete_user/<int:user_id>/', views.delete_user, name='delete_user'),
+    path('edit_user/<int:user_id>/', views.edit_user, name='edit_user'),
+    path('update_user/<int:user_id>/', views.update_user, name='update_user'),
+
 ]

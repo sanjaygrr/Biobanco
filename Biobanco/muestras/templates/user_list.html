@@ -52,6 +52,26 @@
         form {
             margin-top: 20px; 
         }
+
+        .delete-icon, .edit-icon {
+            cursor: pointer;
+            font-size: 30px; /* Ajusta el tamaño del ícono */
+        }
+    
+        .delete-icon {
+            color: red;
+            font-weight: bold;
+        }
+    
+        .edit-icon {
+            color: #4F709C; /* Color azul para editar */
+            padding-left: 60px; /* Espacio entre los íconos si es necesario */
+            font-size: 30px; /* Ajusta el tamaño del ícono */
+        }
+    
+        .delete-icon:hover, .edit-icon:hover {
+            color: #333; /* Cambia el color al pasar el ratón por encima */
+        }
     </style>
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -74,23 +94,30 @@
         </thead>
         <tbody>
             {% for user in users %}
-                <tr>
-                    <td>{{ user.username }}</td>
-                    <td>{{ user.email }}</td>
-                    <td>{{ user.ROLE_id_role.get_id_role_display }}</td>
-                    <td>
+            <tr {% if request.user.id == user.id %} style="background-color: #d4edda;" {% endif %}>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.ROLE_id_role.get_id_role_display }}</td>
+                <td>
+                    {% if request.user.id != user.id %}
                         <!-- Botón de eliminar -->
-                        <form action="{% url 'delete_user' user.id %}" method="post">
+                        <form action="{% url 'delete_user' user.id %}" method="post" style="display: inline;">
                             {% csrf_token %}
-                            <button type="button" onclick="confirmDelete(this.form)">Eliminar</button>
+                            <span class="delete-icon" onclick="confirmDelete(this.form)">&#10006;</span> <!-- Representa la X -->
                         </form>
-                    </td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="4">No hay usuarios para mostrar.</td>
-                </tr>
-            {% endfor %}
+                        <!-- Ícono de editar -->
+                        <a href="{% url 'edit_user' user.id %}" class="edit-icon">&#9998;</a> <!-- Representa el lápiz -->
+                    {% else %}
+                        <!-- Si es el usuario actual, muestra texto en lugar de los botones -->
+                        Este es tu usuario
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="4">No hay usuarios para mostrar.</td>
+            </tr>
+        {% endfor %}
         </tbody>
     </table>
     <script>

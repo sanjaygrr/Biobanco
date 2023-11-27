@@ -232,7 +232,6 @@
         var csrf_token = "{{ csrf_token }}";
         var selectedSamples = [];
         var allSamples = []; // Aquí tus muestras
-        var selectedSampleIds = new Set();
         
 
         function initializeSamples() {
@@ -275,6 +274,11 @@
             var volume = parseFloat(document.getElementById('volume').value);
         
             var filteredSamples = allSamples.filter(function(sample) {
+                // Verificar si la muestra ya está seleccionada y excluir
+                if (selectedSamples.includes(sample.id_sample)) {
+                    return false;
+                }
+        
                 var yearMatches = year ? sample.date_sample.getFullYear() == year : true;
                 var monthMatches = month ? sample.date_sample.getMonth() + 1 == month : true;
                 var subjectIdMatches = subjectId ? sample.id_subject == subjectId : true;
@@ -294,10 +298,7 @@
                     }
                 }
         
-                // Comprueba si la muestra ya está seleccionada
-                var isSampleSelected = selectedSampleIds.has(sample.id_sample);
-        
-                return yearMatches && monthMatches && subjectIdMatches && volumeMatches && !isSampleSelected;
+                return yearMatches && monthMatches && subjectIdMatches && volumeMatches;
             });
         
             updateSamplesTable(filteredSamples);

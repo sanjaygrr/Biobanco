@@ -709,6 +709,7 @@ def create_password(request):
 @login_required
 @require_http_methods(["GET", "POST"])
 def shipments_select(request):
+
     if request.method == 'POST':
         # Verificar si es una solicitud AJAX
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -784,7 +785,12 @@ def shipments_select(request):
             STORAGE_TYPE_id_storagetype_id=3).first()  # ID para caja
         sample.box_name = box_location.STORAGE_id_storage_1.storage_name if box_location else 'No Asignado'
 
-    return render(request, 'shipments_select.html', {'samples': samples})
+    last_shipment = Shipment.objects.order_by('-date_shipment').first()
+
+    return render(request, 'shipments_select.html', {
+        'samples': samples,  # Asegúrate de que 'samples' esté definido correctamente
+        'last_shipment': last_shipment
+    })
 
 
 @csrf_exempt

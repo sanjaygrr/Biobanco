@@ -53,6 +53,7 @@
             margin-top: 20px; 
         }
     </style>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <h1>Lista de Usuarios</h1>
@@ -68,6 +69,7 @@
                 <th>Nombre de Usuario</th>
                 <th>Correo Electrónico</th>
                 <th>Rol</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -76,6 +78,13 @@
                     <td>{{ user.username }}</td>
                     <td>{{ user.email }}</td>
                     <td>{{ user.ROLE_id_role.get_id_role_display }}</td>
+                    <td>
+                        <!-- Botón de eliminar -->
+                        <form action="{% url 'delete_user' user.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="button" onclick="confirmDelete(this.form)">Eliminar</button>
+                        </form>
+                    </td>
                 </tr>
             {% empty %}
                 <tr>
@@ -85,8 +94,20 @@
         </tbody>
     </table>
     <script>
-        function redirectToHome() {
-            window.location.href = "/home";
+        function confirmDelete(form) {
+            Swal.fire({
+                title: '¿Estás seguro de eliminar usuario?',
+                text: "No podrás revertir esto!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, eliminar!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
         }
     </script>
 </body>

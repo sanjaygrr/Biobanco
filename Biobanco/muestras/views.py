@@ -151,6 +151,15 @@ def user_list(request):
 
 
 @login_required
+@require_POST
+def delete_user(request, user_id):
+    # Usa Account en lugar de User
+    user = get_object_or_404(Account, id=user_id)
+    user.delete()
+    return redirect('user_list')
+
+
+@login_required
 def create_space(request):
     if request.method == 'POST':
         storage_type_id = request.POST.get('storage_type')
@@ -766,7 +775,7 @@ def update_samples_shipment(request):
             sample.state_analysis = "1"
             sample.save()
 
-        return JsonResponse({'message': '¡Muestras para envío registradas con éxito y ubicaciones actualizadas!'})
+        return JsonResponse({'message': '¡Muestras para envío registradas con éxito y ubicaciones liberadas!'})
 
     except Sample.DoesNotExist:
         return JsonResponse({'error': 'Una o más muestras no encontradas'}, status=404)

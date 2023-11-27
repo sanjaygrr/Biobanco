@@ -8,7 +8,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('home/', views.home, name='home'),
     path('signup/', views.signup, name='signup'),
-    path('user_list/', views.user_list),
+    path('user_list/', views.user_list, name='user_list'),
     path('create_space/', views.create_space, name='create_space'),
     path('space_list/', views.space_list, name='space_list'),
     path('', views.login_screen),
@@ -35,4 +35,5 @@ urlpatterns = [
     path('shipments/detail/<int:shipment_id>/',
          views.shipments_detail, name='shipments_detail'),
     #     re_path(r'^.*$', views.custom_not_found_view),
+    path('delete_user/<int:user_id>/', views.delete_user, name='delete_user'),
 ]

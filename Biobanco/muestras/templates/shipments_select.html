@@ -165,81 +165,168 @@
         </form>
     </div>
     <script>
-        // Define la variable csrf_token con el valor del token CSRF
         var csrf_token = "{{ csrf_token }}";
+        var selectedSamples = [];
+        var allSamples = []; // Supongamos que esto se llena con tus muestras
 
-        // (Funciones y eventos para filtrar y actualizar tabla de muestras)
-    
-        // Función para mover una fila de una tabla a otra
-        function moveRow(row, targetTableId) {
-            var targetTable = document.querySelector(`#${targetTableId} tbody`);
-            targetTable.appendChild(row);
-        }
-
-        // Eventos para agregar muestras a la lista de envíos
-        document.querySelector('#samplesTable').addEventListener('click', function(event) {
-            if (event.target.matches('.add-to-send')) {
-                var row = event.target.closest('tr');
-                moveRow(row, 'sendTable');
-            }
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('filter-form').addEventListener('input', filterSamples);
+            document.getElementById('send-form').addEventListener('submit', handleSendFormSubmit);
+            document.querySelector('#samplesTable').addEventListener('click', handleSamplesTableClick);
+            document.querySelector('#sendTable').addEventListener('click', handleSendTableClick);
+            initializeSamples(); // Llenar allSamples con datos iniciales
         });
 
-        // Evento para manejar el envío de las muestras seleccionadas
-        document.getElementById('send-form').addEventListener('submit', function(event) {
+        {% comment %} function filterSamples() {
+            var year = document.getElementById('year').value;
+            var month = document.getElementById('month').value;
+            var subjectId = document.getElementById('subject_id').value;
+            var volumeCondition = document.getElementById('volume_condition').value;
+            var volume = parseFloat(document.getElementById('volume').value);
+        
+            var filteredSamples = allSamples.filter(function(sample) {
+                var yearMatches = year ? sample.year == year : true;
+                var monthMatches = month ? sample.month == month : true;
+                var subjectIdMatches = subjectId ? sample.subjectId == subjectId : true;
+                var volumeMatches = true;
+        
+                if (volume) {
+                    switch (volumeCondition) {
+                        case 'greater':
+                            volumeMatches = sample.volume > volume;
+                            break;
+                        case 'less':
+                            volumeMatches = sample.volume < volume;
+                            break;
+                        case 'equal':
+                            volumeMatches = sample.volume == volume;
+                            break;
+                    }
+                }
+        
+                return yearMatches && monthMatches && subjectIdMatches && volumeMatches;
+            });
+        
+            updateSamplesTable(filteredSamples);
+        }
+
+        function updateSamplesTable(filteredSamples) {
+            var tableBody = document.getElementById('samplesTable').querySelector('tbody');
+            tableBody.innerHTML = ''; // Limpiar tabla actual
+        
+            filteredSamples.forEach(function(sample) {
+                var row = document.createElement('tr');
+                row.setAttribute('data-sample-id', sample.id_sample);
+        
+                // Crear y agregar celdas para cada propiedad de la muestra
+                addCell(row, sample.id_subject);
+                addCell(row, sample.date_sample);
+                addCell(row, sample.id_sample);
+                addCell(row, sample.ml_volume);
+                addCell(row, sample.state_preservation ? 'Descongelado' : 'Normal');
+                addCell(row, sample.freezer_name);
+                addCell(row, sample.rack_name);
+                addCell(row, sample.box_name);
+                addCell(row, sample.cell); // Asume que la propiedad para la celda se llama 'cell'
+        
+                // Crear y agregar celda para las acciones
+                var cellActions = document.createElement('td');
+                var addButton = document.createElement('button');
+                addButton.classList.add('add-to-send');
+                addButton.textContent = 'Agregar a Envíos';
+                addButton.type = 'button';
+                cellActions.appendChild(addButton);
+                row.appendChild(cellActions);
+        
+                tableBody.appendChild(row);
+            });
+        }
+        
+        function addCell(row, text) {
+            var cell = document.createElement('td');
+            cell.textContent = text;
+            row.appendChild(cell);
+        } {% endcomment %}
+
+        function handleSendFormSubmit(event) {
             event.preventDefault();
 
-            // Obtener los IDs de las muestras seleccionadas
-            var selectedSamples = Array.from(document.querySelectorAll('#sendTable tbody tr')).map(row => row.getAttribute('data-sample-id'));
-
-            // Verificar si se han seleccionado muestras
             if (selectedSamples.length === 0) {
                 Swal.fire('Error', 'No se han seleccionado muestras para enviar.', 'error');
                 return;
             }
 
-            // Confirmación antes de enviar
             Swal.fire({
-                title: '¿Estás seguro?',
-                text: "No podrás revertir esto",
-                icon: 'warning',
+                title: '¿Seguro que todo está bien?',
+                text: 'Muestras seleccionadas: ' + selectedSamples.join(', ') + '. ¿Está todo correcto?',
+                icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'Sí, enviar!'
+                confirmButtonText: 'Sí, enviar',
+                cancelButtonText: 'No, revisar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Enviar la solicitud al servidor
-                    fetch('/update-shipment/', {
-                        method: 'POST',
-                        body: JSON.stringify({ sample_ids: selectedSamples }),
-                        headers: {
-                            'X-CSRFToken': csrf_token,
-                            'Content-Type': 'application/json',
-                        },
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('La solicitud al servidor falló');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.error) {
-                            Swal.fire('Error', data.error, 'error');
-                        } else {
-                            Swal.fire('Éxito', 'Muestras enviadas con éxito', 'success')
-                                .then(() => {
-                                    window.location.href = '/shipments_report';
-                                });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        Swal.fire('Error', 'Ocurrió un error al procesar la solicitud', 'error');
-                    });
+                    submitSendForm();
                 }
             });
-        });
+        }
+
+
+        function submitSendForm() {
+            fetch('/update-shipment/', {
+                method: 'POST',
+                body: JSON.stringify({ sample_ids: selectedSamples }),
+                headers: {
+                    'X-CSRFToken': csrf_token,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    Swal.fire('Éxito', data.message, 'success')
+                    .then(() => {
+                        window.location.href = "{% url 'shipments_report' %}";
+                    });
+                } else {
+                    Swal.fire('Error', data.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error en la solicitud:', error);
+                Swal.fire('Error', 'Ha ocurrido un error al enviar las muestras.', 'error');
+            });
+        }
+    
+        function handleSamplesTableClick(event) {
+            if (event.target.matches('.add-to-send')) {
+                let sampleId = event.target.closest('tr').getAttribute('data-sample-id');
+                moveRow(sampleId, 'sendTable', 'Volver a Subir', 'return-to-selection');
+                selectedSamples.push(sampleId);
+            }
+        }
+    
+        function handleSendTableClick(event) {
+            if (event.target.matches('.return-to-selection')) {
+                let sampleId = event.target.closest('tr').getAttribute('data-sample-id');
+                moveRow(sampleId, 'samplesTable', 'Agregar a Envíos', 'add-to-send');
+                selectedSamples = selectedSamples.filter(id => id !== sampleId);
+            }
+        }
+    
+        function moveRow(sampleId, targetTableId, buttonText, buttonClass) {
+            let sourceRow = document.querySelector(`tr[data-sample-id="${sampleId}"]`);
+            if (!sourceRow) return;
+        
+            let newRow = sourceRow.cloneNode(true);
+            let button = newRow.querySelector('button');
+            button.textContent = buttonText;
+            button.className = buttonClass;
+        
+            document.getElementById(targetTableId).querySelector('tbody').appendChild(newRow);
+            sourceRow.remove();
+        }
     </script>
 </body>
 </html>

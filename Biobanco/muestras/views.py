@@ -324,7 +324,7 @@ def create_sample(request):
                 existing_location = Location.objects.filter(
                     STORAGE_id_storage_1=caja_obj,
                     cell=cell_value,
-                    # SAMPLE_id_sample_1__SHIPMENT_id_shipment
+                    # # SAMPLE_id_sample_1__SHIPMENT_id_shipment
                 ).first()
                 if existing_location:
                     print(
@@ -688,7 +688,6 @@ def shipments_select(request):
             samples_data = list(samples.values(
                 'id_sample', 'id_subject', 'date_sample',
                 'ml_volume', 'state_preservation'
-                # Añade otros campos necesarios
             ))
 
             return JsonResponse({'samples': samples_data})
@@ -754,15 +753,20 @@ def update_samples_shipment(request):
         if not last_shipment:
             return JsonResponse({'error': 'No se encontró ningún envío'}, status=404)
 
-        # Actualizar los espacios para cada muestra
+        # Actualizar los espacios para cada muestra y eliminar registros de Location asociados
         for sample_id in sample_ids:
             sample = Sample.objects.get(id_sample=sample_id)
+
+            # Eliminar registros de Location asociados al Sample
+            Location.objects.filter(SAMPLE_id_sample_1=sample).delete()
+
+            # Actualizar información del Sample
             sample.SHIPMENT_id_shipment = last_shipment.id_shipment
             sample.state_preservation = "1"
             sample.state_analysis = "1"
             sample.save()
 
-        return JsonResponse({'message': '¡Muestras para envío registradas con éxito! '})
+        return JsonResponse({'message': '¡Muestras para envío registradas con éxito y ubicaciones actualizadas!'})
 
     except Sample.DoesNotExist:
         return JsonResponse({'error': 'Una o más muestras no encontradas'}, status=404)

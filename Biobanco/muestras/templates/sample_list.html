@@ -305,257 +305,160 @@
         </table>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    function debugLog(message) {
-        console.log(`DEBUG: ${message}`);
-    }
-
-    function eliminar(btn) {
-        let fila = btn.parentNode.parentNode;
-        let sample_id = fila.cells[2].textContent; // Use the correct cell index that contains the sample ID
-
-        // Use SweetAlert to confirm the deletion
-        Swal.fire({
-            title: '¿Estás seguro?',
-            text: "No podrás revertir esto!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Sí, eliminarlo!',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // If the user confirms, proceed with the deletion
-                deleteSample(sample_id);
-            }
-        });
-    }
-
-    function deleteSample(sample_id) {
-        // Logic to send a request to the server to delete the sample
-        fetch(`/delete_sample/${sample_id}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === "success") {
-                // Display a success message if the deletion was successful
-                Swal.fire(
-                    'Eliminado!',
-                    'La muestra ha sido eliminada.',
-                    'success'
-                ).then(() => {
-                    location.reload(); // Reload the page to see the changes
-                });
-            } else {
-                // Display an error message if there was an issue with the deletion
-                Swal.fire(
-                    'Error',
-                    'Hubo un problema al eliminar la muestra: ' + data.message,
-                    'error'
-                );
-            }
-        })
-        .catch((error) => {
-            // Display an error message if the fetch operation fails
-            Swal.fire(
-                'Error',
-                'Hubo un problema al eliminar la muestra: ' + error.message,
-                'error'
-            );
-        });
-    }
-    function toggleEditMode(btn) {
-        let fila = btn.parentNode.parentNode;
-        let isEditing = fila.getAttribute('data-editing') === 'true';
+    <script>
+        function eliminar(btn) {
+            let fila = btn.parentNode.parentNode;
+            let sample_id = fila.getAttribute('data-sample-row-id');
     
-        fila.querySelectorAll('.edit-btn, .save-btn').forEach(button => {
-            button.classList.toggle('hidden');
-        });
-    
-        fila.querySelectorAll('.preservation-select, .freezer-select, .rack-select, .box-select, .cell-input').forEach(element => {
-            element.style.display = isEditing ? 'none' : '';
-        });
-    
-        fila.querySelectorAll('.preservation-display, .freezer-display, .rack-display, .box-display, .cell-display').forEach(element => {
-            element.style.display = isEditing ? '' : 'none';
-        });
-    
-        fila.setAttribute('data-editing', isEditing ? 'false' : 'true');
-    }
-    document.querySelectorAll('.save-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            guardar(this);
-        });
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        var table = document.getElementById('sendTable');
-        var headers = table.querySelectorAll('th.sortable');
-        headers.forEach(function(header, index) {
-            header.addEventListener('click', function() {
-                sortTableByColumn(table, index);
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "No podrás revertir esto!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, eliminarlo!',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    deleteSample(sample_id);
+                }
             });
-        });
-    });
-
-    function sortTableByColumn(table, column) {
-        var rows = Array.from(table.tBodies[0].rows);
-        var header = table.querySelectorAll('th')[column];
-        var isAscending = header.classList.contains('th-sort-asc');
-        var newIsAscending = !isAscending;
-    
-        rows.sort(function(rowA, rowB) {
-            var cellA = rowA.cells[column].textContent.trim();
-            var cellB = rowB.cells[column].textContent.trim();
-    
-            if (!isNaN(parseFloat(cellA)) && !isNaN(parseFloat(cellB))) {
-                return newIsAscending ? parseFloat(cellA) - parseFloat(cellB) : parseFloat(cellB) - parseFloat(cellA);
-            } else {
-                return newIsAscending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
-            }
-        });
-    
-        rows.forEach(function(row) {
-            table.tBodies[0].appendChild(row);
-        });
-    
-        table.querySelectorAll('th').forEach(th => th.classList.remove('th-sort-asc', 'th-sort-desc'));
-        header.classList.toggle('th-sort-asc', newIsAscending);
-        header.classList.toggle('th-sort-desc', !newIsAscending);
-    }
-    
-    function getCookie(name) {
-        let value = `; ${document.cookie}`;
-        let parts = value.split(`; ${name}=`);
-        return parts.length === 2 ? parts.pop().split(';').shift() : null;
-    }
-    function guardar(btn) {
-        let fila = btn.closest('tr');
-        console.log(fila); // Verificar el objeto fila
-        console.log(fila.dataset); // Verificar los datos del dataset
-        let sampleId = fila.getAttribute('data-sample-row-id');
-        console.log("Sample ID:", sampleId); 
-    
-        if (!sampleId) {
-            console.error("sampleId no está definido");
-            return;
         }
     
-        // Recolectar los valores editados
-        let preservationState = fila.querySelector('.preservation-select').value;
-        console.log("Preservation State:", preservationState);
+        function deleteSample(sample_id) {
+            fetch(`/delete_sample/${sample_id}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    Swal.fire('Eliminado!', 'La muestra ha sido eliminada.', 'success')
+                    .then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', 'Hubo un problema al eliminar la muestra: ' + data.message, 'error');
+                }
+            })
+            .catch((error) => {
+                Swal.fire('Error', 'Hubo un problema al eliminar la muestra: ' + error.message, 'error');
+            });
+        }
     
-        let freezerId = fila.querySelector('.freezer-select').value;
-        console.log("Freezer ID:", freezerId);
+        function toggleEditMode(btn) {
+            let fila = btn.parentNode.parentNode;
+            let isEditing = fila.getAttribute('data-editing') === 'true';
     
-        let rackId = fila.querySelector('.rack-select').value;
-        console.log("Rack ID:", rackId);
+            fila.querySelectorAll('.edit-btn, .save-btn').forEach(button => {
+                button.classList.toggle('hidden');
+            });
     
-        let boxId = fila.querySelector('.box-select').value;
-        console.log("Box ID:", boxId);
+            fila.querySelectorAll('.preservation-select, .freezer-select, .rack-select, .box-select, .cell-input').forEach(element => {
+                element.style.display = isEditing ? 'none' : '';
+            });
     
-        let cellNumber = fila.querySelector('.cell-input').value;
-        console.log("Cell:", cellNumber);
+            fila.querySelectorAll('.preservation-display, .freezer-display, .rack-display, .box-display, .cell-display').forEach(element => {
+                element.style.display = isEditing ? '' : 'none';
+            });
     
-        // Construir el objeto con los datos
-        let data = {
-            id: sampleId,
-            state_preservation: preservationState,
-            freezer_id: freezerId,
-            rack_id: rackId,
-            box_id: boxId,
-            cell: cellNumber
-        };
+            fila.setAttribute('data-editing', isEditing ? 'false' : 'true');
+        }
     
-        // Agrega registros de consola para mostrar los valores de los select e input
-        console.log("Datos a enviar al servidor:", data);
+        document.querySelectorAll('.save-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                guardar(this);
+            });
+        });
     
-        // Enviar los datos al servidor mediante AJAX
-        fetch(`/update_sample/${sampleId}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                // Actualizar la interfaz de usuario y mostrar un mensaje de éxito con SweetAlert
-                toggleEditMode(btn);
-                updateRowDisplay(fila, data);
-                
-                Swal.fire({
-                    title: '¡Éxito!',
-                    text: 'Muestra actualizada con éxito.',
-                    icon: 'success',
-                    confirmButtonText: 'Ok'
-                }).then(() => {
-                    location.reload(); // Recarga la página
-                });
-            } else {
+        function guardar(btn) {
+            let fila = btn.closest('tr');
+            let sampleId = fila.getAttribute('data-sample-row-id');
+    
+            let preservationState = fila.querySelector('.preservation-select').value;
+            let freezerId = fila.querySelector('.freezer-select').value;
+            let rackId = fila.querySelector('.rack-select').value;
+            let boxId = fila.querySelector('.box-select').value;
+            let cellNumber = fila.querySelector('.cell-input').value;
+    
+            let data = {
+                id: sampleId,
+                state_preservation: preservationState,
+                freezer_id: freezerId,
+                rack_id: rackId,
+                box_id: boxId,
+                cell: cellNumber
+            };
+    
+            fetch(`/update_sample/${sampleId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    toggleEditMode(btn);
+                    updateRowDisplay(fila, data);
+                    
+                    Swal.fire({
+                        title: '¡Éxito!',
+                        text: 'Muestra actualizada con éxito.',
+                        icon: 'success',
+                        confirmButtonText: 'Ok'
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Error al actualizar la muestra, el espacio ya se encuentra ocupado',
+                        icon: 'error',
+                        confirmButtonText: 'Ok'
+                    });
+                }
+            })
+            .catch(error => {
                 Swal.fire({
                     title: 'Error',
-                    text: 'Error al actualizar la muestra: ' + data.message,
+                    text: 'Error al actualizar la muestra, el espacio ya se encuentra ocupado',
                     icon: 'error',
                     confirmButtonText: 'Ok'
                 });
-            }
-        })
-        .catch(error => {
-            Swal.fire({
-                title: 'Error',
-                text: 'Error al actualizar la muestra: ' + error,
-                icon: 'error',
-                confirmButtonText: 'Ok'
+            });
+        } 
+        
+        function updateRowDisplay(fila, data) {
+            fila.querySelector('.preservation-display').textContent = data.state_preservation === '1' ? 'Descongelado' : 'Normal';
+            fila.querySelector('.freezer-display').textContent = data.freezer_name;
+            fila.querySelector('.rack-display').textContent = data.rack_name;
+            fila.querySelector('.box-display').textContent = data.box_name;
+            fila.querySelector('.cell-display').textContent = data.cell;
+        }
+    
+        const cellInputs = document.querySelectorAll('.cell-input');
+        cellInputs.forEach(function (cellInput) {
+            cellInput.addEventListener('input', function () {
+                let enteredValue = cellInput.value;
+                enteredValue = enteredValue.replace(/^0+/, '');
+                if (enteredValue < 1) enteredValue = 1;
+                else if (enteredValue > 99) enteredValue = 99;
+                cellInput.value = enteredValue;
             });
         });
-    } 
     
-    function updateRowDisplay(fila, data) {
-        // Actualiza la fila de la tabla con los nuevos datos
-        fila.querySelector('.preservation-display').textContent = data.state_preservation === '1' ? 'Descongelado' : 'Normal';
-        fila.querySelector('.freezer-display').textContent = data.freezer_name;
-        fila.querySelector('.rack-display').textContent = data.rack_name;
-        fila.querySelector('.box-display').textContent = data.box_name;
-        fila.querySelector('.cell-display').textContent = data.cell;
-    }
-    document.addEventListener('DOMContentLoaded', () => {
-
-    });
-
-    
-</script>
-<script>
-    // Obtener todos los elementos con la clase "cell-input"
-    const cellInputs = document.querySelectorAll('.cell-input');
-    
-    // Iterar a través de los elementos y agregar el evento de entrada
-    cellInputs.forEach(function (cellInput) {
-        cellInput.addEventListener('input', function () {
-            let enteredValue = cellInput.value;
-
-            // Eliminar ceros a la izquierda
-            enteredValue = enteredValue.replace(/^0+/, '');
-
-            // Asegurarse de que el valor esté en el rango correcto
-            if (enteredValue < 1) {
-                enteredValue = 1;
-            } else if (enteredValue > 99) {
-                enteredValue = 99;
-            }
-
-            // Actualizar el valor en el campo de entrada
-            cellInput.value = enteredValue;
-        });
-    });
-</script>
+        function getCookie(name) {
+            let value = `; ${document.cookie}`;
+            let parts = value.split(`; ${name}=`);
+            return parts.length === 2 ? parts.pop().split(';').shift() : null;
+        }
+    </script>
     
 </body>
 </html>

@@ -457,8 +457,6 @@ def sample_list(request):
 def update_sample(request, sample_id):
     try:
         data = json.loads(request.body)
-
-        # Obtener la muestra
         sample = get_object_or_404(Sample, id_sample=sample_id)
 
         # Actualizar el estado de preservación
@@ -466,30 +464,37 @@ def update_sample(request, sample_id):
         sample.state_preservation = state_preservation
         sample.save()
 
-        # Mapeo de los tipos de almacenamiento
         storage_mappings = {
             'freezer_id': '3',  # Asumiendo que 3 es para Freezer
             'rack_id': '2',     # Asumiendo que 2 es para Rack
             'box_id': '1'       # Asumiendo que 1 es para Caja
         }
 
+        cell_value = int(data.get('cell'))
+
         for storage_key, expected_storage_type_id in storage_mappings.items():
             storage_value = data.get(storage_key)
             if storage_value:
-                # Dividir el ID de almacenamiento combinado para obtener el tipo y el nombre
                 storage_type_id, storage_name = storage_value.split('-')
 
-                # Verificar que el tipo de almacenamiento sea el esperado
                 if storage_type_id != expected_storage_type_id:
                     return JsonResponse({'error': f'Tipo de almacenamiento incorrecto para {storage_key}'}, status=400)
 
-                # Buscar el objeto StorageType y Storage
                 storage_type = StorageType.objects.get(
                     name_storagetype=storage_type_id)
                 storage = Storage.objects.get(
                     STORAGE_TYPE_id_storagetype=storage_type, storage_name=storage_name)
 
-                # Buscar y actualizar la ubicación existente
+                # Verificar si la celda está ocupada
+                if storage_key == 'box_id':
+                    existing_location = Location.objects.exclude(SAMPLE_id_sample_1=sample).filter(
+                        STORAGE_id_storage_1=storage,
+                        cell=cell_value
+                    ).first()
+                    if existing_location:
+                        return JsonResponse({'error': f'La celda {cell_value} en caja {storage_name} ya está ocupada'}, status=400)
+
+                # Actualizar la ubicación existente
                 location = Location.objects.filter(
                     SAMPLE_id_sample_1=sample,
                     STORAGE_TYPE_id_storagetype=storage_type
@@ -497,7 +502,7 @@ def update_sample(request, sample_id):
 
                 if location:
                     location.STORAGE_id_storage_1 = storage
-                    location.cell = data.get('cell')
+                    location.cell = cell_value
                     location.save()
                 else:
                     return JsonResponse({'error': f'Ubicación no encontrada para el tipo de almacenamiento: {storage_type_id}'}, status=404)

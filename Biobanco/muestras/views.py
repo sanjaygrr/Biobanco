@@ -304,6 +304,7 @@ def is_valid_int(value):
 
 @login_required
 def create_sample(request):
+    print("Entrando a la función create_sample")
     if request.method == "POST":
         id_subject = request.POST.get('id_subject')
         date_sample = request.POST.get('date_sample')
@@ -312,44 +313,44 @@ def create_sample(request):
         state_preservation = request.POST.get('state_preservation') == "1"
         specification = request.POST.get('specification')
         shipment_id = request.POST.get('SHIPMENT_id_shipment')
+        cell_value = int(request.POST.get('cell'))
 
-        sample = Sample(
-            id_subject=id_subject,
-            date_sample=date_sample,
-            ml_volume=ml_volume,
-            state_analysis=state_analysis,
-            state_preservation=state_preservation,
-            specification=specification
-        )
+        # Verificar si la celda específica en la caja está ocupada
+        caja_value = request.POST.get('caja_id')
+        if caja_value:
+            _, caja_name = caja_value.split('-')
+            caja_obj = Storage.objects.filter(storage_name=caja_name).first()
+            if caja_obj:
+                existing_location = Location.objects.filter(
+                    STORAGE_id_storage_1=caja_obj,
+                    cell=cell_value,
+                    # SAMPLE_id_sample_1__SHIPMENT_id_shipment
+                ).first()
+                if existing_location:
+                    print(
+                        f"La celda {cell_value} en caja {caja_obj.storage_name} ya está ocupada.")
+                    return JsonResponse({'message': f'La celda {cell_value} en caja {caja_obj.storage_name} ya está ocupada'}, status=400)
 
         with transaction.atomic():
-            # Validación de muestra repetida con criterios adicionales
-            existing_sample = Sample.objects.filter(
+            sample = Sample(
                 id_subject=id_subject,
                 date_sample=date_sample,
                 ml_volume=ml_volume,
+                state_analysis=state_analysis,
                 state_preservation=state_preservation,
                 specification=specification,
                 SHIPMENT_id_shipment=0
-            ).first()
-            if existing_sample:
-                return JsonResponse({'message': 'Ya existe una muestra con los mismos detalles proporcionados'}, status=400)
-
-            if shipment_id:
-                sample.SHIPMENT_id_shipment = int(shipment_id)
-
+            )
             sample.save()
+            print(f"Muestra guardada con id_sample: {sample.id_sample}")
 
-            # Lógica para crear un registro en SampleEvent
-            event_user = request.user.username  # Obtener el nombre del usuario actual
-            action = "Registrar muestra"  # Acción por defecto
-            # Detalle
+            # Creación y guardado de SampleEvent
+            event_user = request.user.username
             action_information = f"ID de la muestra: {sample.id_sample}"
-
             sample_event = SampleEvent(
                 event_user=event_user,
                 event_date=timezone.now(),
-                action=action,
+                action="Registrar muestra",
                 action_information=action_information,
                 SAMPLE_id_sample=sample
             )
@@ -358,46 +359,35 @@ def create_sample(request):
             # Lógica de Guardado de Ubicaciones
             for storage_value_key in ['freezer_id', 'rack_id', 'caja_id']:
                 storage_value = request.POST.get(storage_value_key)
-                storage_type, storage_name = storage_value.split('-')
+                if storage_value:
+                    storage_type, storage_name = storage_value.split('-')
+                    storage_obj = Storage.objects.filter(
+                        storage_name=storage_name).first()
+                    if storage_obj:
+                        location = Location(
+                            cell=cell_value,
+                            SAMPLE_id_sample_1=sample,
+                            STORAGE_id_storage_1=storage_obj,
+                            STORAGE_TYPE_id_storagetype_id=int(storage_type)
+                        )
+                        location.save()
+                        if location.id_location:
+                            print(
+                                f"Ubicación para {storage_obj.storage_name} guardada con éxito, id_location: {location.id_location}")
 
-                # Buscar el objeto Storage usando el nombre del almacenamiento:
-                storage_obj = Storage.objects.filter(
-                    storage_name=storage_name).first()
-                if storage_obj:
-                    cell_value = int(request.POST.get('cell'))
-                    location = Location(
-                        cell=cell_value,
-                        SAMPLE_id_sample_1=sample,
-                        STORAGE_id_storage_1=storage_obj,
-                        STORAGE_TYPE_id_storagetype_id=int(storage_type)
-                    )
-                    location.save()
-                    if location.id_location:
-                        print(
-                            f"Ubicación para {storage_obj.storage_name} guardada con éxito.")
-                    else:
-                        print(
-                            f"Error al guardar la ubicación para {storage_obj.storage_name}.")
-                        return JsonResponse({'message': 'Error al guardar la ubicación'}, status=400)
-                else:
-                    print(
-                        f"Objeto Storage no encontrado para id: {storage_value}.")
-
-            action = request.POST.get('action')
-            if action == "add_another":
-                return redirect('create_sample')
-            else:
-                return redirect('sample_list')
+        action = request.POST.get('action')
+        if action == "add_another":
+            return redirect('create_sample')
+        else:
+            return redirect('sample_list')
 
     else:
         storages = Storage.objects.all().order_by('storage_name')
         storage_types = StorageType.objects.all().order_by('name_storagetype')
-
         context = {
             'storages': storages,
             'storage_types': storage_types
         }
-
         return render(request, 'create_sample.html', context)
 
 

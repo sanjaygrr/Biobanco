@@ -413,13 +413,13 @@ def sample_list(request):
             samples = samples.filter(date_sample=sample_date)
         if freezer_number:
             samples = samples.filter(location__STORAGE_id_storage_1__storage_name=freezer_number,
-                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=1)
+                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=3)
         if rack_number:
             samples = samples.filter(location__STORAGE_id_storage_1__storage_name=rack_number,
                                      location__STORAGE_TYPE_id_storagetype__name_storagetype=2)
         if box_number:
             samples = samples.filter(location__STORAGE_id_storage_1__storage_name=box_number,
-                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=3)
+                                     location__STORAGE_TYPE_id_storagetype__name_storagetype=1)
         if sample_id:
             samples = samples.filter(id_sample__icontains=sample_id)
         if cell:

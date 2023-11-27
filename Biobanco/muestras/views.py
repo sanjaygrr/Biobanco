@@ -219,11 +219,12 @@ def update_space_status(request):
 
             # Check if there are associated samples in this space
             if status is False:  # If trying to disable the space
-                has_samples = Location.objects.filter(
-                    STORAGE_id_storage_1=storage).exists()
-                if has_samples:
+                has_samples_with_shipment_0 = Location.objects.filter(
+                    STORAGE_id_storage_1=storage, SAMPLE_id_sample_1__SHIPMENT_id_shipment=0).exists()
+
+                if has_samples_with_shipment_0:
                     error_messages.append(
-                        f'No se puede deshabilitar el espacio {storage.storage_name} porque contiene muestras.')
+                        f'No se puede deshabilitar el espacio {storage.storage_name} porque contiene muestras')
                 else:
                     storage.storage_state = status
                     storage.save()
@@ -319,9 +320,9 @@ def create_sample(request):
                 date_sample=date_sample,
                 ml_volume=ml_volume,
                 state_preservation=state_preservation,
-                specification=specification
+                specification=specification,
+                SHIPMENT_id_shipment=0
             ).first()
-
             if existing_sample:
                 return JsonResponse({'message': 'Ya existe una muestra con los mismos detalles proporcionados'}, status=400)
 

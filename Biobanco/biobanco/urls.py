@@ -1,6 +1,8 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
 from muestras import views
+
+handler404 = 'muestras.views.custom_not_found_view'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,5 +34,5 @@ urlpatterns = [
          views.update_sample, name='update_sample'),
     path('shipments/detail/<int:shipment_id>/',
          views.shipments_detail, name='shipments_detail'),
-
+    re_path(r'^.*$', views.custom_not_found_view),
 ]

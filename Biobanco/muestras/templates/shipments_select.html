@@ -66,6 +66,33 @@
             background-color: #4F709C;
             color: white;
         }
+        .filter-box {
+            padding: 20px;
+            background-color: #f2f2f2;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+        }
+        form {
+            display: flex;
+            flex-direction: row; /* Cambiado de column a row */
+            flex-wrap: wrap; /* Asegura que los elementos se ajusten en pantallas pequeñas */
+            gap: 10px;
+            align-items: center; /* Alinea verticalmente los elementos del formulario */
+        }
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        input[type="number"] {
+            width: 100px;
+        }
     </style>
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -73,15 +100,55 @@
     <h1>Enviar Muestras</h1>
     
     <!-- Formulario de Filtro -->
+
     <div class="filter-box">
         <form id="filter-form" method="POST" action="{% url 'shipments_select' %}">
             {% csrf_token %}
             <!-- Campos de filtro -->
-            <label for="year">Año:</label>
-            <input type="number" id="year" name="year">
+            <label for="year">año:</label>
+            <select id="year" name="year">
+                <option value="">selecciona un año</option>
+                <option value="2023">2023</option>
+                <option value="2022">2022</option>
+                <option value="2021">2021</option>
+                <option value="2020">2020</option>
+                <option value="2019">2019</option>
+                <option value="2018">2018</option>
+                <option value="2017">2017</option>
+                <option value="2016">2016</option>
+                <option value="2015">2015</option>
+                <option value="2014">2014</option>
+                <option value="2013">2013</option>
+                <option value="2012">2012</option>
+                <option value="2011">2011</option>
+                <option value="2010">2010</option>
+                <option value="2009">2009</option>
+                <option value="2008">2008</option>
+                <option value="2007">2007</option>
+                <option value="2006">2006</option>
+                <option value="2005">2005</option>
+                <option value="2004">2004</option>
+                <option value="2003">2003</option>
+                <option value="2002">2002</option>
+            </select>
             
             <label for="month">Mes:</label>
-            <input type="number" id="month" name="month" min="1" max="12">
+            <select id="month" name="month">
+                <option value="">selecciona un mes</option>
+                <option value="1">Enero</option>
+                <option value="2">Febrero</option>
+                <option value="3">Marzo</option>
+                <option value="4">Abril</option>
+                <option value="5">Mayo</option>
+                <option value="6">Junio</option>
+                <option value="7">Julio</option>
+                <option value="8">Agosto</option>
+                <option value="9">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+                <!-- Agrega las demás opciones para los meses -->
+            </select>
             
             <label for="subject_id">ID Sujeto:</label>
             <input type="text" id="subject_id" name="subject_id">
@@ -94,11 +161,8 @@
             </select>
             <input type="number" id="volume" name="volume" min="0"> ml
             <input type="hidden" id="selected-samples" name="selected_samples" value="">
-            
-            <input type="submit" value="Buscar" name="filter_action">
         </form>
     </div>
-    
     <div class="samples-selection">
         <h2>Seleccionar Muestras</h2>
         <table id="samplesTable">
@@ -167,17 +231,43 @@
     <script>
         var csrf_token = "{{ csrf_token }}";
         var selectedSamples = [];
-        var allSamples = []; // Supongamos que esto se llena con tus muestras
+        var allSamples = []; // Aquí tus muestras
+        var selectedSampleIds = new Set();
+        
 
+        function initializeSamples() {
+            var rows = document.getElementById('samplesTable').querySelectorAll('tbody tr');
+            allSamples = Array.from(rows).map(function(row) {
+                return {
+                    id_sample: row.getAttribute('data-sample-id'),
+                    id_subject: row.cells[0].textContent.trim(),
+                    date_sample: new Date(row.cells[1].textContent.trim()),
+                    ml_volume: parseFloat(row.cells[3].textContent.trim()),
+                    state_preservation: row.cells[4].textContent.trim() === 'Descongelado',
+                    freezer_name: row.cells[5].textContent.trim(),
+                    rack_name: row.cells[6].textContent.trim(),
+                    box_name: row.cells[7].textContent.trim(),
+                    cell: row.cells[8].textContent.trim()
+                };
+            });
+        }
+        
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('filter-form').addEventListener('input', filterSamples);
+            initializeSamples(); // Llenar allSamples con datos iniciales
+    
+            // Añadir eventos 'input' a cada campo de filtro
+            document.getElementById('year').addEventListener('input', filterSamples);
+            document.getElementById('month').addEventListener('input', filterSamples);
+            document.getElementById('subject_id').addEventListener('input', filterSamples);
+            document.getElementById('volume_condition').addEventListener('input', filterSamples);
+            document.getElementById('volume').addEventListener('input', filterSamples);
+    
             document.getElementById('send-form').addEventListener('submit', handleSendFormSubmit);
             document.querySelector('#samplesTable').addEventListener('click', handleSamplesTableClick);
             document.querySelector('#sendTable').addEventListener('click', handleSendTableClick);
-            initializeSamples(); // Llenar allSamples con datos iniciales
         });
 
-        {% comment %} function filterSamples() {
+        function filterSamples() {
             var year = document.getElementById('year').value;
             var month = document.getElementById('month').value;
             var subjectId = document.getElementById('subject_id').value;
@@ -185,31 +275,34 @@
             var volume = parseFloat(document.getElementById('volume').value);
         
             var filteredSamples = allSamples.filter(function(sample) {
-                var yearMatches = year ? sample.year == year : true;
-                var monthMatches = month ? sample.month == month : true;
-                var subjectIdMatches = subjectId ? sample.subjectId == subjectId : true;
+                var yearMatches = year ? sample.date_sample.getFullYear() == year : true;
+                var monthMatches = month ? sample.date_sample.getMonth() + 1 == month : true;
+                var subjectIdMatches = subjectId ? sample.id_subject == subjectId : true;
                 var volumeMatches = true;
         
-                if (volume) {
+                if (!isNaN(volume)) {
                     switch (volumeCondition) {
                         case 'greater':
-                            volumeMatches = sample.volume > volume;
+                            volumeMatches = sample.ml_volume > volume;
                             break;
                         case 'less':
-                            volumeMatches = sample.volume < volume;
+                            volumeMatches = sample.ml_volume < volume;
                             break;
                         case 'equal':
-                            volumeMatches = sample.volume == volume;
+                            volumeMatches = sample.ml_volume == volume;
                             break;
                     }
                 }
         
-                return yearMatches && monthMatches && subjectIdMatches && volumeMatches;
+                // Comprueba si la muestra ya está seleccionada
+                var isSampleSelected = selectedSampleIds.has(sample.id_sample);
+        
+                return yearMatches && monthMatches && subjectIdMatches && volumeMatches && !isSampleSelected;
             });
         
             updateSamplesTable(filteredSamples);
         }
-
+        
         function updateSamplesTable(filteredSamples) {
             var tableBody = document.getElementById('samplesTable').querySelector('tbody');
             tableBody.innerHTML = ''; // Limpiar tabla actual
@@ -218,9 +311,17 @@
                 var row = document.createElement('tr');
                 row.setAttribute('data-sample-id', sample.id_sample);
         
+                // Suponiendo que sample.date_sample es tu fecha original
+                let fechaOriginal = new Date(sample.date_sample);
+                let formatoDeseado = fechaOriginal.toLocaleDateString('es-CL', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+        
                 // Crear y agregar celdas para cada propiedad de la muestra
                 addCell(row, sample.id_subject);
-                addCell(row, sample.date_sample);
+                addCell(row, formatoDeseado);
                 addCell(row, sample.id_sample);
                 addCell(row, sample.ml_volume);
                 addCell(row, sample.state_preservation ? 'Descongelado' : 'Normal');
@@ -246,7 +347,8 @@
             var cell = document.createElement('td');
             cell.textContent = text;
             row.appendChild(cell);
-        } {% endcomment %}
+        }
+        
 
         function handleSendFormSubmit(event) {
             event.preventDefault();

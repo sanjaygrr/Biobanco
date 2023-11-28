@@ -215,7 +215,7 @@
     
     <div class="samples-list">
         <h2>Lista de Muestras</h2>
-        <table id="sendTable">
+        <table id="sampleTable">
             <thead>
                 <tr>
                     <th class="sortable">ID Sujeto</th>
@@ -457,6 +457,39 @@
             let value = `; ${document.cookie}`;
             let parts = value.split(`; ${name}=`);
             return parts.length === 2 ? parts.pop().split(';').shift() : null;
+        }
+        document.querySelectorAll('#sampleTable .sortable').forEach(headerCell => {
+            headerCell.addEventListener('click', () => {
+                const tableElement = headerCell.closest('table');
+                const headerIndex = Array.prototype.indexOf.call(headerCell.parentElement.children, headerCell);
+                const currentIsAscending = headerCell.classList.contains('th-sort-asc');
+                sortTableByColumn(tableElement, headerIndex, !currentIsAscending);
+            });
+        });
+
+        function sortTableByColumn(table, column, asc = true) {
+            const dirModifier = asc ? 1 : -1;
+            const tBody = table.tBodies[0];
+            const rows = Array.from(tBody.querySelectorAll('tr'));
+
+            // Ordenar cada fila
+            const sortedRows = rows.sort((a, b) => {
+                const aColText = a.querySelector(`td:nth-child(${ column + 1 })`).textContent.trim();
+                const bColText = b.querySelector(`td:nth-child(${ column + 1 })`).textContent.trim();
+                return aColText.localeCompare(bColText, 'es', { numeric: true }) * dirModifier;
+            });
+
+            // Remover todas las filas existentes y re-agregarlas en el nuevo orden
+            while (tBody.firstChild) {
+                tBody.removeChild(tBody.firstChild);
+            }
+
+            tBody.append(...sortedRows);
+
+            // Recordar cómo está ordenada la columna
+            table.querySelectorAll('th').forEach(th => th.classList.remove('th-sort-asc', 'th-sort-desc'));
+            table.querySelector(`th:nth-child(${ column + 1})`).classList.toggle('th-sort-asc', asc);
+            table.querySelector(`th:nth-child(${ column + 1})`).classList.toggle('th-sort-desc', !asc);
         }
     </script>
     

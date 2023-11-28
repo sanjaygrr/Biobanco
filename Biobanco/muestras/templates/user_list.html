@@ -72,6 +72,26 @@
         .delete-icon:hover, .edit-icon:hover {
             color: #333; /* Cambia el color al pasar el ratón por encima */
         }
+        th.sortable {
+            cursor: pointer;
+            position: relative;
+        }
+
+        th.sortable::after {
+            content: '';
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        th.sortable.th-sort-asc::after {
+            content: '▲';
+        }
+
+        th.sortable.th-sort-desc::after {
+            content: '▼';
+        }
     </style>
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -86,9 +106,9 @@
     <table>
         <thead>
             <tr>
-                <th>Nombre de Usuario</th>
-                <th>Correo Electrónico</th>
-                <th>Rol</th>
+                <th class="sortable">Nombre de Usuario</th>
+                <th class="sortable">Correo Electrónico</th>
+                <th class="sortable">Rol</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -135,6 +155,47 @@
                     form.submit();
                 }
             });
+        }
+    </script>
+    <script>
+        // ... Tu script existente ...
+        
+        // Script para hacer las columnas ordenables
+        document.querySelectorAll('.sortable').forEach(headerCell => {
+            headerCell.addEventListener('click', () => {
+                const tableElement = headerCell.closest('table');
+                const headerIndex = Array.prototype.indexOf.call(headerCell.parentElement.children, headerCell);
+                const currentIsAscending = headerCell.classList.contains('th-sort-asc');
+
+                sortTableByColumn(tableElement, headerIndex, !currentIsAscending);
+            });
+        });
+
+
+        function sortTableByColumn(table, column, asc = true) {
+            const dirModifier = asc ? 1 : -1;
+            const tBody = table.tBodies[0];
+            const rows = Array.from(tBody.querySelectorAll('tr'));
+
+            // Ordenar cada fila
+            const sortedRows = rows.sort((a, b) => {
+                const aColText = a.querySelector(`td:nth-child(${ column + 1 })`).textContent.trim();
+                const bColText = b.querySelector(`td:nth-child(${ column + 1 })`).textContent.trim();
+
+                return aColText.localeCompare(bColText, 'es', { numeric: true }) * dirModifier;
+            });
+
+            // Remover todas las filas existentes y re-agregarlas en el nuevo orden
+            while (tBody.firstChild) {
+                tBody.removeChild(tBody.firstChild);
+            }
+
+            tBody.append(...sortedRows);
+
+            // Recordar cómo está ordenada la columna
+            table.querySelectorAll('th').forEach(th => th.classList.remove('th-sort-asc', 'th-sort-desc'));
+            table.querySelector(`th:nth-child(${ column + 1})`).classList.toggle('th-sort-asc', asc);
+            table.querySelector(`th:nth-child(${ column + 1})`).classList.toggle('th-sort-desc', !asc);
         }
     </script>
 </body>

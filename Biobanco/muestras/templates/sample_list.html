@@ -206,7 +206,7 @@
 
                 <div>
                     <label for="cell">Celda:</label>
-                    <input type="number" name="cell" placeholder="" min="0" max="99">
+                    <input type="number" name="cell" placeholder="" min="0" max="100">
                 </div>
                 <button type="submit">Buscar</button>
             </div>
@@ -289,7 +289,7 @@
                     <!-- Celda -->
                     <td class="cell-td">
                         <span class="cell-display">{{ sample.location_set.first.cell }}</span>
-                        <input type="number" name="cell" class="cell-input" value="{{ sample.location_set.first.cell }}" style="display:none;" min="1" max="99">
+                        <input type="number" name="cell" class="cell-input" value="{{ sample.location_set.first.cell }}" style="display:none;" min="1" max="100">
                     </td>
             
                     <!-- Botones de acción -->
@@ -448,7 +448,7 @@
                 let enteredValue = cellInput.value;
                 enteredValue = enteredValue.replace(/^0+/, '');
                 if (enteredValue < 1) enteredValue = 1;
-                else if (enteredValue > 99) enteredValue = 99;
+                else if (enteredValue > 100) enteredValue = 100;
                 cellInput.value = enteredValue;
             });
         });

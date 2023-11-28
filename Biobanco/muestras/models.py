@@ -28,7 +28,7 @@ class Storage(models.Model):
     """
     Modelo para representar el almacenamiento.
     """
-    storage_name = models.CharField(max_length=9, null=False, blank=False)
+    storage_name = models.IntegerField(null=False, blank=False)
     storage_state = models.BooleanField(
         null=False, blank=False, default=True)
     storage_description = models.CharField(

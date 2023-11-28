@@ -286,17 +286,25 @@
             var table = document.getElementById('spacesTable');
             var tbody = table.querySelector('tbody');
             var rows = Array.from(tbody.querySelectorAll('tr'));
-    
+        
             rows.sort(function(rowA, rowB) {
                 var cellA = rowA.cells[columnIndex].innerText;
                 var cellB = rowB.cells[columnIndex].innerText;
-                return cellA.localeCompare(cellB);
+        
+                // Verificar si la columna es la de "Número de Espacio"
+                if (columnIndex === 1) { // Asumiendo que la columna "Número de Espacio" es la segunda (índice 1)
+                    // Convertir los valores a números para la comparación
+                    return parseInt(cellA) - parseInt(cellB);
+                } else {
+                    // Para otras columnas, usar comparación de texto
+                    return cellA.localeCompare(cellB);
+                }
             });
-    
+        
             while (tbody.firstChild) {
                 tbody.removeChild(tbody.firstChild);
             }
-    
+        
             rows.forEach(function(row) {
                 tbody.appendChild(row);
             });

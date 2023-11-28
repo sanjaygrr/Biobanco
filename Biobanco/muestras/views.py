@@ -508,7 +508,7 @@ def sample_list(request):
         if sample_id:
             samples = samples.filter(id_sample__icontains=sample_id)
         if cell:
-            samples = samples.filter(location__cell=cell)
+            samples = samples.filter(location__cell=cell).distinct()
 
         # Añadir información de ubicación a cada muestra
         for sample in samples:
@@ -571,6 +571,12 @@ def update_sample(request, sample_id):
                 storage = Storage.objects.get(
                     STORAGE_TYPE_id_storagetype=storage_type, storage_name=storage_name)
 
+                # Actualizar la ubicación existente
+                location = Location.objects.filter(
+                    SAMPLE_id_sample_1=sample,
+                    STORAGE_TYPE_id_storagetype=storage_type
+                ).first()
+
                 # Verificar si la celda está ocupada
                 if storage_key == 'box_id':
                     existing_location = Location.objects.exclude(SAMPLE_id_sample_1=sample).filter(
@@ -579,12 +585,6 @@ def update_sample(request, sample_id):
                     ).first()
                     if existing_location:
                         return JsonResponse({'error': f'La celda {cell_value} en caja {storage_name} ya está ocupada'}, status=400)
-
-                # Actualizar la ubicación existente
-                location = Location.objects.filter(
-                    SAMPLE_id_sample_1=sample,
-                    STORAGE_TYPE_id_storagetype=storage_type
-                ).first()
 
                 if location:
                     location.STORAGE_id_storage_1 = storage
@@ -942,7 +942,7 @@ def samples_report(request):
         if sample_id:
             samples = samples.filter(id_sample__icontains=sample_id)
         if cell:
-            samples = samples.filter(location__cell=cell)
+            samples = samples.filter(location__cell=cell).distinct()
 
         # Añadir información de ubicación a cada muestra
         for sample in samples:

@@ -93,10 +93,9 @@
                 document.getElementById('date_sample').max = new Date().toISOString().split('T')[0];
             </script>
         </div>
-
         <div class="form-group">
             <label for="ml_volume">Volumen (ml):</label>
-            <input type="number" name="ml_volume" min="0.1" step="0.01" required>
+            <input type="number" id="ml_volume" name="ml_volume" step="0.01" required>
         </div>
 
         <div class="form-group" style="display: none;">
@@ -166,7 +165,7 @@
 
         <div class="form-group">
             <label for="cell">Celda:</label>
-            <input type="number" name="cell" id="cellInput" min="0" max="99" required>
+            <input type="number" name="cell" id="cellInput" min="1" max="100" required>
         </div>
         
         <script>
@@ -181,14 +180,16 @@
                 // Asegurarse de que el valor esté en el rango correcto
                 if (enteredValue < 0) {
                     enteredValue = 0;
-                } else if (enteredValue > 99) {
-                    enteredValue = 99;
+                } else if (enteredValue > 100) {
+                    enteredValue = 100;
                 }
         
                 // Actualizar el valor en el campo de entrada
                 cellInput.value = enteredValue;
             });
         </script>
+
+        <span id="error_message" style="color: red;"></span>
         
 
         <!-- Botones de acción -->
@@ -198,6 +199,30 @@
         </div>
     </form>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var input = document.getElementById('ml_volume');
+        var errorMessage = document.getElementById('error_message');
+
+        input.addEventListener('input', function() {
+            var value = parseFloat(input.value);
+
+            // Restricción de número negativo y límite superior
+            if (value < 0.1 || value > 10) {
+                errorMessage.textContent = 'El volumen debe estar entre 0.1 y 10 ml.';
+                input.value = ''; // Limpiar el campo si el valor es incorrecto
+            } else {
+                errorMessage.textContent = ''; // Limpiar mensaje de error si el valor es correcto
+            }
+
+            // Restricción para evitar caracteres no numéricos
+            if (isNaN(value) && input.value !== '') {
+                errorMessage.textContent = 'Por favor, ingrese solo números.';
+                input.value = ''; // Limpiar el campo si se ingresan caracteres no numéricos
+            }
+        });
+    });
+</script>
 <script>
     function handleSubmit(actionValue, event) {
         event.preventDefault();

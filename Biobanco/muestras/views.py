@@ -205,6 +205,16 @@ def update_user(request, user_id):
     return render(request, 'edit_user.html', {'user': user, 'roles': Role.objects.all()})
 
 
+@csrf_exempt  # Si usas AJAX, es posible que necesites deshabilitar la protección CSRF
+def toggle_user_status(request, user_id):
+    if request.method == 'POST':
+        user = get_object_or_404(Account, id=user_id)
+        user.user_state = not user.user_state
+        user.save()
+        return JsonResponse({'success': True, 'new_state': user.user_state})
+    return JsonResponse({'success': False}, status=400)
+
+
 @login_required
 def create_space(request):
     if request.method == 'POST':

@@ -53,6 +53,31 @@
             margin-top: 20px; 
         }
 
+        .action-cell {
+            display: flex;
+            align-items: center;
+            justify-content: start;
+            gap: 10px; /* Espacio entre elementos */
+        }
+        
+        /* Asegurándose de que todos los elementos tengan un tamaño y alineación consistentes */
+        .edit-icon, .delete-icon, .switch {
+            margin: 0 5px; /* Margen uniforme */
+            /* Otras propiedades de estilo */
+        }
+        
+        /* Ajustes adicionales en caso de que el botón de eliminar tenga estilos por defecto que afecten la alineación */
+        .delete-icon button {
+            border: none; /* Eliminar borde por defecto */
+            background: none; /* Eliminar fondo por defecto */
+            padding: 0; /* Eliminar relleno por defecto */
+            vertical-align: middle; /* Alinear verticalmente */
+        }
+        
+        /* Ajustes para el ícono dentro del botón, si es necesario */
+        .delete-icon svg {
+            vertical-align: middle;
+        }
         .delete-icon, .edit-icon {
             cursor: pointer;
             font-size: 30px; /* Ajusta el tamaño del ícono */
@@ -65,8 +90,9 @@
     
         .edit-icon {
             color: #4F709C; /* Color azul para editar */
-            padding-left: 60px; /* Espacio entre los íconos si es necesario */
+            padding-left: 20px; /* Espacio entre los íconos si es necesario */
             font-size: 30px; /* Ajusta el tamaño del ícono */
+            padding-right: 20px;
         }
     
         .delete-icon:hover, .edit-icon:hover {
@@ -92,6 +118,61 @@
         th.sortable.th-sort-desc::after {
             content: '▼';
         }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+          }
+          
+          .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+          }
+          
+          .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+          }
+          
+          .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+          }
+          
+          input:checked + .slider {
+            background-color: #4F709C;
+          }
+
+          input:checked + .slider:before {
+            transform: translateX(26px); /* Mueve el círculo a la derecha cuando está activado */
+          }
+          
+          
+          input:focus + .slider {
+            box-shadow: 0 0 1px #4F709C;
+          }
+          
+          .slider.round {
+            border-radius: 34px;
+          }
+          
+          .slider.round:before {
+            border-radius: 50%;
+          }
     </style>
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -115,17 +196,22 @@
         <tbody>
             {% for user in users %}
         <tr {% if request.user.id == user.id %} style="background-color: #d4edda;" {% endif %}>
+                <!-- ... (Otras celdas de la fila) ... -->
             <td>{{ user.username }}</td>
             <td>{{ user.email }}</td>
             <td>{{ user.ROLE_id_role.get_id_role_display }}</td>
-            <td>
+            <td class="action-cell">
                 {% if request.user.id != user.id %}
+                <label class="switch">
+                    <input type="checkbox" {% if user.user_state %} checked {% endif %} onchange="confirmToggleStatus({{ user.id }}, this)">
+                    <span class="slider round"></span>
+                </label>
+                <a href="{% url 'edit_user' user.id %}" class="edit-icon">&#9998;</a>
                 <form action="{% url 'delete_user' user.id %}" method="post" style="display: inline;">
                     {% csrf_token %}
                     <button type="button" class="delete-icon" onclick="confirmDelete(this)">&#10006;</button>
                 </form>
-                
-                    <a href="{% url 'edit_user' user.id %}" class="edit-icon">&#9998;</a>
+
                 {% else %}
                     Este es tu usuario
                 {% endif %}
@@ -139,6 +225,62 @@
         </tbody>
     </table>
     <script>
+
+        function confirmToggleStatus(userId, checkbox) {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "¿Quieres cambiar el estado de este usuario?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, cambiarlo!',
+                cancelButtonText: 'No, cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    toggleUserStatus(userId, checkbox.checked);
+                } else {
+                    // Revertir el estado del checkbox
+                    checkbox.checked = !checkbox.checked;
+                }
+            });
+        }
+        
+        function toggleUserStatus(userId, newState) {
+    fetch(`/toggle_user_status/${userId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userState: newState })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Actualiza el estado del checkbox basado en la respuesta del servidor
+            const checkbox = document.querySelector(`input[data-user-id="${userId}"]`);
+            if (checkbox) {
+                checkbox.checked = data.new_state;
+            }
+        } else {
+            console.error('Error al cambiar el estado del usuario');
+            // Revertir el estado del checkbox en caso de error
+            const checkbox = document.querySelector(`input[data-user-id="${userId}"]`);
+            if (checkbox) {
+                checkbox.checked = !newState;
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Revertir el estado del checkbox en caso de error
+        const checkbox = document.querySelector(`input[data-user-id="${userId}"]`);
+        if (checkbox) {
+            checkbox.checked = !newState;
+        }
+    });
+}
         function confirmDelete(button) {
             var form = button.form; // Accede al formulario a través del botón
         

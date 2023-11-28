@@ -418,6 +418,15 @@ def create_sample(request):
             if existing_sample:
                 return JsonResponse({'message': 'Ya existe una muestra con los mismos detalles proporcionados'}, status=400)
 
+            existing_sample2 = Sample.objects.filter(
+                id_subject=id_subject,
+                date_sample=date_sample,
+                specification=specification,
+                SHIPMENT_id_shipment=0
+            ).first()
+            if existing_sample:
+                return JsonResponse({'message': 'Ya existe una muestra con los mismos detalles proporcionados '}, status=400)
+
             sample.save()
             print(f"Muestra guardada con id_sample: {sample.id_sample}")
 

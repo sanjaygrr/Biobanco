@@ -151,11 +151,15 @@ def user_list(request):
 
 
 @login_required
-@require_POST
 def delete_user(request, user_id):
-    # Usa Account en lugar de User
     user = get_object_or_404(Account, id=user_id)
-    user.delete()
+
+    if request.user != user:  # Evita que el usuario elimine su propia cuenta
+        user.delete()
+        messages.success(request, "Usuario eliminado con éxito.")
+    else:
+        messages.error(request, "No puedes eliminar tu propia cuenta.")
+
     return redirect('user_list')
 
 

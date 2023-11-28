@@ -94,34 +94,34 @@
         </thead>
         <tbody>
             {% for user in users %}
-            <tr {% if request.user.id == user.id %} style="background-color: #d4edda;" {% endif %}>
-                <td>{{ user.username }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.ROLE_id_role.get_id_role_display }}</td>
-                <td>
-                    {% if request.user.id != user.id %}
-                        <!-- Botón de eliminar -->
-                        <form action="{% url 'delete_user' user.id %}" method="post" style="display: inline;">
-                            {% csrf_token %}
-                            <span class="delete-icon" onclick="confirmDelete(this.form)">&#10006;</span> <!-- Representa la X -->
-                        </form>
-                        <!-- Ícono de editar -->
-                        <a href="{% url 'edit_user' user.id %}" class="edit-icon">&#9998;</a> <!-- Representa el lápiz -->
-                    {% else %}
-                        <!-- Si es el usuario actual, muestra texto en lugar de los botones -->
-                        Este es tu usuario
-                    {% endif %}
-                </td>
-            </tr>
+        <tr {% if request.user.id == user.id %} style="background-color: #d4edda;" {% endif %}>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.ROLE_id_role.get_id_role_display }}</td>
+            <td>
+                {% if request.user.id != user.id %}
+                <form action="{% url 'delete_user' user.id %}" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="button" class="delete-icon" onclick="confirmDelete(this)">&#10006;</button>
+                </form>
+                
+                    <a href="{% url 'edit_user' user.id %}" class="edit-icon">&#9998;</a>
+                {% else %}
+                    Este es tu usuario
+                {% endif %}
+            </td>
+        </tr>
         {% empty %}
-            <tr>
-                <td colspan="4">No hay usuarios para mostrar.</td>
-            </tr>
+        <tr>
+            <td colspan="4">No hay usuarios para mostrar.</td>
+        </tr>
         {% endfor %}
         </tbody>
     </table>
     <script>
-        function confirmDelete(form) {
+        function confirmDelete(button) {
+            var form = button.form; // Accede al formulario a través del botón
+        
             Swal.fire({
                 title: '¿Estás seguro de eliminar usuario?',
                 text: "No podrás revertir esto!",

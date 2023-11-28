@@ -101,44 +101,103 @@
             <textarea id="analysis" name="analysis" required></textarea>
         </div>
         <button type="submit">Registrar nuevo envío</button>
-
-        <button id="continueShipmentButton" class="continue-button">Continuar con el último envío</button>
+        <button type="button" id="continueShipmentButton" class="continue-button">Continuar con el último envío</button>
     </form>
-    <script>
-        document.getElementById('continueShipmentButton').addEventListener('click', function() {
-            window.location.href = "{% url 'shipments_select' %}";
-        });
-    </script>
     <script>
         document.getElementById('shipmentForm').addEventListener('submit', function(e) {
             e.preventDefault();
-    
-            const date = document.getElementById('date_shipment').value;
-            const laboratory = document.getElementById('laboratory').value;
-            const analysis = document.getElementById('analysis').value;
-    
-            Swal.fire({
-                title: '¿Seguro que todo está bien?',
-                html: `
-                    <strong>Fecha:</strong> ${date}<br>
-                    <strong>Laboratorio:</strong> ${laboratory}<br>
-                    <strong>Análisis:</strong> ${analysis}
-                `,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Sí, enviar',
-                cancelButtonText: 'No, revisar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Si el usuario confirma, envía el formulario
-                    e.target.submit();
+        
+            const formData = new FormData(this);
+        
+            fetch("{% url 'shipments' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
                 }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Éxito',
+                        text: data.success,
+                        icon: 'success',
+                        confirmButtonText: 'Aceptar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = data.redirect_url;
+                        }
+                    });
+                } else if (data.error) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.error,
+                        icon: 'error',
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Ocurrió un error inesperado.',
+                    icon: 'error',
+                    confirmButtonText: 'Aceptar'
+                });
             });
         });
+
+            document.getElementById('continueShipmentButton').addEventListener('click', function(e) {
+                e.preventDefault(); // Evita el comportamiento predeterminado del botón
+        
+                // Realiza la solicitud fetch para verificar las muestras
+                fetch("{% url 'check_samples' %}")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.has_samples) {
+                        // Si hay muestras, pregunta al usuario si desea continuar
+                        Swal.fire({
+                            title: 'Continuar',
+                            text: '¿Desea continuar con el último envío?',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Sí, continuar',
+                            cancelButtonText: 'No, cancelar'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = "{% url 'shipments_select' %}";
+                            }
+                        });
+                    } else {
+                        // Si no hay muestras, muestra un mensaje de error
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'No hay muestras con ID de envío igual a 0. Registre o actualice muestras antes de continuar.',
+                            icon: 'error',
+                            confirmButtonText: 'Aceptar'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Ocurrió un error inesperado.',
+                        icon: 'error',
+                        confirmButtonText: 'Aceptar'
+                    });
+                });
+            });
     </script>
-    
 </body>
 </html>
 {% endblock %}

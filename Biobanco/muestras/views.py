@@ -683,36 +683,54 @@ def shipments(request):
         laboratory = request.POST.get('laboratory')
         analysis = request.POST.get('analysis')
 
-        # Crear y guardar el nuevo Shipment
-        shipment = Shipment(
-            date_shipment=date_shipment,
-            laboratory=laboratory,
-            analysis=analysis,
-            sender=request.user  # Asignar el usuario actual como remitente
-        )
-        shipment.save()
+        # Verifica si hay muestras registradas con SHIPMENT_id_shipment igual a 0
+        if Sample.objects.filter(SHIPMENT_id_shipment=0).exists():
+            # Crear y guardar el nuevo Shipment
+            shipment = Shipment(
+                date_shipment=date_shipment,
+                laboratory=laboratory,
+                analysis=analysis,
+                sender=request.user  # Asignar el usuario actual como remitente
+            )
+            shipment.save()
 
-        # Obtener la última muestra guardada
-        # Asumiendo que 'id_sample' es la clave principal
-        last_sample = Sample.objects.latest('id_sample')
+            # Obtener la última muestra guardada
+            last_sample = Sample.objects.latest('id_sample')
 
-        # Crear y guardar el SampleEvent
-        sample_event = SampleEvent(
-            # Asumiendo que quieres registrar el usuario que realiza la acción
-            event_user=request.user.username,
-            event_date=timezone.now(),  # Fecha actual
-            action="Crear envío",  # Acción realizada
-            action_information=f"Envío creado a laboratorio {shipment.laboratory}",
-            SAMPLE_id_sample=last_sample
-        )
-        sample_event.save()
+            # Crear y guardar el SampleEvent
+            sample_event = SampleEvent(
+                event_user=request.user.username,
+                event_date=timezone.now(),  # Fecha actual
+                action="Crear envío",  # Acción realizada
+                action_information=f"Envío creado a laboratorio {shipment.laboratory}",
+                SAMPLE_id_sample=last_sample
+            )
+            sample_event.save()
 
-        # Redirigir a la vista de selección de muestras
-        # Asegúrate de que 'shipments_select' es el nombre correcto de la ruta
-        return redirect('shipments_select')
+            # Devolver respuesta JSON con mensaje de éxito y URL de redirección
+            return JsonResponse({
+                'success': 'Envío creado correctamente.',
+                # Asegúrate de proporcionar la ruta correcta
+                'redirect_url': '/shipments_select'
+            })
+
+        else:
+            # Devolver respuesta JSON con mensaje de error
+            return JsonResponse({
+                'error': "No hay muestras para enviar"
+            })
 
     # Si es un GET, renderiza la página con el formulario
     return render(request, 'shipments.html')
+
+
+@login_required
+def check_samples(request):
+    # Verifica si hay muestras con SHIPMENT_id_shipment igual a 0
+    if Sample.objects.filter(SHIPMENT_id_shipment=0).exists():
+        return JsonResponse({'has_samples': True})
+    else:
+        return JsonResponse({'has_samples': False})
 
 
 @login_required

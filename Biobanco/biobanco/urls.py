@@ -40,5 +40,6 @@ urlpatterns = [
     path('update_user/<int:user_id>/', views.update_user, name='update_user'),
     path('toggle_user_status/<int:user_id>/',
          views.toggle_user_status, name='toggle_user_status'),
+    path('check-samples/', views.check_samples, name='check_samples'),
 
 ]

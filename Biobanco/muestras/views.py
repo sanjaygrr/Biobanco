@@ -133,7 +133,7 @@ def signup(request):
 
             return render(request, 'signup.html', {'success': 'Usuario creado exitosamente.'})
         except IntegrityError:
-            return render(request, 'signup.html', {'error': 'El correo ya existe'})
+            return render(request, 'signup.html', {'error': 'datos invalidos'})
     else:
         return render(request, 'signup.html')
 
@@ -293,12 +293,12 @@ def update_space_status(request):
                     storage.storage_state = status
                     storage.save()
                     success_messages.append(
-                        f'El espacio {storage.storage_name} ha sido deshabilitado con éxito.')
+                        f' ¡los cambios se han realizado con exito! ')
             else:
                 storage.storage_state = status
                 storage.save()
                 success_messages.append(
-                    f'El espacio {storage.storage_name} ha sido habilitado con éxito.')
+                    f'¡los cambios se han realizado con exito!')
 
         return JsonResponse({'success_messages': success_messages, 'error_messages': error_messages})
 

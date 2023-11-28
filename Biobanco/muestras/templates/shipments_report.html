@@ -149,16 +149,18 @@
             </thead>
             <tbody>
                 {% for shipment in shipments %}
-                <tr>
-                    <td>{{ shipment.sender }}</td>
-                    <td>{{ shipment.date_shipment|date:"d/m/Y" }}</td>
-                    <td>{{ shipment.laboratory }}</td>
-                    <td>{{ shipment.analysis }}</td>
-                    <td>{{ shipment.num_samples }}</td>
-                    <td>
-                        <a href="{% url 'shipments_detail' shipment.id_shipment %}">Detalle</a>
-                    </td>
-                </tr>
+                    {% if shipment.num_samples > 0 %}
+                        <tr>
+                            <td>{{ shipment.sender }}</td>
+                            <td>{{ shipment.date_shipment|date:"d/m/Y" }}</td>
+                            <td>{{ shipment.laboratory }}</td>
+                            <td>{{ shipment.analysis }}</td>
+                            <td>{{ shipment.num_samples }}</td>
+                            <td>
+                                <a href="{% url 'shipments_detail' shipment.id_shipment %}">Detalle</a>
+                            </td>
+                        </tr>
+                    {% endif %}
                 {% endfor %}
             </tbody>
         </table>

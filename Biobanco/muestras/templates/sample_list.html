@@ -135,6 +135,7 @@
             background-color: darkred; /* Cambia el color de fondo cuando el cursor está sobre el botón */
         }
         
+        
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
 </head>
@@ -221,6 +222,7 @@
                     <th class="sortable">ID Sujeto</th>
                     <th class="sortable">Fecha de Obtención</th>
                     <th class="sortable">Número de Muestra</th>
+                    <th class="sortable">Especificación</th>
                     <th class="sortable">Volumen (ml)</th>
                     <th class="sortable">Estado de Preservación</th>
                     <th class="sortable">Freezer Nro</th>
@@ -237,7 +239,9 @@
                     <td>{{ sample.id_subject }}</td>
                     <td>{{ sample.date_sample }}</td>
                     <td>{{ sample.id_sample }}</td>
+                    <td>{{ sample.specification }}</td>
                     <td>{{ sample.ml_volume }}</td>
+
                     <td>
                         <span class="preservation-display">{% if sample.state_preservation %}Descongelado{% else %}Normal{% endif %}</span>
                         <select class="preservation-select" style="display:none;">
@@ -245,6 +249,7 @@
                             <option value="1" {% if sample.state_preservation %}selected{% endif %}>Descongelado</option>
                         </select>
                     </td>
+                    
                     <td>
                         <span class="freezer-display">{{ sample.freezer_name }}</span>
                         <select name="freezer_id" class="freezer-select" style="display:none;">
@@ -297,6 +302,9 @@
                         <button class="edit-btn" onclick="toggleEditMode(this)">Editar</button>
                         <button class="save-btn hidden" data-sample-id="{{ sample.id  }}">Guardar</button>
                         <button class="eliminar-btn" onclick="eliminar(this)"><i class="fas fa-times"></i></button>
+                        <button class="refresh-btn" data-sample-id="{{ sample.id_sample }}" title="Actualizar">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
                     </td>
                 </tr>
                 {% endif %}
@@ -306,6 +314,28 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const preservationSelects = document.querySelectorAll('.preservation-select');
+        
+            preservationSelects.forEach(select => {
+                const isDefrosted = select.querySelector('option[value="1"]').selected;
+        
+                // Deshabilitar la opción 'Normal' si la muestra está 'Descongelada'
+                if (isDefrosted) {
+                    select.querySelector('option[value="0"]').disabled = true;
+                }
+            });
+            document.querySelectorAll('.refresh-btn').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    const sampleId = this.getAttribute('data-sample-id');
+                    refreshRow(sampleId);
+                });
+            });
+        });
+        function refreshRow(sampleId) {
+            location.reload();
+        }
+        
         function eliminar(btn) {
             let fila = btn.parentNode.parentNode;
             let sample_id = fila.getAttribute('data-sample-row-id');
@@ -325,7 +355,6 @@
                 }
             });
         }
-    
         function deleteSample(sample_id) {
             fetch(`/delete_sample/${sample_id}/`, {
                 method: 'POST',
